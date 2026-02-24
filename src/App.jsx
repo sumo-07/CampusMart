@@ -12,6 +12,7 @@ import { Signup } from "./pages/Signup";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { About } from "./pages/About";
 import { Cart } from "./pages/Cart";
+import './App.css';
 
 const router = createBrowserRouter([
   {

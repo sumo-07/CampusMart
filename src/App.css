@@ -1,0 +1,179 @@
+/* 2. Header Background & Shadow */
+.section-navbar {
+  width: 100%;
+  height: 5rem;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.section-navbar .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* 3. Logo/Brand Styling */
+.navbar-brand .brand-link {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  text-decoration: none;
+}
+
+.navbar-brand img {
+  width: 50px; /* Adjusted from 80% to a fixed size for better control */
+  height: auto;
+}
+
+.brand-name {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #2d3436;
+  letter-spacing: -1px;
+}
+
+/* 4. Navigation Links */
+.navbar ul {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+  align-items: center;
+}
+
+.nav-link {
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #636e72;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* Hover and Active states */
+.nav-link:hover,
+.nav-link.active {
+  color: #0984e3; /* Modern Blue */
+}
+
+/* Add a small underline effect for the active link */
+.nav-link.active::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #0984e3;
+}
+
+/* 5. Special Styling for Login button */
+.nav-item:last-child .nav-link {
+  background-color: #0984e3;
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+}
+
+.nav-item:last-child .nav-link:hover {
+  background-color: #074b83;
+}
+
+.nav-item:last-child .nav-link.active::after {
+  display: none; /* Remove underline for the button version */
+}
+
+
+/* --- Footer Main Section --- */
+.section-footer {
+  background-color: #2d3436; /* Dark slate background */
+  color: #dfe6e9;            /* Light gray text */
+  padding-top: 4rem;
+  margin-top: 5rem;          /* Pushes footer away from page content */
+}
+
+/* --- Layout Grid --- */
+.footer-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr; /* Brand gets more space than links */
+  gap: 3rem;
+  padding-bottom: 3rem;
+}
+
+
+
+/* --- Brand Section --- */
+.footer-logo {
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.footer-text {
+  line-height: 1.6;
+  max-width: 350px;
+  font-size: 0.95rem;
+  color: #b2bec3;
+}
+
+/* --- Link Sections --- */
+.footer-title {
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.footer-links ul {
+  list-style: none;
+}
+
+.footer-links li {
+  margin-bottom: 0.8rem;
+}
+
+.footer-link {
+  text-decoration: none;
+  color: #b2bec3;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.footer-link:hover {
+  color: #0984e3; /* Matching your header's blue */
+  padding-left: 5px; /* Subtle slide effect on hover */
+}
+
+/* --- Footer Bottom Bar --- */
+.footer-bottom {
+  border-top: 1px solid #444; /* Darker border for separation */
+  padding: 1.5rem 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #636e72;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+  .footer-container {
+    grid-template-columns: 1fr; /* Stack columns on tablets/mobile */
+    text-align: center;
+    gap: 2rem;
+  }
+
+  .footer-text {
+    margin: 0 auto;
+  }
+  
+  .footer-link:hover {
+    padding-left: 0; /* Disable slide effect on mobile */
+  }
+}
