@@ -19,11 +19,11 @@ export const HeroSection = () => {
           </p>
 
           <div className="hero-actions">
-            <NavLink to="/product" className="btn btn-primary">
+            <NavLink to="/product" className="hero-btn hero-btn-primary">
               Shop Now
             </NavLink>
 
-            <NavLink to="/about" className="btn btn-outline">
+            <NavLink to="/about" className="hero-btn hero-btn-outline">
               Learn More
             </NavLink>
           </div>

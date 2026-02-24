@@ -1,75 +1,84 @@
-/* Container and Section Spacing */
+/* --- Section & Layout --- */
 .section-hero {
-  padding: 5rem 0;
-  background-color: #f9fafb; /* Light subtle background */
+  padding: 3.5rem 0; /* Reduced from 5rem */
+  background-color: #f9fafb;
 }
 
 .hero-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4rem;
+  gap: 3rem; /* Reduced gap */
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
 }
 
-/* Typography */
+/* --- Content --- */
 .hero-content {
   flex: 1;
+  max-width: 520px;
 }
 
+/* Heading */
 .hero-heading {
-  font-size: 3.5rem;
+  font-size: 2.6rem; /* Reduced from 3.5rem */
   font-weight: 800;
-  line-height: 1.1;
-  color: #1a1a1a;
-  margin-bottom: 1.5rem;
+  line-height: 1.15;
+  color: #111827;
+  margin-bottom: 1rem;
 }
 
+/* Description */
 .hero-description {
-  font-size: 1.2rem;
+  font-size: 1rem; /* Reduced */
   line-height: 1.6;
-  color: #4b5563;
-  margin-bottom: 2.5rem;
+  color: #6b7280;
+  margin-bottom: 2rem;
+}
+
+/* --- Actions --- */
+.hero-actions {
+  display: flex;
+  gap: 1rem;
 }
 
 /* Buttons */
-.hero-actions {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.btn {
-  padding: 1rem 2rem;
-  border-radius: 8px;
+.hero-btn {
+  padding: 0.75rem 1.6rem; /* Smaller buttons */
+  border-radius: 6px;
   font-weight: 600;
+  font-size: 0.85rem;
   text-decoration: none;
-  transition: all 0.3s ease;
-  display: inline-block;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.btn-primary {
-  background-color: #2563eb; /* Royal Blue */
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #1d4ed8;
-  transform: translateY(-2px);
-}
-
-.btn-outline {
-  border: 2px solid #2563eb;
-  color: #2563eb;
-}
-
-.btn-outline:hover {
+/* Primary */
+.hero-btn-primary {
   background-color: #2563eb;
   color: white;
 }
 
-/* Image Styling */
+.hero-btn-primary:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px); /* Subtle lift */
+}
+
+/* Outline */
+.hero-btn-outline {
+  border: 1.5px solid #2563eb;
+  color: #2563eb;
+}
+
+.hero-btn-outline:hover {
+  background-color: #2563eb;
+  color: white;
+}
+
+/* --- Image --- */
 .hero-image {
   flex: 1;
   display: flex;
@@ -78,24 +87,43 @@
 
 .hero-image img {
   width: 100%;
-  max-width: 500px;
-  border-radius: 20px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  max-width: 420px; /* Reduced from 500px */
+  border-radius: 16px;
+  box-shadow: 0 12px 18px rgba(0, 0, 0, 0.08);
 }
 
-/* Responsive Design */
+/* --- Responsive --- */
 @media (max-width: 992px) {
   .hero-container {
     flex-direction: column;
     text-align: center;
-    gap: 3rem;
+    gap: 2.5rem;
+  }
+
+  .hero-content {
+    max-width: 100%;
   }
 
   .hero-heading {
-    font-size: 2.5rem;
+    font-size: 2.1rem;
   }
 
   .hero-actions {
     justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-heading {
+    font-size: 1.9rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .hero-btn {
+    width: 100%;
   }
 }

@@ -1,0 +1,130 @@
+/* --- Section & Container --- */
+.section-about {
+  padding: 60px 0; /* Reduced from 80px */
+  background-color: #ffffff;
+  color: #374151;
+}
+
+.about-container {
+  max-width: 1100px; /* Slightly tighter */
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* --- Header --- */
+.about-header {
+  text-align: center;
+  margin-bottom: 45px;
+}
+
+.about-title {
+  font-size: 2.1rem; /* Reduced */
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 8px;
+  text-transform: none; /* Less shouty */
+  letter-spacing: -0.5px;
+}
+
+.about-subtitle {
+  font-size: 0.95rem;
+  color: #6b7280;
+  font-style: normal;
+}
+
+/* --- Content Layout --- */
+.about-content {
+  display: flex;
+  align-items: center;
+  gap: 40px; /* Reduced */
+  margin-bottom: 60px;
+}
+
+.about-text {
+  flex: 1;
+}
+
+.about-text p {
+  font-size: 0.95rem; /* Reduced */
+  line-height: 1.65;
+  margin-bottom: 16px;
+  color: #4b5563;
+}
+
+/* --- Image --- */
+.about-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.about-image img {
+  width: 100%;
+  max-width: 420px; /* Reduced */
+  border-radius: 16px;
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease;
+}
+
+.about-image img:hover {
+  transform: scale(1.015);
+}
+
+/* --- Features Grid --- */
+.about-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px; /* Tighter */
+}
+
+/* Feature Card */
+.feature-item {
+  background: #f9fafb;
+  padding: 28px 22px; /* Reduced padding */
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+  transition: all 0.25s ease;
+}
+
+.feature-item:hover {
+  background: #ffffff;
+  border-color: #2563eb; /* Match hero blue */
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+  transform: translateY(-4px);
+}
+
+.feature-item h3 {
+  font-size: 1.05rem; /* Reduced */
+  color: #2563eb;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.feature-item p {
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* --- Responsive --- */
+@media (max-width: 992px) {
+  .about-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .about-features {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .about-features {
+    grid-template-columns: 1fr;
+  }
+
+  .about-title {
+    font-size: 1.8rem;
+  }
+}
