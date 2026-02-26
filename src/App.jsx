@@ -13,6 +13,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { About } from "./pages/About";
 import { Cart } from "./pages/Cart";
 import './App.css';
+// import { ScrollToTop } from "./components/common/ScrollToTop";
 
 const router = createBrowserRouter([
   {
