@@ -10,6 +10,8 @@ import {
 import { ProductCard } from "../components/UI/ProductCard";
 import "../components/css/products.css";
 
+const ITEMS_PER_PAGE = 16;
+
 export const Products = () => {
   /* ------------------ UI State ------------------ */
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,7 +23,9 @@ export const Products = () => {
   const [showCategories, setShowCategories] = useState(false);
   const [showPrice, setShowPrice] = useState(false);
 
-  /* ------------------ Products Query (STATIC → INFINITE CACHE) ------------------ */
+  const [currentPage, setCurrentPage] = useState(1);
+
+  /* ------------------ Products Query ------------------ */
   const {
     data: products = [],
     isLoading,
@@ -38,7 +42,7 @@ export const Products = () => {
     keepPreviousData: true,
   });
 
-  /* ------------------ Categories Query (STATIC → INFINITE CACHE) ------------------ */
+  /* ------------------ Categories Query ------------------ */
   const {
     data: categories = [],
     isLoading: isCategoryLoading,
@@ -53,57 +57,63 @@ export const Products = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
     }, 500);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  /* ------------------ Category Filter ------------------ */
+  /* ------------------ Handlers ------------------ */
   const handleCategoryFilter = (category) => {
     setActiveCategory(category);
     setActiveSort(null);
+    setCurrentPage(1);
     setShowCategories(false);
   };
 
-  /* ------------------ Price Sort ------------------ */
   const handlePriceSort = (type) => {
     setActiveSort(type);
     setActiveCategory(null);
+    setCurrentPage(1);
     setShowPrice(false);
   };
 
-  /* ------------------ Clear Filters ------------------ */
   const clearFilters = () => {
     setActiveCategory(null);
     setActiveSort(null);
     setSearchTerm("");
+    setCurrentPage(1);
     setShowCategories(false);
     setShowPrice(false);
   };
 
-  /* ------------------ Derived Products ------------------ */
-  let finalProducts = [...products];
+  /* ------------------ Filter + Sort ------------------ */
+  let filteredProducts = [...products];
 
-  // Search
-  finalProducts = finalProducts.filter((product) =>
+  filteredProducts = filteredProducts.filter((product) =>
     product.title.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
 
-  // Sort
   if (activeSort) {
-    finalProducts.sort((a, b) =>
+    filteredProducts.sort((a, b) =>
       activeSort === "low-high" ? a.price - b.price : b.price - a.price
     );
   }
 
-  /* ------------------ Loading & Error UI ------------------ */
-  if (isLoading) {
-    return <p>Loading products...</p>;
-  }
+  /* ------------------ Pagination ------------------ */
+  const totalPages = Math.ceil(
+    filteredProducts.length / ITEMS_PER_PAGE
+  );
 
-  if (isError) {
-    return <p>Error loading products: {error.message}</p>;
-  }
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedProducts = filteredProducts.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE
+  );
+
+  /* ------------------ Loading & Error ------------------ */
+  if (isLoading) return <p>Loading products...</p>;
+  if (isError) return <p>{error.message}</p>;
 
   /* ------------------ Render ------------------ */
   return (
@@ -122,7 +132,6 @@ export const Products = () => {
 
         {/* Filters */}
         <div className="products-filters">
-
           {/* Categories */}
           <div className="filter-block">
             <button
@@ -199,22 +208,54 @@ export const Products = () => {
             )}
           </div>
 
-          {/* Clear */}
           <button onClick={clearFilters} className="filter-clear">
             Clear Filters
           </button>
         </div>
 
-        {/* Products Grid */}
+        {/* Products */}
         <div className="products-grid">
-          {finalProducts.length > 0 ? (
-            finalProducts.map((product) => (
+          {paginatedProducts.length > 0 ? (
+            paginatedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))
           ) : (
             <p>No products found.</p>
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="pagination">
+            <button
+              className="pagination-btn"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+            >
+              Prev
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                className={`pagination-btn ${
+                  currentPage === i + 1 ? "active" : ""
+                }`}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+
+            <button
+              className="pagination-btn"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+            >
+              Next
+            </button>
+          </div>
+        )}
 
       </div>
     </section>
