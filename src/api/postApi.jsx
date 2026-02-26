@@ -6,7 +6,7 @@ const api = axios.create({
 
 /* Get all products */
 export const getAllProducts = async () => {
-  const response = await api.get("/products");
+  const response = await api.get("/products?limit=1000");
   return response.data.products;
 };
 
