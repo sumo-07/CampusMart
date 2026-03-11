@@ -13,61 +13,66 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { About } from "./pages/About";
 import { Cart } from "./pages/Cart";
 import './App.css';
+import { AuthProvider } from "./context/AuthContext";
 // import { ScrollToTop } from "./components/common/ScrollToTop";
 
 const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <AppLayout />,
-    errorElement: <ErrorPage />,
-    children: [
-      {
+    {
         path: "/",
-        element: <Home />,
-      },
-      {
-        path: "/product",
-        element: <Products />,
-      },
-      {
-        path: "/product/:productId",
-        element: <ProductDetails />,
-      },
-      {
-        path: "/about",
-        element: <About />,
-      },
-      {
-        path: "/contact",
-        element: <Contact />,
-      },
-      {
-        path: "/cart",
-        element: <Cart />,
-      },
-      {
-        path: "/checkout",
-        element: <Checkout />,
-      },
-      {
-        path: "/login",
-        element: <Login />,
-      },
-      {
-        path: "/signup",
-        element: <Signup />,
-      },
-    ]
-  }
+        element: (
+          <AuthProvider>
+            <AppLayout />
+          </AuthProvider>
+        ),
+        errorElement: <ErrorPage />,
+        children: [
+            {
+                path: "/",
+                element: <Home />,
+            },
+            {
+                path: "/product",
+                element: <Products />,
+            },
+            {
+                path: "/product/:productId",
+                element: <ProductDetails />,
+            },
+            {
+                path: "/about",
+                element: <About />,
+            },
+            {
+                path: "/contact",
+                element: <Contact />,
+            },
+            {
+                path: "/cart",
+                element: <Cart />,
+            },
+            {
+                path: "/checkout",
+                element: <Checkout />,
+            },
+            {
+                path: "/login",
+                element: <Login />,
+            },
+            {
+                path: "/signup",
+                element: <Signup />,
+            },
+        ]
+    }
 ])
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  return <QueryClientProvider client={queryClient}>
-    <RouterProvider router={router} />
-    <ReactQueryDevtools initialIsOpen={false} />
-  </QueryClientProvider>
+    return <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+        <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
 }
 
 export default App;

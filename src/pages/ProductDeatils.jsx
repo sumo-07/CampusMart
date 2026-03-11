@@ -1,4 +1,5 @@
-import { useParams } from "react-router-dom";
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { getProductById } from "../api/postApi";
@@ -7,6 +8,8 @@ import { addToCart } from "../utils/cartUtils";
 
 export const ProductDetails = () => {
     const { productId } = useParams(); // ✅ MUST match route param
+    const navigate = useNavigate();
+    const [addingToCart, setAddingToCart] = useState(false);
 
     /* ------------------ Product Query ------------------ */
     const {
@@ -34,6 +37,20 @@ export const ProductDetails = () => {
     if (!product) {
         return <p>Product not found.</p>;
     }
+
+    const handleAddToCart = async () => {
+        setAddingToCart(true);
+        try {
+            await addToCart(product);
+        } catch (error) {
+            alert(error.message);
+            if (error.message.toLowerCase().includes("login") || error.message.toLowerCase().includes("authorized")) {
+                navigate("/login");
+            }
+        } finally {
+            setAddingToCart(false);
+        }
+    };
 
     /* ------------------ Render ------------------ */
     return (
@@ -69,9 +86,10 @@ export const ProductDetails = () => {
                     <div className="pd-actions">
                         <button
                             className="pd-btn add-cart-btn"
-                            onClick={() => addToCart(product)}
+                            onClick={handleAddToCart}
+                            disabled={addingToCart}
                         >
-                            Add to Cart
+                            {addingToCart ? "Adding..." : "Add to Cart"}
                         </button>
                         <button className="pd-btn buy-now-btn">
                             Buy Now

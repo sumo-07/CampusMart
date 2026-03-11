@@ -1,6 +1,16 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 
 export const Footer = () => {
+  const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <footer className="section-footer">
       <div className="container footer-container">
@@ -30,8 +40,16 @@ export const Footer = () => {
           <h4 className="footer-title">Account</h4>
           <ul>
             <li><NavLink to="/cart" className="footer-link">Cart</NavLink></li>
-            <li><NavLink to="/login" className="footer-link">Login</NavLink></li>
-            <li><NavLink to="/signup" className="footer-link">Sign Up</NavLink></li>
+            {!user ? (
+              <>
+                <li><NavLink to="/login" className="footer-link">Login</NavLink></li>
+                <li><NavLink to="/signup" className="footer-link">Sign Up</NavLink></li>
+              </>
+            ) : (
+                <li>
+                  <button onClick={handleLogout} className="footer-link" style={{background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', padding: 0}}>Logout</button>
+                </li>
+            )}
           </ul>
         </div>
 

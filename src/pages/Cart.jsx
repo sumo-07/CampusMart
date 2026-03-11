@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MdDeleteOutline } from "react-icons/md";
+import { AuthContext } from "../context/AuthContext";
 
 import {
-    getCartFromStorage,
+    getCart,
     updateQuantity,
     removeFromCart,
 } from "../utils/cartUtils";
@@ -12,19 +13,28 @@ import "../components/css/cart.css";
 
 export const Cart = () => {
     const [cartItems, setCartItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const { user } = useContext(AuthContext);
     const navigate = useNavigate();
 
     useEffect(() => {
-        setCartItems(getCartFromStorage());
-    }, []);
+        const fetchCart = async () => {
+            if (user) {
+                const data = await getCart();
+                setCartItems(data);
+            }
+            setLoading(false);
+        };
+        fetchCart();
+    }, [user]);
 
-    const handleQuantity = (id, type) => {
-        const updatedCart = updateQuantity(id, type);
+    const handleQuantity = async (productId, type) => {
+        const updatedCart = await updateQuantity(productId, type);
         setCartItems(updatedCart);
     };
 
-    const handleRemove = (id) => {
-        const updatedCart = removeFromCart(id);
+    const handleRemove = async (productId) => {
+        const updatedCart = await removeFromCart(productId);
         setCartItems(updatedCart);
     };
 
@@ -33,11 +43,22 @@ export const Cart = () => {
         0
     );
 
+    if (!user) {
+        return (
+            <section style={{ textAlign: 'center', padding: '4rem' }}>
+                <h2>Please Login to view your cart</h2>
+                <Link to="/login" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>Login</Link>
+            </section>
+        );
+    }
+
+    if (loading) return <p style={{ textAlign: 'center', padding: '4rem' }}>Loading cart...</p>;
+
     if (cartItems.length === 0) {
         return (
-            <section>
+            <section style={{ textAlign: 'center', padding: '4rem' }}>
                 <h2>Your cart is empty</h2>
-                <Link to="/product">Go to Products</Link>
+                <Link to="/product" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>Go to Products</Link>
             </section>
         );
     }
@@ -47,7 +68,7 @@ export const Cart = () => {
             <h1>Your Cart</h1>
 
             {cartItems.map((item) => (
-                <div key={item.id} className="cart-item">
+                <div key={item.productId} className="cart-item">
                     <img
                         src={item.thumbnail}
                         alt={item.title}
@@ -59,20 +80,20 @@ export const Cart = () => {
                         <p>₹{item.price}</p>
 
                         <div className="cart-qty">
-                            <button onClick={() => handleQuantity(item.id, "dec")}>
+                            <button onClick={() => handleQuantity(item.productId, "dec")}>
                                 −
                             </button>
 
                             <span>{item.quantity}</span>
 
-                            <button onClick={() => handleQuantity(item.id, "inc")}>
+                            <button onClick={() => handleQuantity(item.productId, "inc")}>
                                 +
                             </button>
 
                             {/* Remove Button */}
                             <button
                                 className="cart-remove-btn"
-                                onClick={() => handleRemove(item.id)}
+                                onClick={() => handleRemove(item.productId)}
                                 aria-label="Remove item"
                             >
                                 <MdDeleteOutline size={22} />
@@ -89,7 +110,7 @@ export const Cart = () => {
 
             <hr />
 
-            <h2>Total Price: ₹{totalPrice}</h2>
+            <h2>Total Price: ₹{totalPrice.toFixed(2)}</h2>
 
             <button onClick={() => navigate("/checkout")}>
                 Checkout

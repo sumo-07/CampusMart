@@ -1,58 +1,58 @@
-const CART_KEY = "campusmart_cart";
+import api from "../api/axiosConfig";
 
-export const getCartFromStorage = () => {
-  const cart = localStorage.getItem(CART_KEY);
-  return cart ? JSON.parse(cart) : [];
+export const getCart = async () => {
+  try {
+    const { data } = await api.get("/api/cart");
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch cart", error);
+    return [];
+  }
 };
 
-export const saveCartToStorage = (cart) => {
-  localStorage.setItem(CART_KEY, JSON.stringify(cart));
-};
-
-export const addToCart = (product) => {
-  const cart = getCartFromStorage();
-
-  const existingItem = cart.find((item) => item.id === product.id);
-
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart.push({
-      id: product.id,
+export const addToCart = async (product) => {
+  try {
+    const { data } = await api.post("/api/cart/add", {
+      productId: product.id,
       title: product.title,
       price: product.price,
       thumbnail: product.thumbnail,
       quantity: 1,
     });
+    alert(`${product.title} has been added to your cart!`);
+    return data;
+  } catch (error) {
+    console.error("Failed to add to cart", error);
+    throw new Error(error.response?.data?.message || "Please login to add items to cart.");
   }
-
-  saveCartToStorage(cart);
 };
 
-export const updateQuantity = (id, type) => {
-  const cart = getCartFromStorage();
-
-  const updatedCart = cart
-    .map((item) => {
-      if (item.id === id) {
-        if (type === "inc") item.quantity += 1;
-        if (type === "dec") item.quantity -= 1;
-      }
-      return item;
-    })
-    .filter((item) => item.quantity > 0);
-
-  saveCartToStorage(updatedCart);
-  return updatedCart;
+export const updateQuantity = async (productId, action) => {
+  try {
+    const { data } = await api.put(`/api/cart/${productId}`, { action });
+    return data;
+  } catch (error) {
+    console.error("Failed to update quantity", error);
+    return [];
+  }
 };
 
-export const clearCart = () => {
-  localStorage.removeItem(CART_KEY);
+export const removeFromCart = async (productId) => {
+  try {
+    const { data } = await api.delete(`/api/cart/${productId}`);
+    return data;
+  } catch (error) {
+    console.error("Failed to remove from cart", error);
+    return [];
+  }
 };
 
-export const removeFromCart = (id) => {
-  const cart = getCartFromStorage();
-  const updatedCart = cart.filter((item) => item.id !== id);
-  saveCartToStorage(updatedCart);
-  return updatedCart;
+export const clearCart = async () => {
+    try {
+        const { data } = await api.delete("/api/cart");
+        return data;
+    } catch (error) {
+        console.error("Failed to clear cart", error);
+        return [];
+    }
 };

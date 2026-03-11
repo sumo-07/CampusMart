@@ -1,29 +1,39 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCartFromStorage, clearCart } from "../utils/cartUtils";
+import { getCart, clearCart } from "../utils/cartUtils";
+import { AuthContext } from "../context/AuthContext";
 import '../components/css/checkout.css';
 
 export const Checkout = () => {
   const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const cart = getCartFromStorage();
-    setCartItems(cart);
-  }, []);
+    const fetchCart = async () => {
+      if (user) {
+         setCartItems(await getCart());
+      }
+      setLoading(false);
+    };
+    fetchCart();
+  }, [user]);
+
+  if (loading) return <p style={{ textAlign: 'center', padding: '4rem' }}>Loading checkout...</p>;
 
   const totalPrice = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (cartItems.length === 0) {
       alert("Your cart is empty");
       return;
     }
 
-    clearCart();
+    await clearCart();
     alert("Order placed successfully!");
     navigate("/product");
   };
@@ -48,7 +58,7 @@ export const Checkout = () => {
         <h2>Order Summary</h2>
 
         {cartItems.map((item) => (
-          <div key={item.id} className="checkout-item">
+          <div key={item.productId} className="checkout-item">
             <p>{item.title}</p>
             <p>
               {item.quantity} × ₹{item.price}
@@ -61,7 +71,7 @@ export const Checkout = () => {
 
         <hr />
 
-        <h3>Total: ₹{totalPrice}</h3>
+        <h3>Total: ₹{totalPrice.toFixed(2)}</h3>
       </div>
 
       {/* User Details (dummy) */}
