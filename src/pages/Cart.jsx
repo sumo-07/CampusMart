@@ -80,8 +80,7 @@ export const Cart = () => {
                         </div>
 
                         <p>
-                            Item Total: ₹{(item.price * item.quantity).toFixed(2)}
-                        </p>
+                            Item Total: ₹{(Math.round(item.price * item.quantity * 100) / 100).toFixed(2)}                        </p>
                     </div>
 
 
