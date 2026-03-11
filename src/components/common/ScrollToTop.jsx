@@ -8,7 +8,7 @@ export const ScrollToTop = () => {
     window.scrollTo({
       top: 0,
       left: 0,
-      behavior: "smooth", // remove if you want instant
+      behavior: "smooth", 
     });
   }, [pathname]);
 
