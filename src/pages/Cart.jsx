@@ -80,7 +80,7 @@ export const Cart = () => {
                         </div>
 
                         <p>
-                            Item Total: ₹{item.price * item.quantity}
+                            Item Total: ₹{(item.price * item.quantity).toFixed(2)}
                         </p>
                     </div>
 
