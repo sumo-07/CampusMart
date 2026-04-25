@@ -5,6 +5,7 @@ const connectDB = require("./config/db");
 
 const authRoutes = require("./routes/authRoutes");
 const cartRoutes = require("./routes/cartRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 
 dotenv.config();
 connectDB();
@@ -18,6 +19,7 @@ app.use(cors({
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

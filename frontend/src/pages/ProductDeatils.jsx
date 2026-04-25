@@ -52,6 +52,18 @@ export const ProductDetails = () => {
         }
     };
 
+    const handleBuyNow = () => {
+        // Construct the item mapping for a direct checkout override
+        const buyNowItem = {
+            productId: product.id || productId,
+            title: product.title,
+            price: product.price,
+            thumbnail: product.thumbnail,
+            quantity: 1
+        };
+        navigate("/checkout", { state: { buyNowItem } });
+    };
+
     /* ------------------ Render ------------------ */
     return (
         <section className="pd-section">
@@ -91,7 +103,10 @@ export const ProductDetails = () => {
                         >
                             {addingToCart ? "Adding..." : "Add to Cart"}
                         </button>
-                        <button className="pd-btn buy-now-btn">
+                        <button 
+                            className="pd-btn buy-now-btn"
+                            onClick={handleBuyNow}
+                        >
                             Buy Now
                         </button>
                     </div>

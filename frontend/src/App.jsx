@@ -9,6 +9,7 @@ import { Contact } from "./pages/Contact";
 import { Checkout } from "./pages/Checkout";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
+import { Orders } from "./pages/Orders";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { About } from "./pages/About";
 import { Cart } from "./pages/Cart";
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
             {
                 path: "/signup",
                 element: <Signup />,
+            },
+            {
+                path: "/orders",
+                element: <Orders />,
             },
         ]
     }
