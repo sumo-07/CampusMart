@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axiosConfig";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import '../components/css/auth.css';
 
 export const Signup = () => {
@@ -9,6 +10,8 @@ export const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
 
   const { login } = useContext(AuthContext);
@@ -72,30 +75,50 @@ export const Signup = () => {
             <label className="form-label" htmlFor="password">
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              className="form-input"
-              placeholder="Create a password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="password-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                className="form-input"
+                placeholder="Create a password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="eye-toggle"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label="Toggle password visibility"
+              >
+                {showPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
+              </button>
+            </div>
           </div>
 
           <div className="form-group">
             <label className="form-label" htmlFor="confirm-password">
               Confirm Password
             </label>
-            <input
-              type="password"
-              id="confirm-password"
-              className="form-input"
-              placeholder="Confirm password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
+            <div className="password-wrapper">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                id="confirm-password"
+                className="form-input"
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="eye-toggle"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                aria-label="Toggle confirm password visibility"
+              >
+                {showConfirmPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
+              </button>
+            </div>
           </div>
 
           <button type="submit" className="auth-btn signup-btn">

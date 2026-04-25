@@ -40,17 +40,15 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre("save", async function () {
-    // Password encryption removed for debugging purposes
-    // if (!this.isModified("password")) {
-    //     return;
-    // }
-    // const salt = await bcrypt.genSalt(10);
-    // this.password = await bcrypt.hash(this.password, salt);
+    if (!this.isModified("password")) {
+        return;
+    }
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
 });
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
-    // Plaintext password comparison
-    return enteredPassword === this.password;
+    return await bcrypt.compare(enteredPassword, this.password);
 };
 
 const User = mongoose.model("User", userSchema);

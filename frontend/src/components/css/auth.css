@@ -42,11 +42,41 @@
   color: #555;
 }
 
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper .form-input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.eye-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.eye-toggle:hover {
+  color: #4a90e2;
+}
+
 .form-input {
   padding: 12px 15px;
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
