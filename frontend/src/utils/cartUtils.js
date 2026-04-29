@@ -13,7 +13,7 @@ export const getCart = async () => {
 export const addToCart = async (product) => {
   try {
     const { data } = await api.post("/api/cart/add", {
-      productId: product.id,
+      productId: product._id || product.id,
       title: product.title,
       price: product.price,
       thumbnail: product.thumbnail,

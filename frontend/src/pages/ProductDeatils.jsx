@@ -55,7 +55,7 @@ export const ProductDetails = () => {
     const handleBuyNow = () => {
         // Construct the item mapping for a direct checkout override
         const buyNowItem = {
-            productId: product.id || productId,
+            productId: product._id || product.id || productId,
             title: product.title,
             price: product.price,
             thumbnail: product.thumbnail,

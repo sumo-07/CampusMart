@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom"
+import { NavLink, useNavigate, useLocation } from "react-router-dom"
 import { useContext, useState } from "react"
 import logo from '../../images/logo.jpg'
 import { AuthContext } from "../../context/AuthContext"
@@ -7,7 +7,11 @@ import { AddressModal } from "./AddressModal"
 export const Header = () => {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
+    const location = useLocation();
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Hide shopping links if the logged in user is an Admin
+    const isUserAdmin = user?.isAdmin;
 
     const handleLogout = () => {
         logout();
@@ -22,7 +26,7 @@ export const Header = () => {
                         <img src={logo} alt="shop-logo" />
                         <span className="brand-name">CampusMart</span>
                     </NavLink>
-                    {user && (
+                    {user && !isUserAdmin && (
                         <div 
                             style={{ marginLeft: '1.5rem', color: '#64748b', fontSize: '0.75rem', display: 'flex', flexDirection: 'column', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem', cursor: 'pointer' }}
                             onClick={() => setIsModalOpen(true)}
@@ -43,17 +47,30 @@ export const Header = () => {
                             <NavLink to="/" className="nav-link">Home</NavLink> </li>
                         <li className="nav-item">
                             <NavLink to="/product" className="nav-link" >Products</NavLink> </li>
-                        <li className="nav-item">
-                            <NavLink to="/about" className="nav-link" >About</NavLink> </li>
-                        <li className="nav-item">
-                            <NavLink to="/contact" className="nav-link" >Contact</NavLink> </li>
-                        <li className="nav-item">
-                            <NavLink to="/cart" className="nav-link" >Cart</NavLink> </li>
-                        {user ? (
+                        
+                        {!isUserAdmin && (
                             <>
                                 <li className="nav-item">
-                                    <NavLink to="/orders" className="nav-link" >Orders</NavLink> 
-                                </li>
+                                    <NavLink to="/about" className="nav-link" >About</NavLink> </li>
+                                <li className="nav-item">
+                                    <NavLink to="/contact" className="nav-link" >Contact</NavLink> </li>
+                                <li className="nav-item">
+                                    <NavLink to="/cart" className="nav-link" >Cart</NavLink> </li>
+                            </>
+                        )}
+
+                        {user ? (
+                            <>
+                                {isUserAdmin && (
+                                    <li className="nav-item">
+                                        <NavLink to="/admin" className="nav-link" style={{color: '#ff4757', fontWeight: 'bold'}}>Admin Panel</NavLink>
+                                    </li>
+                                )}
+                                {!isUserAdmin && (
+                                    <li className="nav-item">
+                                        <NavLink to="/orders" className="nav-link" >Orders</NavLink> 
+                                    </li>
+                                )}
                                 <li className="nav-item">
                                     <span className="nav-link" style={{color: '#646cff'}}>Hello, {user.name}</span>
                                 </li>

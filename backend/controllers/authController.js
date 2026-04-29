@@ -14,6 +14,7 @@ const authUser = async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
+            isAdmin: user.isAdmin,
             addresses: user.addresses,
             token: generateToken(user._id),
         });
@@ -46,6 +47,7 @@ const registerUser = async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
+            isAdmin: user.isAdmin,
             addresses: user.addresses,
             token: generateToken(user._id),
         });
@@ -62,6 +64,7 @@ const getProfile = async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
+            isAdmin: user.isAdmin,
             addresses: user.addresses,
         });
     } else {

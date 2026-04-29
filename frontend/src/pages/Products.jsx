@@ -140,8 +140,9 @@ export const Products = () => {
                 setShowCategories((prev) => !prev);
                 setShowPrice(false);
               }}
+              style={activeCategory ? { background: '#1a1a1a', color: 'white' } : {}}
             >
-              Categories <span>{showCategories ? "−" : "+"}</span>
+              {activeCategory ? `Category: ${categories.find(c => c.slug === activeCategory)?.name || activeCategory}` : "Categories"} <span>{showCategories ? "−" : "+"}</span>
             </button>
 
             {showCategories && (
@@ -177,8 +178,9 @@ export const Products = () => {
                 setShowPrice((prev) => !prev);
                 setShowCategories(false);
               }}
+              style={activeSort ? { background: '#1a1a1a', color: 'white' } : {}}
             >
-              Sort by Price <span>{showPrice ? "−" : "+"}</span>
+              {activeSort ? (activeSort === "low-high" ? "Sort: Low → High" : "Sort: High → Low") : "Sort by Price"} <span>{showPrice ? "−" : "+"}</span>
             </button>
 
             {showPrice && (
@@ -217,7 +219,7 @@ export const Products = () => {
         <div className="products-grid">
           {paginatedProducts.length > 0 ? (
             paginatedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product._id || product.id} product={product} />
             ))
           ) : (
             <p>No products found.</p>

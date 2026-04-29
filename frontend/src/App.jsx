@@ -10,6 +10,8 @@ import { Checkout } from "./pages/Checkout";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
 import { Orders } from "./pages/Orders";
+import { AdminDashboard } from "./pages/AdminDashboard";
+import { AdminRequire } from "./components/AdminRequire";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { About } from "./pages/About";
 import { Cart } from "./pages/Cart";
@@ -66,6 +68,16 @@ const router = createBrowserRouter([
             {
                 path: "/orders",
                 element: <Orders />,
+            },
+            {
+                path: "/admin",
+                element: <AdminRequire />,
+                children: [
+                    {
+                        path: "",
+                        element: <AdminDashboard />,
+                    }
+                ]
             },
         ]
     }

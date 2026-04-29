@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import '../css/productCard.css';
 export const ProductCard = ({ product }) => {
   const {
+    _id,
     id,
     title,
     price,
@@ -32,7 +33,7 @@ export const ProductCard = ({ product }) => {
           <span className="product-price">₹ {price}</span>
 
           <NavLink
-            to={`/product/${id}`}
+            to={`/product/${_id || id}`}
             className="btn btn-primary"
           >
             View Details

@@ -79,6 +79,10 @@
   border-color: #111827;
 }
 
+.cart-qty button:not(.cart-remove-btn):active {
+  transform: scale(0.9);
+}
+
 .cart-qty span {
   font-weight: 600;
   font-size: 1rem;
