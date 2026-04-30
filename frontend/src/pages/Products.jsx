@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   getAllProducts,
@@ -112,8 +113,19 @@ export const Products = () => {
   );
 
   /* ------------------ Loading & Error ------------------ */
-  if (isLoading) return <p>Loading products...</p>;
+  if (isLoading) return <div className="loading-container"><p>Discovering best products for you...</p></div>;
   if (isError) return <p>{error.message}</p>;
+
+  /* ------------------ Motion Variants ------------------ */
+  const gridVariants = {
+    initial: { opacity: 0 },
+    animate: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
 
   /* ------------------ Render ------------------ */
   return (
@@ -121,14 +133,20 @@ export const Products = () => {
       <div className="container products-container">
 
         {/* Search */}
-        <div className="products-search">
+        <motion.div 
+            className="products-search"
+            variants={{
+                initial: { opacity: 0, y: -15 },
+                animate: { opacity: 1, y: 0 }
+            }}
+        >
           <input
             type="text"
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-        </div>
+        </motion.div>
 
         {/* Filters */}
         <div className="products-filters">
@@ -144,29 +162,38 @@ export const Products = () => {
               Categories <span>{showCategories ? "−" : "+"}</span>
             </button>
 
-            {showCategories && (
-              <div className="filter-content">
-                {isCategoryLoading ? (
-                  <p>Loading...</p>
-                ) : (
-                  categories.map((category) => (
-                    <button
-                      key={category.slug}
-                      onClick={() =>
-                        handleCategoryFilter(category.slug)
-                      }
-                      className={
-                        activeCategory === category.slug
-                          ? "filter-btn active"
-                          : "filter-btn"
-                      }
-                    >
-                      {category.name}
-                    </button>
-                  ))
+            <AnimatePresence>
+                {showCategories && (
+                <motion.div 
+                    className="filter-content"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                >
+                    {isCategoryLoading ? (
+                    <p>Loading...</p>
+                    ) : (
+                    categories.map((category) => (
+                        <motion.button
+                            key={category.slug}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() =>
+                                handleCategoryFilter(category.slug)
+                            }
+                            className={
+                                activeCategory === category.slug
+                                ? "filter-btn active"
+                                : "filter-btn"
+                            }
+                        >
+                        {category.name}
+                        </motion.button>
+                    ))
+                    )}
+                </motion.div>
                 )}
-              </div>
-            )}
+            </AnimatePresence>
           </div>
 
           {/* Price */}
@@ -181,80 +208,109 @@ export const Products = () => {
               Sort by Price <span>{showPrice ? "−" : "+"}</span>
             </button>
 
-            {showPrice && (
-              <div className="filter-content">
-                <button
-                  onClick={() => handlePriceSort("low-high")}
-                  className={
-                    activeSort === "low-high"
-                      ? "filter-btn active"
-                      : "filter-btn"
-                  }
+            <AnimatePresence>
+                {showPrice && (
+                <motion.div 
+                    className="filter-content"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
                 >
-                  Low → High
-                </button>
+                    <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handlePriceSort("low-high")}
+                    className={
+                        activeSort === "low-high"
+                        ? "filter-btn active"
+                        : "filter-btn"
+                    }
+                    >
+                    Low → High
+                    </motion.button>
 
-                <button
-                  onClick={() => handlePriceSort("high-low")}
-                  className={
-                    activeSort === "high-low"
-                      ? "filter-btn active"
-                      : "filter-btn"
-                  }
-                >
-                  High → Low
-                </button>
-              </div>
-            )}
+                    <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handlePriceSort("high-low")}
+                    className={
+                        activeSort === "high-low"
+                        ? "filter-btn active"
+                        : "filter-btn"
+                    }
+                    >
+                    High → Low
+                    </motion.button>
+                </motion.div>
+                )}
+            </AnimatePresence>
           </div>
 
-          <button onClick={clearFilters} className="filter-clear">
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={clearFilters} 
+            className="filter-clear"
+          >
             Clear Filters
-          </button>
+          </motion.button>
         </div>
 
         {/* Products */}
-        <div className="products-grid">
+        <motion.div 
+            className="products-grid"
+            variants={gridVariants}
+            key={currentPage + activeCategory + activeSort} // Key to re-trigger animation
+        >
           {paginatedProducts.length > 0 ? (
             paginatedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))
           ) : (
-            <p>No products found.</p>
+            <motion.p variants={{ initial: { opacity: 0 }, animate: { opacity: 1 } }}>No products found.</motion.p>
           )}
-        </div>
+        </motion.div>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="pagination">
-            <button
+          <motion.div 
+            className="pagination"
+            variants={{ initial: { opacity: 0 }, animate: { opacity: 1 } }}
+          >
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               className="pagination-btn"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => p - 1)}
             >
               Prev
-            </button>
+            </motion.button>
 
             {Array.from({ length: totalPages }, (_, i) => (
-              <button
+              <motion.button
                 key={i}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 className={`pagination-btn ${
                   currentPage === i + 1 ? "active" : ""
                 }`}
                 onClick={() => setCurrentPage(i + 1)}
               >
                 {i + 1}
-              </button>
+              </motion.button>
             ))}
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               className="pagination-btn"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => p + 1)}
             >
               Next
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         )}
 
       </div>

@@ -1,14 +1,19 @@
+html {
+  scroll-behavior: smooth;
+}
+
 /* 2. Header Background & Shadow */
 .section-navbar {
   width: 100%;
-  height: 5rem;
+  height: 5.5rem;
   background-color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
   display: flex;
   align-items: center;
   position: sticky;
   top: 0;
   z-index: 1000;
+  transition: all 0.3s ease;
 }
 
 .section-navbar .container {
@@ -72,64 +77,152 @@
   background-color: #0984e3;
 }
 
-/* 5. Special Styling for Login button */
-.nav-item:last-child .nav-link {
-  background-color: #0984e3;
-  color: #fff;
+.delivery-location {
+  margin-left: 2rem;
+  padding-left: 1.5rem;
+  border-left: 2px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delivery-location:hover {
+  opacity: 0.8;
+}
+
+.deliver-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.deliver-city {
+  font-size: 0.9rem;
+  color: #0f172a;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.cart-link, .orders-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-greeting {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.greeting-text {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 400;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  color: #0984e3;
+  font-weight: 700;
+}
+
+.logout-btn {
+  background: #fff;
+  color: #ef4444;
+  border: 1.5px solid #fee2e2;
   padding: 0.6rem 1.2rem;
-  border-radius: 8px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.nav-item:last-child .nav-link:hover {
-  background-color: #074b83;
+.logout-btn:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  transform: translateY(-1px);
 }
 
-.nav-item:last-child .nav-link.active::after {
-  display: none; /* Remove underline for the button version */
+.login-btn {
+  background: linear-gradient(135deg, #0984e3 0%, #00cec9 100%);
+  color: #fff;
+  padding: 0.7rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  box-shadow: 0 4px 15px rgba(9, 132, 227, 0.3);
+  transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(9, 132, 227, 0.4);
 }
 
 
 /* --- Footer Main Section --- */
 .section-footer {
-  background-color: #2d3436; /* Dark slate background */
-  color: #dfe6e9;            /* Light gray text */
-  padding-top: 4rem;
-  margin-top: 5rem;          /* Pushes footer away from page content */
+  background-color: #0f172a;
+  color: #f8fafc;
+  padding: 5rem 0 2rem 0;
+  margin-top: 6rem;
 }
 
-/* --- Layout Grid --- */
 .footer-container {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr; /* Brand gets more space than links */
-  gap: 3rem;
-  padding-bottom: 3rem;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 4rem;
+  padding-bottom: 4rem;
 }
 
-
-
-/* --- Brand Section --- */
 .footer-logo {
-  color: #fff;
   font-size: 1.8rem;
   font-weight: 800;
-  margin-bottom: 1rem;
+  color: #fff;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-logo span {
+  background: linear-gradient(135deg, #0984e3 0%, #00cec9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .footer-text {
+  color: #94a3b8;
   line-height: 1.6;
-  max-width: 350px;
   font-size: 0.95rem;
-  color: #b2bec3;
+  margin-bottom: 2rem;
 }
 
-/* --- Link Sections --- */
 .footer-title {
   color: #fff;
   font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-weight: 700;
+  margin-bottom: 1.8rem;
+  position: relative;
+}
+
+.footer-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 30px;
+  height: 2px;
+  background: #0984e3;
 }
 
 .footer-links ul {
@@ -137,28 +230,29 @@
 }
 
 .footer-links li {
-  margin-bottom: 0.8rem;
+  margin-bottom: 1rem;
 }
 
 .footer-link {
+  color: #94a3b8;
   text-decoration: none;
-  color: #b2bec3;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
 }
 
 .footer-link:hover {
-  color: #0984e3; /* Matching your header's blue */
-  padding-left: 5px; /* Subtle slide effect on hover */
+  color: #0984e3;
+  padding-left: 8px;
 }
 
-/* --- Footer Bottom Bar --- */
 .footer-bottom {
-  border-top: 1px solid #444; /* Darker border for separation */
-  padding: 1.5rem 0;
-  text-align: center;
-  font-size: 0.85rem;
-  color: #636e72;
+  border-top: 1px solid #1e293b;
+  padding-top: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #64748b;
+  font-size: 0.9rem;
 }
 
 /* --- Responsive Adjustments --- */

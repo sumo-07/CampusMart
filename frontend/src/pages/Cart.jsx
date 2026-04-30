@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MdDeleteOutline } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
     getCart,
@@ -45,76 +46,113 @@ export const Cart = () => {
 
     if (!user) {
         return (
-            <section style={{ textAlign: 'center', padding: '4rem' }}>
+            <motion.section 
+                variants={{ initial: { opacity: 0 }, animate: { opacity: 1 } }}
+                style={{ textAlign: 'center', padding: '4rem' }}
+            >
                 <h2>Please Login to view your cart</h2>
                 <Link to="/login" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>Login</Link>
-            </section>
+            </motion.section>
         );
     }
 
-    if (loading) return <p style={{ textAlign: 'center', padding: '4rem' }}>Loading cart...</p>;
+    if (loading) return (
+        <div style={{ textAlign: 'center', padding: '4rem' }}>
+            <p>Gathering your selected items...</p>
+        </div>
+    );
 
     if (cartItems.length === 0) {
         return (
-            <section style={{ textAlign: 'center', padding: '4rem' }}>
+            <motion.section 
+                variants={{ initial: { opacity: 0, scale: 0.9 }, animate: { opacity: 1, scale: 1 } }}
+                style={{ textAlign: 'center', padding: '4rem' }}
+            >
                 <h2>Your cart is empty</h2>
                 <Link to="/product" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>Go to Products</Link>
-            </section>
+            </motion.section>
         );
     }
 
     return (
         <section className="cart-section">
-            <h1>Your Cart</h1>
+            <motion.h1 
+                variants={{ initial: { opacity: 0, x: -15 }, animate: { opacity: 1, x: 0 } }}
+            >
+                Your Cart
+            </motion.h1>
 
-            {cartItems.map((item) => (
-                <div key={item.productId} className="cart-item">
-                    <img
-                        src={item.thumbnail}
-                        alt={item.title}
-                        width="80"
-                    />
+            <AnimatePresence>
+                {cartItems.map((item) => (
+                    <motion.div 
+                        key={item.productId} 
+                        className="cart-item"
+                        variants={{ initial: { opacity: 0, x: -15 }, animate: { opacity: 1, x: 0 } }}
+                        exit={{ opacity: 0, x: 50, transition: { duration: 0.2 } }}
+                        layout
+                    >
+                        <img
+                            src={item.thumbnail}
+                            alt={item.title}
+                            width="80"
+                        />
 
-                    <div className="cart-item-info">
-                        <h3>{item.title}</h3>
-                        <p>₹{item.price}</p>
+                        <div className="cart-item-info">
+                            <h3>{item.title}</h3>
+                            <p>₹{item.price}</p>
 
-                        <div className="cart-qty">
-                            <button onClick={() => handleQuantity(item.productId, "dec")}>
-                                −
-                            </button>
+                            <div className="cart-qty">
+                                <motion.button 
+                                    whileTap={{ scale: 0.8 }}
+                                    onClick={() => handleQuantity(item.productId, "dec")}
+                                >
+                                    −
+                                </motion.button>
 
-                            <span>{item.quantity}</span>
+                                <span>{item.quantity}</span>
 
-                            <button onClick={() => handleQuantity(item.productId, "inc")}>
-                                +
-                            </button>
+                                <motion.button 
+                                    whileTap={{ scale: 0.8 }}
+                                    onClick={() => handleQuantity(item.productId, "inc")}
+                                >
+                                    +
+                                </motion.button>
 
-                            {/* Remove Button */}
-                            <button
-                                className="cart-remove-btn"
-                                onClick={() => handleRemove(item.productId)}
-                                aria-label="Remove item"
-                            >
-                                <MdDeleteOutline size={22} />
-                            </button>
+                                {/* Remove Button */}
+                                <motion.button
+                                    className="cart-remove-btn"
+                                    whileHover={{ color: "#ef4444", scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => handleRemove(item.productId)}
+                                    aria-label="Remove item"
+                                >
+                                    <MdDeleteOutline size={22} />
+                                </motion.button>
+                            </div>
+
+                            <p>
+                                Item Total: ₹{(Math.round(item.price * item.quantity * 100) / 100).toFixed(2)}                        </p>
                         </div>
+                    </motion.div>
+                ))}
+            </AnimatePresence>
 
-                        <p>
-                            Item Total: ₹{(Math.round(item.price * item.quantity * 100) / 100).toFixed(2)}                        </p>
-                    </div>
+            <motion.div 
+                className="cart-summary"
+                variants={{ initial: { opacity: 0, y: 15 }, animate: { opacity: 1, y: 0 } }}
+                transition={{ delay: 0.1 }}
+            >
+                <hr />
+                <h2>Total Price: ₹{totalPrice.toFixed(2)}</h2>
 
-
-                </div>
-            ))}
-
-            <hr />
-
-            <h2>Total Price: ₹{totalPrice.toFixed(2)}</h2>
-
-            <button onClick={() => navigate("/checkout")}>
-                Checkout
-            </button>
+                <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate("/checkout")}
+                >
+                    Checkout
+                </motion.button>
+            </motion.div>
         </section>
     );
-};
+};

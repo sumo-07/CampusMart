@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { getMyOrders } from "../utils/orderUtils";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import '../components/css/orders.css';
 
 export const Orders = () => {
@@ -34,27 +35,70 @@ export const Orders = () => {
     }, [user, authLoading, navigate]);
 
     if (authLoading || loading) {
-        return <p className="loading-text">Loading orders...</p>;
+        return (
+            <div className="loading-container">
+                <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="loading-text"
+                >
+                    Retrieving your order history...
+                </motion.p>
+            </div>
+        );
     }
+
+    const containerVariants = {
+        initial: { opacity: 0 },
+        animate: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.08
+            }
+        }
+    };
+
+    const cardVariants = {
+        initial: { opacity: 0, x: -10 },
+        animate: { opacity: 1, x: 0 }
+    };
 
     return (
         <section className="orders-section">
-            <h1 className="orders-title">My Orders</h1>
+            <motion.h1 
+                variants={{ initial: { opacity: 0, y: -15 }, animate: { opacity: 1, y: 0 } }}
+                className="orders-title"
+            >
+                My Orders
+            </motion.h1>
 
             {orders.length === 0 ? (
-                <div className="orders-empty">
+                <motion.div 
+                    className="orders-empty"
+                    variants={{ initial: { opacity: 0, scale: 0.9 }, animate: { opacity: 1, scale: 1 } }}
+                >
                     <p>You have no past orders.</p>
-                    <button 
+                    <motion.button 
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => navigate("/product")}
                         className="start-shopping-btn"
                     >
                         Start Shopping
-                    </button>
-                </div>
+                    </motion.button>
+                </motion.div>
             ) : (
-                <div className="orders-list">
+                <motion.div 
+                    className="orders-list"
+                    variants={containerVariants}
+                >
                     {orders.map((order) => (
-                        <div key={order._id} className="order-card">
+                        <motion.div 
+                            key={order._id} 
+                            className="order-card"
+                            variants={cardVariants}
+                            whileHover={{ y: -5 }}
+                        >
                             <div className="order-header">
                                 <div className="order-header-block">
                                     <span className="order-label">Order Placed</span>
@@ -81,12 +125,13 @@ export const Orders = () => {
                                             <img src={item.thumbnail} alt={item.title} />
                                         </div>
                                         <div className="item-details">
-                                            <p 
+                                            <motion.p 
                                                 className="item-title" 
+                                                whileHover={{ color: "#0984e3", x: 3 }}
                                                 onClick={() => navigate(`/product/${item.productId}`)}
                                             >
                                                 {item.title}
-                                            </p>
+                                            </motion.p>
                                             <p className="item-meta">
                                                 Qty: {item.quantity} | ₹{item.price} each
                                             </p>
@@ -94,9 +139,9 @@ export const Orders = () => {
                                     </div>
                                 ))}
                             </div>
-                        </div>
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
             )}
         </section>
     );
