@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import '../css/productCard.css';
+
 export const ProductCard = ({ product }) => {
   const {
     _id,
@@ -34,9 +35,9 @@ export const ProductCard = ({ product }) => {
 
           <NavLink
             to={`/product/${_id || id}`}
-            className="btn btn-primary"
+            className="btn-details"
           >
-            View Details
+            Details
           </NavLink>
         </div>
       </div>

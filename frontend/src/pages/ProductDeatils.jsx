@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { getProductById } from "../api/postApi";
 import "../components/css/productDetails.css";
 import { addToCart } from "../utils/cartUtils";
+import { AuthContext } from "../context/AuthContext";
 
 export const ProductDetails = () => {
     const { productId } = useParams(); // ✅ MUST match route param
     const navigate = useNavigate();
     const [addingToCart, setAddingToCart] = useState(false);
+    const { user } = useContext(AuthContext);
 
     /* ------------------ Product Query ------------------ */
     const {
@@ -95,21 +97,23 @@ export const ProductDetails = () => {
                     </p>
 
                     {/* Actions */}
-                    <div className="pd-actions">
-                        <button
-                            className="pd-btn add-cart-btn"
-                            onClick={handleAddToCart}
-                            disabled={addingToCart}
-                        >
-                            {addingToCart ? "Adding..." : "Add to Cart"}
-                        </button>
-                        <button 
-                            className="pd-btn buy-now-btn"
-                            onClick={handleBuyNow}
-                        >
-                            Buy Now
-                        </button>
-                    </div>
+                    {!user?.isAdmin && (
+                        <div className="pd-actions">
+                            <button
+                                className="pd-btn add-cart-btn"
+                                onClick={handleAddToCart}
+                                disabled={addingToCart}
+                            >
+                                {addingToCart ? "Adding..." : "Add to Cart"}
+                            </button>
+                            <button 
+                                className="pd-btn buy-now-btn"
+                                onClick={handleBuyNow}
+                            >
+                                Buy Now
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* ------------------ Reviews Section ------------------ */}

@@ -23,9 +23,9 @@ const router = createBrowserRouter([
     {
         path: "/",
         element: (
-          <AuthProvider>
-            <AppLayout />
-          </AuthProvider>
+            <AuthProvider>
+                <AppLayout />
+            </AuthProvider>
         ),
         errorElement: <ErrorPage />,
         children: [
