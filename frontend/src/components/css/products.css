@@ -51,6 +51,8 @@
   margin-bottom: 40px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 100;
 }
 
 /* --- Filter Blocks --- */
