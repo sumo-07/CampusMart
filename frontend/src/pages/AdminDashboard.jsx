@@ -164,7 +164,7 @@ export const AdminDashboard = () => {
                                     placeholder="Search products by title or ID..." 
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px', minWidth: '250px' }}
+                                    className="admin-search-input"
                                 />
                             </div>
                             <button onClick={() => {

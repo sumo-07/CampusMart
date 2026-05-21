@@ -185,3 +185,27 @@
   margin-top: 4rem;
   color: var(--text-muted);
 }
+
+/* Admin Search Input styled like products search input */
+.admin-search-input {
+  padding: 8px 16px;
+  border: 1px solid var(--border-glass);
+  border-radius: 30px;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  outline: none;
+  min-width: 250px;
+  transition: var(--transition-smooth);
+}
+
+.admin-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.admin-search-input:focus {
+  border-color: rgba(var(--accent-purple-rgb), 0.5);
+  box-shadow: 0 0 15px rgba(var(--accent-purple-rgb), 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
