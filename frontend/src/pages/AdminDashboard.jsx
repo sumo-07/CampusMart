@@ -12,7 +12,26 @@ export const AdminDashboard = () => {
     const [editingProduct, setEditingProduct] = useState(null); // For inline stock edit
     const [editFormProduct, setEditFormProduct] = useState(null); // For full form edit
     const [showAddForm, setShowAddForm] = useState(false);
+    const [isAnimatingOut, setIsAnimatingOut] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+
+    const closeFormWithAnimation = () => {
+        setIsAnimatingOut(true);
+        setTimeout(() => {
+            setShowAddForm(false);
+            setIsAnimatingOut(false);
+            setEditFormProduct(null);
+            setNewProduct({ title: '', price: 0, stock: 0, category: '', description: '', thumbnail: '' });
+        }, 350);
+    };
+
+    const toggleAddForm = () => {
+        if (showAddForm) {
+            closeFormWithAnimation();
+        } else {
+            setShowAddForm(true);
+        }
+    };
     const [currentPage, setCurrentPage] = useState(1);
     const [newProduct, setNewProduct] = useState({ title: '', price: 0, stock: 0, category: '', description: '', thumbnail: '' });
 
@@ -69,9 +88,7 @@ export const AdminDashboard = () => {
                 const { data } = await api.post("/api/products", newProduct);
                 setProducts([data, ...products]);
             }
-            setShowAddForm(false);
-            setEditFormProduct(null);
-            setNewProduct({ title: '', price: 0, stock: 0, category: '', description: '', thumbnail: '' });
+            closeFormWithAnimation();
         } catch (error) {
             console.error("Failed to save product", error);
             alert("Failed to save product");
@@ -167,28 +184,22 @@ export const AdminDashboard = () => {
                                     className="admin-search-input"
                                 />
                             </div>
-                            <button onClick={() => {
-                                setShowAddForm(!showAddForm);
-                                if (showAddForm) {
-                                    setEditFormProduct(null);
-                                    setNewProduct({ title: '', price: 0, stock: 0, category: '', description: '', thumbnail: '' });
-                                }
-                            }} style={{ padding: '10px 20px', backgroundColor: '#111827', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                            <button onClick={toggleAddForm} className={`admin-btn-action ${showAddForm ? "cancel" : ""}`}>
                                 {showAddForm ? "Cancel" : "+ Add New Product"}
                             </button>
                         </div>
 
-                        {showAddForm && (
-                            <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #eee' }}>
+                        {(showAddForm || isAnimatingOut) && (
+                            <div className={`admin-form-container ${isAnimatingOut ? 'anim-fade-out' : 'anim-fade-in'}`}>
                                 <h3>{editFormProduct ? "Edit Product" : "Add New Product"}</h3>
-                                <form onSubmit={handleSaveProduct} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '15px' }}>
-                                    <input required type="text" placeholder="Title" value={newProduct.title} onChange={e => setNewProduct({...newProduct, title: e.target.value})} style={{ padding: '8px' }} />
-                                    <input required type="number" placeholder="Price (₹)" value={newProduct.price || ''} onChange={e => setNewProduct({...newProduct, price: Number(e.target.value)})} style={{ padding: '8px' }} />
-                                    <input required type="number" placeholder="Initial Stock" value={newProduct.stock || ''} onChange={e => setNewProduct({...newProduct, stock: Number(e.target.value)})} style={{ padding: '8px' }} />
-                                    <input required type="text" placeholder="Category" value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} style={{ padding: '8px' }} />
-                                    <input required type="text" placeholder="Image URL (Thumbnail)" value={newProduct.thumbnail} onChange={e => setNewProduct({...newProduct, thumbnail: e.target.value})} style={{ padding: '8px', gridColumn: 'span 2' }} />
-                                    <textarea required placeholder="Description" rows="3" value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} style={{ padding: '8px', gridColumn: 'span 2' }}></textarea>
-                                    <button type="submit" style={{ gridColumn: 'span 2', padding: '10px', backgroundColor: '#4caf50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                                <form onSubmit={handleSaveProduct} className="admin-form">
+                                    <input required type="text" placeholder="Title" value={newProduct.title} onChange={e => setNewProduct({...newProduct, title: e.target.value})} className="admin-form-input" />
+                                    <input required type="number" placeholder="Price (₹)" value={newProduct.price || ''} onChange={e => setNewProduct({...newProduct, price: Number(e.target.value)})} className="admin-form-input" />
+                                    <input required type="number" placeholder="Initial Stock" value={newProduct.stock || ''} onChange={e => setNewProduct({...newProduct, stock: Number(e.target.value)})} className="admin-form-input" />
+                                    <input required type="text" placeholder="Category" value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} className="admin-form-input" />
+                                    <input required type="text" placeholder="Image URL (Thumbnail)" value={newProduct.thumbnail} onChange={e => setNewProduct({...newProduct, thumbnail: e.target.value})} className="admin-form-input full-width" />
+                                    <textarea required placeholder="Description" rows="3" value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} className="admin-form-textarea"></textarea>
+                                    <button type="submit" className="admin-form-submit-btn">
                                         {editFormProduct ? "Save Changes" : "Create Product"}
                                     </button>
                                 </form>
@@ -230,7 +241,7 @@ export const AdminDashboard = () => {
                                             </td>
                                             <td>
                                                 <div style={{ display: 'flex', gap: '8px' }}>
-                                                    <button onClick={() => startEditProduct(product)} style={{ padding: '5px 10px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Edit</button>
+                                                    <button onClick={() => startEditProduct(product)} className="btn-edit">Edit</button>
                                                     <button onClick={() => handleDeleteProduct(product._id)} className="btn-delete">Delete</button>
                                                 </div>
                                             </td>
@@ -241,19 +252,27 @@ export const AdminDashboard = () => {
                         </div>
 
                         {totalPages > 1 && (
-                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', marginTop: '20px' }}>
+                            <div className="pagination">
                                 <button 
+                                    className="pagination-btn"
                                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
                                     disabled={currentPage === 1}
-                                    style={{ padding: '8px 15px', border: '1px solid #ccc', borderRadius: '4px', background: currentPage === 1 ? '#f1f5f9' : 'white', cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
                                 >
-                                    Previous
+                                    Prev
                                 </button>
-                                <span>Page {currentPage} of {totalPages}</span>
+                                {Array.from({ length: totalPages }, (_, i) => (
+                                    <button
+                                        key={i}
+                                        className={`pagination-btn ${currentPage === i + 1 ? "active" : ""}`}
+                                        onClick={() => setCurrentPage(i + 1)}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
                                 <button 
+                                    className="pagination-btn"
                                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
                                     disabled={currentPage === totalPages}
-                                    style={{ padding: '8px 15px', border: '1px solid #ccc', borderRadius: '4px', background: currentPage === totalPages ? '#f1f5f9' : 'white', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
                                 >
                                     Next
                                 </button>
