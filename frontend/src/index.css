@@ -1,31 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --bg-primary: #0B0F19;
+  --bg-secondary: #0D0D11;
+  --bg-footer: #05070B;
+  --bg-glass: rgba(13, 17, 23, 0.7);
+  --border-glass: rgba(255, 255, 255, 0.08);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  
+  --accent-blue: #00d2ff;
+  --accent-purple: #a259ff;
+  --accent-blue-rgb: 0, 210, 255;
+  --accent-purple-rgb: 162, 89, 255;
+  
+  --gradient-neon: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+  --gradient-glow: radial-gradient(circle at 50% 50%, rgba(var(--accent-blue-rgb), 0.15) 0%, rgba(var(--accent-purple-rgb), 0.15) 50%, transparent 100%);
+  
+  --shadow-neon: 0 0 20px rgba(var(--accent-blue-rgb), 0.35);
+  --shadow-purple: 0 0 20px rgba(var(--accent-purple-rgb), 0.35);
+  
+  --font-header: 'Outfit', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  
+  --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Inter', sans-serif; /* Or your preferred font */
+html, body {
+  height: 100%;
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  scroll-behavior: smooth;
 }
 
+body {
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gradient-neon);
+}
+
+/* Text Selection */
+::selection {
+  background: rgba(var(--accent-blue-rgb), 0.3);
+  color: #fff;
+}
+
+/* Container Utility */
 .container {
-  max-width: 1240px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 24px;
   width: 100%;
 }
 
-
-html, 
-body{
-    height: 100%;
-}
 #root {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  position: relative;
+}
+
+/* Add custom ambient globs behind main body */
+#root::before {
+  content: "";
+  position: absolute;
+  top: 10%;
+  left: -10%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, rgba(var(--accent-blue-rgb), 0.08) 0%, transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+#root::after {
+  content: "";
+  position: absolute;
+  bottom: 20%;
+  right: -10%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, rgba(var(--accent-purple-rgb), 0.08) 0%, transparent 70%);
+  z-index: 0;
+  pointer-events: none;
 }
 
 main {
-    flex: 1;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+/* Glassmorphism Styles */
+.glass-panel {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
 }

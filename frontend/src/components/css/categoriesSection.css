@@ -1,0 +1,158 @@
+.section-categories {
+  padding: 6rem 0;
+  background-color: var(--bg-secondary);
+  position: relative;
+  border-top: 1px solid var(--border-glass);
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.section-categories::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  background: radial-gradient(circle, rgba(var(--accent-blue-rgb), 0.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.categories-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.categories-title {
+  font-family: var(--font-header);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.categories-subtitle {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.category-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-glass);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  transition: var(--transition-smooth);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Shifting light background on hover */
+.category-card::before {
+  content: "";
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(var(--accent-blue-rgb), 0.2) 0%, transparent 70%);
+  transition: var(--transition-smooth);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.category-card:nth-child(2)::before {
+  background: radial-gradient(circle, rgba(var(--accent-purple-rgb), 0.2) 0%, transparent 70%);
+}
+
+.category-card:nth-child(3)::before {
+  background: radial-gradient(circle, rgba(var(--accent-blue-rgb), 0.2) 0%, transparent 70%);
+}
+
+.category-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.category-card:hover::before {
+  opacity: 1;
+  transform: scale(1.5);
+}
+
+.category-card:hover:nth-child(1) {
+  box-shadow: 0 10px 30px rgba(var(--accent-blue-rgb), 0.12);
+}
+
+.category-card:hover:nth-child(2) {
+  box-shadow: 0 10px 30px rgba(var(--accent-purple-rgb), 0.12);
+}
+
+.category-card:hover:nth-child(3) {
+  box-shadow: 0 10px 30px rgba(var(--accent-blue-rgb), 0.12);
+}
+
+.category-info {
+  margin-top: 1.5rem;
+}
+
+.category-name {
+  font-family: var(--font-header);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  transition: var(--transition-smooth);
+}
+
+.category-card:hover .category-name {
+  background: var(--gradient-neon);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.category-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.category-link {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-blue);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  transition: var(--transition-smooth);
+}
+
+.category-card:hover .category-link {
+  color: var(--text-primary);
+  text-shadow: 0 0 10px rgba(var(--accent-blue-rgb), 0.4);
+}
+
+@media (max-width: 992px) {
+  .categories-grid {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+}

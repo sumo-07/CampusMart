@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 
 import {
   getAllProducts,
@@ -13,17 +14,25 @@ import "../components/css/products.css";
 const ITEMS_PER_PAGE = 16;
 
 export const Products = () => {
-  /* ------------------ UI State ------------------ */
+  /* ------------------ Search & Modal State ------------------ */
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categoryParam = searchParams.get("category");
+
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const [activeCategory, setActiveCategory] = useState(null);
+  const [activeCategory, setActiveCategory] = useState(categoryParam || null);
   const [activeSort, setActiveSort] = useState(null);
 
   const [showCategories, setShowCategories] = useState(false);
   const [showPrice, setShowPrice] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Sync category parameter
+  useEffect(() => {
+    setActiveCategory(categoryParam || null);
+  }, [categoryParam]);
 
   /* ------------------ Products Query ------------------ */
   const {
@@ -65,7 +74,7 @@ export const Products = () => {
 
   /* ------------------ Handlers ------------------ */
   const handleCategoryFilter = (category) => {
-    setActiveCategory(category);
+    setSearchParams({ category });
     setActiveSort(null);
     setCurrentPage(1);
     setShowCategories(false);
@@ -73,13 +82,13 @@ export const Products = () => {
 
   const handlePriceSort = (type) => {
     setActiveSort(type);
-    setActiveCategory(null);
+    setSearchParams({});
     setCurrentPage(1);
     setShowPrice(false);
   };
 
   const clearFilters = () => {
-    setActiveCategory(null);
+    setSearchParams({});
     setActiveSort(null);
     setSearchTerm("");
     setCurrentPage(1);
@@ -219,7 +228,10 @@ export const Products = () => {
         <div className="products-grid">
           {paginatedProducts.length > 0 ? (
             paginatedProducts.map((product) => (
-              <ProductCard key={product._id || product.id} product={product} />
+              <ProductCard 
+                key={product._id || product.id} 
+                product={product} 
+              />
             ))
           ) : (
             <p>No products found.</p>
@@ -260,6 +272,7 @@ export const Products = () => {
         )}
 
       </div>
+
     </section>
   );
 };

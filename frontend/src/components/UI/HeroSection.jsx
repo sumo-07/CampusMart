@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
-import heroImage from "../../images/heroSection.jpeg";
+import { HeroCanvas } from "./ThreeDObjects";
 import '../css/heroSection.css';
+
 export const HeroSection = () => {
   return (
     <section className="section-hero">
@@ -19,19 +20,19 @@ export const HeroSection = () => {
           </p>
 
           <div className="hero-actions">
-            <NavLink to="/product" className="hero-btn hero-btn-primary">
+            <NavLink to="/product" className="btn btn-primary">
               Shop Now
             </NavLink>
 
-            <NavLink to="/about" className="hero-btn hero-btn-outline">
+            <NavLink to="/about" className="btn btn-outline">
               Learn More
             </NavLink>
           </div>
         </div>
 
-        {/* Hero Image */}
-        <div className="hero-image">
-          <img src={heroImage} alt="Campus shopping" />
+        {/* Hero 3D Canvas */}
+        <div className="hero-canvas-container">
+          <HeroCanvas />
         </div>
 
       </div>

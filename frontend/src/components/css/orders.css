@@ -1,81 +1,81 @@
 /* Orders Container */
 .orders-section {
-  max-width: 850px;
-  margin: 3rem auto;
+  max-width: 900px;
+  margin: 4rem auto;
   padding: 0 20px;
   min-height: 70vh;
 }
 
 .orders-title {
-  margin-bottom: 2rem;
-  color: #1e293b;
-  font-size: 2rem;
+  font-family: var(--font-header);
+  font-size: 2.2rem;
   font-weight: 800;
-  letter-spacing: -0.5px;
+  margin-bottom: 2.5rem;
+  color: var(--text-primary);
+  background: var(--gradient-neon);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .loading-text {
   text-align: center;
   padding: 4rem;
   font-size: 1.1rem;
-  color: #64748b;
-  font-weight: 500;
+  color: var(--text-muted);
 }
 
 /* Empty State */
 .orders-empty {
   text-align: center;
   padding: 4rem 2rem;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 20px;
+  border: 1px solid var(--border-glass);
 }
 
 .orders-empty p {
-  color: #64748b;
+  color: var(--text-secondary);
   font-size: 1.1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .start-shopping-btn {
-  padding: 12px 24px;
-  background: #4f46e5;
+  padding: 12px 28px;
+  background: var(--gradient-neon);
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 1rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+  transition: var(--transition-smooth);
+  box-shadow: var(--shadow-neon);
 }
 
 .start-shopping-btn:hover {
-  background: #4338ca;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);
+  box-shadow: 0 0 25px rgba(var(--accent-blue-rgb), 0.5);
+  transform: translateY(-2px);
 }
 
 /* Orders List */
 .orders-list {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 2.5rem;
 }
 
 /* Individual Order Card */
 .order-card {
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  background: white;
+  border: 1px solid var(--border-glass);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-  transition: box-shadow 0.2s ease;
+  transition: var(--transition-smooth);
 }
 
 .order-card:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.04);
+  border-color: rgba(var(--accent-blue-rgb), 0.3);
+  box-shadow: 0 10px 25px rgba(var(--accent-blue-rgb), 0.1);
 }
 
 /* Order Header */
@@ -84,9 +84,9 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1.5rem;
-  background: #f8fafc;
+  background: rgba(255, 255, 255, 0.03);
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-glass);
 }
 
 .order-header-block {
@@ -102,15 +102,15 @@
 
 .order-label {
   font-size: 0.75rem;
-  color: #64748b;
-  font-weight: 600;
+  color: var(--text-muted);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 .order-value {
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-primary);
   font-size: 0.95rem;
 }
 
@@ -131,8 +131,9 @@
 .item-image-wrapper {
   width: 90px;
   height: 90px;
-  background: #f1f5f9;
-  border-radius: 8px;
+  background: rgba(5, 7, 11, 0.4);
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -144,7 +145,7 @@
   max-width: 80%;
   max-height: 80%;
   object-fit: contain;
-  transition: transform 0.3s ease;
+  transition: var(--transition-smooth);
 }
 
 .order-item:hover .item-image-wrapper img {
@@ -156,23 +157,25 @@
 }
 
 .item-title {
+  font-family: var(--font-header);
   font-weight: 700;
-  color: #4f46e5;
+  color: var(--accent-blue);
   cursor: pointer;
   font-size: 1.05rem;
   margin-bottom: 6px;
-  transition: color 0.2s ease;
+  transition: var(--transition-smooth);
   text-decoration: none;
+  display: inline-block;
 }
 
 .item-title:hover {
-  color: #3730a3;
-  text-decoration: underline;
+  color: var(--accent-purple);
+  text-shadow: 0 0 10px rgba(var(--accent-purple-rgb), 0.3);
 }
 
 .item-meta {
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
