@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import api from "../api/axiosConfig";
 import "../components/css/admin.css";
 
 export const AdminDashboard = () => {
+    const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState("overview"); // "overview" | "products" | "orders"
     
     const [orders, setOrders] = useState([]);
@@ -60,6 +62,9 @@ export const AdminDashboard = () => {
             await api.put(`/api/products/${id}`, { stock: Number(newStock) });
             setProducts(products.map(p => p._id === id ? { ...p, stock: Number(newStock) } : p));
             setEditingProduct(null);
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+            queryClient.invalidateQueries({ queryKey: ["product"] });
+            queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
         } catch (error) {
             console.error("Failed to update stock", error);
         }
@@ -70,6 +75,9 @@ export const AdminDashboard = () => {
             try {
                 await api.delete(`/api/products/${id}`);
                 setProducts(products.filter(p => p._id !== id));
+                queryClient.invalidateQueries({ queryKey: ["products"] });
+                queryClient.invalidateQueries({ queryKey: ["product"] });
+                queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
             } catch (error) {
                 console.error("Failed to delete product", error);
             }
@@ -88,6 +96,9 @@ export const AdminDashboard = () => {
                 const { data } = await api.post("/api/products", newProduct);
                 setProducts([data, ...products]);
             }
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+            queryClient.invalidateQueries({ queryKey: ["product"] });
+            queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
             closeFormWithAnimation();
         } catch (error) {
             console.error("Failed to save product", error);

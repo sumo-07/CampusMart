@@ -22,22 +22,52 @@ export const ProductDetails = () => {
     } = useQuery({
         queryKey: ["product", productId],
         queryFn: () => getProductById(productId),
-        staleTime: Infinity,
-        gcTime: Infinity,
+        staleTime: 0,
+        refetchOnMount: true,
+        refetchOnWindowFocus: true,
         enabled: !!productId,
     });
 
     /* ------------------ Loading & Error ------------------ */
     if (isLoading) {
-        return <p>Loading product details...</p>;
+        return (
+            <section className="pd-section">
+                <div className="pd-container" style={{ textAlign: "center", display: "block", paddingTop: "4rem" }}>
+                    <p style={{ color: "var(--text-secondary)", fontSize: "1.2rem" }}>Loading product details...</p>
+                </div>
+            </section>
+        );
     }
 
     if (isError) {
-        return <p>Error: {error.message}</p>;
+        return (
+            <section className="pd-section">
+                <div className="pd-container" style={{ textAlign: "center", display: "block", paddingTop: "4rem" }}>
+                    <h2 style={{ color: "#ef4444", marginBottom: "1rem" }}>Unable to load product</h2>
+                    <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
+                        {error?.message === "Network Error"
+                            ? "Network Error: Please ensure the backend server is running."
+                            : error?.message || "Failed to load product details."}
+                    </p>
+                    <button className="pd-btn buy-now-btn" onClick={() => navigate("/product")}>
+                        Back to Products
+                    </button>
+                </div>
+            </section>
+        );
     }
 
     if (!product) {
-        return <p>Product not found.</p>;
+        return (
+            <section className="pd-section">
+                <div className="pd-container" style={{ textAlign: "center", display: "block", paddingTop: "4rem" }}>
+                    <h2 style={{ marginBottom: "1rem" }}>Product not found</h2>
+                    <button className="pd-btn buy-now-btn" onClick={() => navigate("/product")}>
+                        Back to Products
+                    </button>
+                </div>
+            </section>
+        );
     }
 
     const handleAddToCart = async () => {
@@ -96,21 +126,39 @@ export const ProductDetails = () => {
                         Rating: {product.rating} ⭐
                     </p>
 
+                    {product.stock !== undefined && (
+                        <div className="pd-stock-info">
+                            <span className="pd-stock-label">Availability:</span>
+                            <span className={`pd-stock-badge ${product.stock > 0 ? (product.stock <= 5 ? "low" : "in") : "out"}`}>
+                                {product.stock > 0
+                                    ? (product.stock <= 5
+                                        ? `⚠️ Only ${product.stock} left in stock - Order soon`
+                                        : `✓ In Stock (${product.stock} units available)`)
+                                    : "✕ Currently Out of Stock"}
+                            </span>
+                        </div>
+                    )}
+
                     {/* Actions */}
                     {!user?.isAdmin && (
                         <div className="pd-actions">
                             <button
                                 className="pd-btn add-cart-btn"
                                 onClick={handleAddToCart}
-                                disabled={addingToCart}
+                                disabled={addingToCart || product.stock <= 0}
                             >
-                                {addingToCart ? "Adding..." : "Add to Cart"}
+                                {product.stock <= 0
+                                    ? "Out of Stock"
+                                    : addingToCart
+                                    ? "Adding..."
+                                    : "Add to Cart"}
                             </button>
                             <button 
                                 className="pd-btn buy-now-btn"
                                 onClick={handleBuyNow}
+                                disabled={product.stock <= 0}
                             >
-                                Buy Now
+                                {product.stock <= 0 ? "Out of Stock" : "Buy Now"}
                             </button>
                         </div>
                     )}

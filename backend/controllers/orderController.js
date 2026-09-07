@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Order = require("../models/Order");
 const User = require("../models/User");
 const Product = require("../models/Product");
@@ -6,34 +7,75 @@ const Product = require("../models/Product");
 // @route   POST /api/orders
 // @access  Private
 const addOrderItems = async (req, res) => {
-    const { orderItems, shippingAddress, totalPrice } = req.body;
+    const { orderItems, shippingAddress } = req.body;
 
-    if (orderItems && orderItems.length === 0) {
-        res.status(400).json({ message: "No order items" });
-        return;
+    if (!orderItems || !Array.isArray(orderItems) || orderItems.length === 0) {
+        return res.status(400).json({ message: "No order items provided" });
+    }
+
+    if (!shippingAddress) {
+        return res.status(400).json({ message: "Shipping address is required" });
     }
 
     try {
-        // Create the order
+        const verifiedOrderItems = [];
+        const productsToUpdate = [];
+        let calculatedTotalPrice = 0;
+
+        // 1. Verify all products, validate stock, and calculate authentic prices
+        for (const item of orderItems) {
+            const qty = Number(item.quantity);
+            if (!qty || qty <= 0) {
+                return res.status(400).json({ message: `Invalid quantity for item: ${item.title || item.productId}` });
+            }
+
+            if (!mongoose.isValidObjectId(item.productId)) {
+                return res.status(400).json({ message: `Invalid product ID format: ${item.productId}` });
+            }
+
+            const product = await Product.findById(item.productId);
+            if (!product) {
+                return res.status(404).json({ message: `Product not found: ${item.title || item.productId}` });
+            }
+
+            // Check stock availability
+            if (product.stock < qty) {
+                return res.status(400).json({
+                    message: product.stock === 0
+                        ? `"${product.title}" is out of stock`
+                        : `Insufficient stock for "${product.title}". Only ${product.stock} available.`,
+                });
+            }
+
+            verifiedOrderItems.push({
+                productId: product._id.toString(),
+                title: product.title,
+                price: product.price,
+                thumbnail: product.thumbnail,
+                quantity: qty,
+            });
+
+            calculatedTotalPrice += product.price * qty;
+            productsToUpdate.push({ product, quantity: qty });
+        }
+
+        // 2. Decrement stock for all verified products
+        for (const { product, quantity } of productsToUpdate) {
+            product.stock -= quantity;
+            await product.save();
+        }
+
+        // 3. Create and save the order with server-verified prices
         const order = new Order({
             user: req.user._id,
-            orderItems,
+            orderItems: verifiedOrderItems,
             shippingAddress,
-            totalPrice,
+            totalPrice: Number(calculatedTotalPrice.toFixed(2)),
         });
 
         const createdOrder = await order.save();
 
-        // Decrement product stock
-        for (const item of orderItems) {
-            const product = await Product.findById(item.productId);
-            if (product) {
-                product.stock = Math.max(0, product.stock - item.quantity); // Prevent negative stock
-                await product.save();
-            }
-        }
-
-        // Clear the user's cart after successfully placing an order (UNLESS it was a 'Buy Now' bypass)
+        // 4. Clear the user's cart after successfully placing an order (UNLESS it was a 'Buy Now' bypass)
         if (!req.body.isBuyNow) {
             const user = await User.findById(req.user._id);
             if (user) {
@@ -45,7 +87,7 @@ const addOrderItems = async (req, res) => {
         res.status(201).json(createdOrder);
     } catch (error) {
         console.error("Order Creation Error:", error);
-        res.status(500).json({ message: "Server Error while creating order" });
+        res.status(500).json({ message: "Server Error while creating order", error: error.message });
     }
 };
 

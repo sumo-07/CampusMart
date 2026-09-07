@@ -56,8 +56,8 @@ export const ProductQuickViewModal = ({ isOpen, onClose, product }) => {
           
           <div className="quickview-meta">
             <span className="quickview-rating">⭐ {rating} Rating</span>
-            <span className={`quickview-stock ${stock > 0 ? "" : "out"}`}>
-              {stock > 0 ? `In Stock (${stock})` : "Out of Stock"}
+            <span className={`quickview-stock ${stock > 0 ? (stock <= 5 ? "low" : "") : "out"}`}>
+              {stock > 0 ? (stock <= 5 ? `Only ${stock} left!` : `In Stock (${stock})`) : "Out of Stock"}
             </span>
           </div>
 
@@ -78,7 +78,7 @@ export const ProductQuickViewModal = ({ isOpen, onClose, product }) => {
                 disabled={adding || stock <= 0}
               >
                 <FaShoppingCart style={{ marginRight: "8px" }} />
-                {adding ? "Adding..." : "Add to Cart"}
+                {stock <= 0 ? "Out of Stock" : adding ? "Adding..." : "Add to Cart"}
               </button>
             </div>
           </div>

@@ -10,7 +10,8 @@ export const FeaturedProducts = () => {
   const { data: products = [], isLoading, isError } = useQuery({
     queryKey: ["featuredProducts"],
     queryFn: getAllProducts,
-    staleTime: 300000, // 5 minutes cache
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   // Limit featured products to 8 items

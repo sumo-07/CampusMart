@@ -46,8 +46,9 @@ export const Products = () => {
       activeCategory
         ? getProductsByCategory(activeCategory)
         : getAllProducts(),
-    staleTime: Infinity,
-    gcTime: Infinity,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     keepPreviousData: true,
   });
 

@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { getCart } from "../utils/cartUtils";
 import { createOrder } from "../utils/orderUtils";
 import { addAddress } from "../utils/addressUtils";
@@ -25,6 +26,7 @@ export const Checkout = () => {
   const { user, setUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const buyNowItem = location.state?.buyNowItem;
 
   useEffect(() => {
@@ -104,6 +106,9 @@ export const Checkout = () => {
       };
 
       await createOrder(orderData);
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product"] });
+      queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
       navigate("/orders");
     } catch (error) {
       alert(error.response?.data?.message || "Failed to place order.");
@@ -131,12 +136,12 @@ export const Checkout = () => {
         {cartItems.map((item) => (
           <div key={item.productId} className="checkout-item">
             <p>{item.title}</p>
-            <p>{item.quantity} × ₹{item.price}</p>
-            <p>₹{item.price * item.quantity}</p>
+            <p>{item.quantity} × ₹{Number(item.price).toFixed(2)}</p>
+            <p>₹{(Number(item.price) * item.quantity).toFixed(2)}</p>
           </div>
         ))}
         <hr />
-        <h3>Total: ₹{totalPrice.toFixed(2)}</h3>
+        <h3>Total: ₹{Number(totalPrice).toFixed(2)}</h3>
       </div>
 
       {/* Delivery Configuration */}

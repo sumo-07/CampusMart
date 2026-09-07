@@ -99,6 +99,47 @@
   gap: 6px;
 }
 
+/* --- Stock Availability --- */
+.pd-stock-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+}
+
+.pd-stock-label {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.pd-stock-badge {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pd-stock-badge.in {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.pd-stock-badge.low {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.pd-stock-badge.out {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
 /* --- Buttons/Actions with Feedback --- */
 .pd-actions {
   display: flex;

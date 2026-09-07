@@ -88,7 +88,7 @@ export const Orders = () => {
                                                 {item.title}
                                             </p>
                                             <p className="item-meta">
-                                                Qty: {item.quantity} | ₹{item.price} each
+                                                Qty: {item.quantity} | ₹{Number(item.price).toFixed(2)} each
                                             </p>
                                         </div>
                                     </div>

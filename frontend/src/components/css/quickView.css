@@ -130,6 +130,10 @@
   font-weight: 600;
 }
 
+.quickview-stock.low {
+  color: #f59e0b;
+}
+
 .quickview-stock.out {
   color: #ff4757;
 }
