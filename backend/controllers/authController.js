@@ -1,6 +1,15 @@
 const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
 
+const sendTokenCookie = (res, token) => {
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    });
+};
+
 // @desc    Auth user & get token (Login)
 // @route   POST /api/auth/login
 // @access  Public
@@ -10,13 +19,14 @@ const authUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
+        const token = generateToken(user._id);
+        sendTokenCookie(res, token);
         res.json({
             _id: user._id,
             name: user.name,
             email: user.email,
             isAdmin: user.isAdmin,
             addresses: user.addresses,
-            token: generateToken(user._id),
         });
     } else {
         res.status(401).json({ message: "Invalid email or password" });
@@ -43,13 +53,14 @@ const registerUser = async (req, res) => {
     });
 
     if (user) {
+        const token = generateToken(user._id);
+        sendTokenCookie(res, token);
         res.status(201).json({
             _id: user._id,
             name: user.name,
             email: user.email,
             isAdmin: user.isAdmin,
             addresses: user.addresses,
-            token: generateToken(user._id),
         });
     } else {
         res.status(400).json({ message: "Invalid user data" });
@@ -129,10 +140,22 @@ const setDefaultAddress = async (req, res) => {
     }
 };
 
+// @desc    Logout user & clear cookie
+// @route   POST /api/auth/logout
+// @access  Public
+const logoutUser = (req, res) => {
+    res.cookie("token", "", {
+        httpOnly: true,
+        expires: new Date(0),
+    });
+    res.status(200).json({ message: "Logged out successfully" });
+};
+
 module.exports = {
     authUser,
     registerUser,
     getProfile,
     addUserAddress,
     setDefaultAddress,
+    logoutUser,
 };

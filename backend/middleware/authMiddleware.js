@@ -1,32 +1,29 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret_for_development";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const protect = async (req, res, next) => {
-    let token;
+    const token = req.cookies?.token;
 
-    if (
-        req.headers.authorization &&
-        req.headers.authorization.startsWith("Bearer")
-    ) {
+    if (token) {
         try {
-            token = req.headers.authorization.split(" ")[1];
-
             const decoded = jwt.verify(token, JWT_SECRET);
 
             req.user = await User.findById(decoded.id).select("-password");
 
-            next();
+            if (!req.user) {
+                return res.status(401).json({ message: "Not authorized, user not found" });
+            }
+
+            return next();
         } catch (error) {
-            console.error(error);
-            res.status(401).json({ message: "Not authorized, token failed" });
+            console.error("Auth Middleware Error:", error.message);
+            return res.status(401).json({ message: "Not authorized, token failed" });
         }
     }
 
-    if (!token) {
-        res.status(401).json({ message: "Not authorized, no token" });
-    }
+    return res.status(401).json({ message: "Not authorized, no token" });
 };
 
 const admin = (req, res, next) => {

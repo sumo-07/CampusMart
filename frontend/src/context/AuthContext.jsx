@@ -10,30 +10,31 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const fetchUser = async () => {
-            const token = localStorage.getItem("token");
-            if (token) {
-                try {
-                    const { data } = await api.get("/api/auth/profile");
-                    setUser(data);
-                } catch (error) {
-                    console.error("Token invalid or expired", error);
-                    localStorage.removeItem("token");
-                }
+            try {
+                const { data } = await api.get("/api/auth/profile");
+                setUser(data);
+            } catch (error) {
+                setUser(null);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
 
         fetchUser();
     }, []);
 
-    const login = (userData, token) => {
-        localStorage.setItem("token", token);
+    const login = (userData) => {
         setUser(userData);
     };
 
-    const logout = () => {
-        localStorage.removeItem("token");
-        setUser(null);
+    const logout = async () => {
+        try {
+            await api.post("/api/auth/logout");
+        } catch (error) {
+            console.error("Logout request failed:", error);
+        } finally {
+            setUser(null);
+        }
     };
 
     return (

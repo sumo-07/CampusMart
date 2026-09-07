@@ -27,7 +27,7 @@ export const Signup = () => {
 
     try {
       const { data } = await api.post("/api/auth/signup", { name, email, password });
-      login(data, data.token);
+      login(data);
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Signup failed");

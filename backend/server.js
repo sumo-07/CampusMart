@@ -1,5 +1,6 @@
+require("./config/env");
 const express = require("express");
-const dotenv = require("dotenv");
+const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const connectDB = require("./config/db");
 
@@ -8,7 +9,6 @@ const cartRoutes = require("./routes/cartRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const productRoutes = require("./routes/productRoutes");
 
-dotenv.config();
 connectDB();
 
 const app = express();
@@ -18,6 +18,7 @@ app.use(cors({
     credentials: true,
 }));
 app.use(express.json());
+app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
