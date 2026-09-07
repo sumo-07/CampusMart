@@ -9,14 +9,27 @@ const cartRoutes = require("./routes/cartRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const productRoutes = require("./routes/productRoutes");
 
-connectDB();
-
 const app = express();
 
+const allowedOrigins = [
+    process.env.CLIENT_URL
+].filter(Boolean).map((url) => url.replace(/\/$/, ""));
+
 app.use(cors({
-    origin: process.env.CLIENT_URL,
+    origin: (origin, callback) => {
+        // Allow requests with no origin (e.g. mobile apps, curl, Postman)
+        if (!origin) return callback(null, true);
+
+        const cleanOrigin = origin.replace(/\/$/, "");
+        if (allowedOrigins.includes(cleanOrigin)) {
+            return callback(null, true);
+        }
+        return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
 }));
+
+
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/auth", authRoutes);
@@ -34,12 +47,18 @@ app.use((err, req, res, next) => {
     res.status(500).send({ message: "Something went wrong" });
 });
 
-app.get("/", (req, res) => {
-    res.send("API is running...");
-});
+const PORT = process.env.PORT || 5000;
 
-const PORT = 5000;
+const startServer = async () => {
+    try {
+        await connectDB();
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error("Failed to start server:", error.message);
+        process.exit(1);
+    }
+};
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+startServer();
