@@ -28,6 +28,30 @@ const orderSchema = new mongoose.Schema(
             required: true,
             default: 0.0,
         },
+        paymentMethod: {
+            type: String,
+            required: true,
+            default: "COD",
+        },
+        paymentStatus: {
+            type: String,
+            enum: ["Pending", "Paid", "Failed"],
+            default: "Pending",
+        },
+        paidAt: {
+            type: Date,
+        },
+        orderStatus: {
+            type: String,
+            enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],
+            default: "Pending",
+        },
+        deliveredAt: {
+            type: Date,
+        },
+        cancelledAt: {
+            type: Date,
+        },
     },
     {
         timestamps: true,

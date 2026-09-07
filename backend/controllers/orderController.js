@@ -71,6 +71,9 @@ const addOrderItems = async (req, res) => {
             orderItems: verifiedOrderItems,
             shippingAddress,
             totalPrice: Number(calculatedTotalPrice.toFixed(2)),
+            paymentMethod: req.body.paymentMethod || "COD",
+            paymentStatus: "Pending",
+            orderStatus: "Pending",
         });
 
         const createdOrder = await order.save();
@@ -117,8 +120,108 @@ const getAllOrders = async (req, res) => {
     }
 };
 
+// @desc    Update order status
+// @route   PUT /api/orders/:id/status
+// @access  Private/Admin
+const updateOrderStatus = async (req, res) => {
+    const { status } = req.body;
+    const validStatuses = ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
+
+    if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: `Invalid status. Must be one of: ${validStatuses.join(", ")}` });
+    }
+
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        const previousStatus = order.orderStatus;
+
+        // If transitioning to Cancelled and wasn't already cancelled, restock inventory
+        if (status === "Cancelled" && previousStatus !== "Cancelled") {
+            for (const item of order.orderItems) {
+                if (mongoose.isValidObjectId(item.productId)) {
+                    const product = await Product.findById(item.productId);
+                    if (product) {
+                        product.stock += item.quantity;
+                        await product.save();
+                    }
+                }
+            }
+            order.cancelledAt = new Date();
+        }
+
+        // If marked as Delivered
+        if (status === "Delivered") {
+            order.deliveredAt = new Date();
+            // If COD, delivery implies collection of cash
+            if (order.paymentMethod === "COD" && order.paymentStatus !== "Paid") {
+                order.paymentStatus = "Paid";
+                order.paidAt = new Date();
+            }
+        }
+
+        order.orderStatus = status;
+        const updatedOrder = await order.save();
+        res.json(updatedOrder);
+    } catch (error) {
+        console.error("Update Order Status Error:", error);
+        res.status(500).json({ message: "Server error while updating order status", error: error.message });
+    }
+};
+
+// @desc    Cancel order (Customer or Admin)
+// @route   PUT /api/orders/:id/cancel
+// @access  Private
+const cancelMyOrder = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        // Verify ownership (or admin)
+        if (order.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+            return res.status(403).json({ message: "Not authorized to cancel this order" });
+        }
+
+        if (order.orderStatus === "Cancelled") {
+            return res.status(400).json({ message: "Order is already cancelled" });
+        }
+
+        if (order.orderStatus === "Delivered" || order.orderStatus === "Shipped") {
+            return res.status(400).json({
+                message: `Cannot cancel an order that is already ${order.orderStatus.toLowerCase()}`
+            });
+        }
+
+        // Restock products into catalog
+        for (const item of order.orderItems) {
+            if (mongoose.isValidObjectId(item.productId)) {
+                const product = await Product.findById(item.productId);
+                if (product) {
+                    product.stock += item.quantity;
+                    await product.save();
+                }
+            }
+        }
+
+        order.orderStatus = "Cancelled";
+        order.cancelledAt = new Date();
+        const updatedOrder = await order.save();
+        res.json(updatedOrder);
+    } catch (error) {
+        console.error("Cancel Order Error:", error);
+        res.status(500).json({ message: "Server error while cancelling order", error: error.message });
+    }
+};
+
 module.exports = {
     addOrderItems,
     getMyOrders,
     getAllOrders,
+    updateOrderStatus,
+    cancelMyOrder,
 };

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import api from "../api/axiosConfig";
+import { updateOrderStatus } from "../utils/orderUtils";
 import "../components/css/admin.css";
+import "../components/css/orders.css";
 
 export const AdminDashboard = () => {
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState("overview"); // "overview" | "products" | "orders"
-    
+
     const [orders, setOrders] = useState([]);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -120,10 +122,29 @@ export const AdminDashboard = () => {
         window.scrollTo(0, 0); // Scroll to form
     };
 
+    const handleOrderStatusChange = async (orderId, newStatus) => {
+        try {
+            const updated = await updateOrderStatus(orderId, newStatus);
+            setOrders(orders.map(o => o._id === orderId ? { ...o, ...updated } : o));
+            if (newStatus === "Cancelled") {
+                queryClient.invalidateQueries({ queryKey: ["products"] });
+                queryClient.invalidateQueries({ queryKey: ["product"] });
+                queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
+                const productsRes = await api.get("/api/products");
+                setProducts(productsRes.data.products);
+            }
+        } catch (error) {
+            console.error("Failed to update order status:", error);
+            alert(error.response?.data?.message || "Failed to update order status");
+        }
+    };
+
     // Calculate Overview Metrics
     const totalSales = orders.reduce((acc, order) => acc + order.totalPrice, 0);
     const totalOrders = orders.length;
     const totalProducts = products.length;
+    const pendingOrders = orders.filter(o => (o.orderStatus || 'Pending') === 'Pending').length;
+    const deliveredOrders = orders.filter(o => o.orderStatus === 'Delivered').length;
 
     // Pagination & Search Logic
     const filteredProducts = products.filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()) || p._id.includes(searchQuery));
@@ -144,19 +165,19 @@ export const AdminDashboard = () => {
                 <div className="admin-header">
                     <h1>Admin Dashboard</h1>
                     <div className="admin-tabs">
-                        <button 
+                        <button
                             className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
                             onClick={() => setActiveTab("overview")}
                         >
                             Overview
                         </button>
-                        <button 
+                        <button
                             className={`tab-btn ${activeTab === "products" ? "active" : ""}`}
                             onClick={() => setActiveTab("products")}
                         >
                             Manage Products
                         </button>
-                        <button 
+                        <button
                             className={`tab-btn ${activeTab === "orders" ? "active" : ""}`}
                             onClick={() => setActiveTab("orders")}
                         >
@@ -176,6 +197,14 @@ export const AdminDashboard = () => {
                             <p>{totalOrders}</p>
                         </div>
                         <div className="metric-card">
+                            <h3>Pending</h3>
+                            <p style={{ color: '#eab308' }}>{pendingOrders}</p>
+                        </div>
+                        <div className="metric-card">
+                            <h3>Delivered</h3>
+                            <p style={{ color: '#22c55e' }}>{deliveredOrders}</p>
+                        </div>
+                        <div className="metric-card">
                             <h3>Total Products</h3>
                             <p>{totalProducts}</p>
                         </div>
@@ -187,9 +216,9 @@ export const AdminDashboard = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                 <h2>Manage Inventory</h2>
-                                <input 
-                                    type="text" 
-                                    placeholder="Search products by title or ID..." 
+                                <input
+                                    type="text"
+                                    placeholder="Search products by title or ID..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="admin-search-input"
@@ -204,12 +233,12 @@ export const AdminDashboard = () => {
                             <div className={`admin-form-container ${isAnimatingOut ? 'anim-fade-out' : 'anim-fade-in'}`}>
                                 <h3>{editFormProduct ? "Edit Product" : "Add New Product"}</h3>
                                 <form onSubmit={handleSaveProduct} className="admin-form">
-                                    <input required type="text" placeholder="Title" value={newProduct.title} onChange={e => setNewProduct({...newProduct, title: e.target.value})} className="admin-form-input" />
-                                    <input required type="number" placeholder="Price (₹)" value={newProduct.price || ''} onChange={e => setNewProduct({...newProduct, price: Number(e.target.value)})} className="admin-form-input" />
-                                    <input required type="number" placeholder="Initial Stock" value={newProduct.stock || ''} onChange={e => setNewProduct({...newProduct, stock: Number(e.target.value)})} className="admin-form-input" />
-                                    <input required type="text" placeholder="Category" value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} className="admin-form-input" />
-                                    <input required type="text" placeholder="Image URL (Thumbnail)" value={newProduct.thumbnail} onChange={e => setNewProduct({...newProduct, thumbnail: e.target.value})} className="admin-form-input full-width" />
-                                    <textarea required placeholder="Description" rows="3" value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} className="admin-form-textarea"></textarea>
+                                    <input required type="text" placeholder="Title" value={newProduct.title} onChange={e => setNewProduct({ ...newProduct, title: e.target.value })} className="admin-form-input" />
+                                    <input required type="number" placeholder="Price (₹)" value={newProduct.price || ''} onChange={e => setNewProduct({ ...newProduct, price: Number(e.target.value) })} className="admin-form-input" />
+                                    <input required type="number" placeholder="Initial Stock" value={newProduct.stock || ''} onChange={e => setNewProduct({ ...newProduct, stock: Number(e.target.value) })} className="admin-form-input" />
+                                    <input required type="text" placeholder="Category" value={newProduct.category} onChange={e => setNewProduct({ ...newProduct, category: e.target.value })} className="admin-form-input" />
+                                    <input required type="text" placeholder="Image URL (Thumbnail)" value={newProduct.thumbnail} onChange={e => setNewProduct({ ...newProduct, thumbnail: e.target.value })} className="admin-form-input full-width" />
+                                    <textarea required placeholder="Description" rows="3" value={newProduct.description} onChange={e => setNewProduct({ ...newProduct, description: e.target.value })} className="admin-form-textarea"></textarea>
                                     <button type="submit" className="admin-form-submit-btn">
                                         {editFormProduct ? "Save Changes" : "Create Product"}
                                     </button>
@@ -238,8 +267,8 @@ export const AdminDashboard = () => {
                                             <td>₹{product.price}</td>
                                             <td>
                                                 {editingProduct === product._id ? (
-                                                    <input 
-                                                        type="number" 
+                                                    <input
+                                                        type="number"
                                                         defaultValue={product.stock}
                                                         onBlur={(e) => handleStockUpdate(product._id, e.target.value)}
                                                         autoFocus
@@ -264,9 +293,9 @@ export const AdminDashboard = () => {
 
                         {totalPages > 1 && (
                             <div className="pagination">
-                                <button 
+                                <button
                                     className="pagination-btn"
-                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                     disabled={currentPage === 1}
                                 >
                                     Prev
@@ -280,9 +309,9 @@ export const AdminDashboard = () => {
                                         {i + 1}
                                     </button>
                                 ))}
-                                <button 
+                                <button
                                     className="pagination-btn"
-                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                                     disabled={currentPage === totalPages}
                                 >
                                     Next
@@ -302,7 +331,10 @@ export const AdminDashboard = () => {
                                         <th>Customer</th>
                                         <th>Date</th>
                                         <th>Total</th>
+                                        <th>Payment</th>
+                                        <th>Status</th>
                                         <th>Items Ordered</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -311,22 +343,52 @@ export const AdminDashboard = () => {
                                             <td>{order._id.substring(order._id.length - 8)}</td>
                                             <td>
                                                 {order.user ? order.user.name : "Guest"}
-                                                <br/>
-                                                <small style={{color: '#666'}}>{order.user ? order.user.email : ""}</small>
+                                                <br />
+                                                <small style={{ color: '#666' }}>{order.user ? order.user.email : ""}</small>
                                             </td>
                                             <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                                            <td><strong style={{color: '#212121'}}>₹{order.totalPrice.toFixed(2)}</strong></td>
+                                            <td><strong style={{ color: '#212121' }}>₹{order.totalPrice.toFixed(2)}</strong></td>
                                             <td>
-                                                <ul style={{ listStyleType: "none", paddingLeft: "0", margin: 0, fontSize: "0.9rem" }}>
+                                                <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                                                    {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
+                                                </span>
+                                                <br />
+                                                <small style={{
+                                                    fontWeight: 700,
+                                                    color: order.paymentStatus === "Paid" ? "#22c55e" : "#eab308"
+                                                }}>
+                                                    ({order.paymentStatus || "Pending"})
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <span className={`status-badge ${(order.orderStatus || "Pending").toLowerCase()}`}>
+                                                    {order.orderStatus || "Pending"}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <ul className="admin-order-items-list" style={{ listStyleType: "none", paddingLeft: "0", margin: 0, fontSize: "0.9rem" }}>
                                                     {order.orderItems.map((item, idx) => (
                                                         <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                                                             <img src={item.thumbnail} alt={item.title} width="30" height="30" style={{ objectFit: 'cover', borderRadius: '4px', border: '1px solid #eee' }} />
                                                             <span>
-                                                                {item.title} <span style={{color: '#666'}}>(x{item.quantity})</span>
+                                                                {item.title} <span style={{ color: '#666' }}>(x{item.quantity})</span>
                                                             </span>
                                                         </li>
                                                     ))}
                                                 </ul>
+                                            </td>
+                                            <td>
+                                                <select
+                                                    className="admin-status-select"
+                                                    value={order.orderStatus || "Pending"}
+                                                    onChange={(e) => handleOrderStatusChange(order._id, e.target.value)}
+                                                >
+                                                    <option value="Pending">Pending</option>
+                                                    <option value="Processing">Processing</option>
+                                                    <option value="Shipped">Shipped</option>
+                                                    <option value="Delivered">Delivered</option>
+                                                    <option value="Cancelled">Cancelled</option>
+                                                </select>
                                             </td>
                                         </tr>
                                     ))}

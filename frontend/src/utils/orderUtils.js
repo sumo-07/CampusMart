@@ -19,3 +19,24 @@ export const getMyOrders = async () => {
         throw error;
     }
 };
+
+export const cancelOrder = async (orderId) => {
+    try {
+        const { data } = await api.put(`/api/orders/${orderId}/cancel`);
+        return data;
+    } catch (error) {
+        console.error("Error cancelling order:", error);
+        throw error;
+    }
+};
+
+export const updateOrderStatus = async (orderId, status) => {
+    try {
+        const { data } = await api.put(`/api/orders/${orderId}/status`, { status });
+        return data;
+    } catch (error) {
+        console.error("Error updating order status:", error);
+        throw error;
+    }
+};
+

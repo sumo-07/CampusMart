@@ -432,4 +432,57 @@
   background-color: transparent;
 }
 
+/* Admin Order Status Select */
+.admin-status-select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-glass);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.admin-status-select:focus {
+  border-color: var(--accent-blue);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.admin-status-select option {
+  background: #1e293b;
+  color: #fff;
+}
+
+/* Admin Order Items List with Scrollbar */
+.admin-order-items-list {
+  max-height: 125px;
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--accent-blue-rgb), 0.4) rgba(255, 255, 255, 0.03);
+}
+
+.admin-order-items-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.admin-order-items-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+.admin-order-items-list::-webkit-scrollbar-thumb {
+  background: rgba(var(--accent-blue-rgb), 0.35);
+  border-radius: 4px;
+}
+
+.admin-order-items-list::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-blue);
+}
+
+
+
 
