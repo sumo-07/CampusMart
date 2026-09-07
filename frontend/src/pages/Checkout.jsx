@@ -1,15 +1,14 @@
 import { useEffect, useState, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { getCart } from "../utils/cartUtils";
 import { createOrder } from "../utils/orderUtils";
 import { addAddress } from "../utils/addressUtils";
 import { AuthContext } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 import '../components/css/checkout.css';
 
 export const Checkout = () => {
-  const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { cartItems: contextCartItems, loading: cartLoading, resetCartState } = useCart();
   
   // Address modes: 'new' or index number from user.addresses
   const [addressMode, setAddressMode] = useState("new"); 
@@ -29,25 +28,15 @@ export const Checkout = () => {
   const queryClient = useQueryClient();
   const buyNowItem = location.state?.buyNowItem;
 
+  const cartItems = buyNowItem ? [buyNowItem] : contextCartItems;
+
   useEffect(() => {
-    const fetchCart = async () => {
-      if (user) {
-         if (buyNowItem) {
-             setCartItems([buyNowItem]);
-         } else {
-             setCartItems(await getCart());
-         }
-         // Pre-select Default address if exists
-         if (user.addresses && user.addresses.length > 0) {
-            setAddressMode("0"); // First address
-         }
-      }
-      setLoading(false);
-    };
-    fetchCart();
+    if (user?.addresses && user.addresses.length > 0) {
+      setAddressMode("0"); // First address
+    }
   }, [user]);
 
-  if (loading) return <p style={{ textAlign: 'center', padding: '4rem' }}>Loading checkout...</p>;
+  if (cartLoading) return <p style={{ textAlign: 'center', padding: '4rem' }}>Loading checkout...</p>;
 
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -106,6 +95,9 @@ export const Checkout = () => {
       };
 
       await createOrder(orderData);
+      if (!buyNowItem) {
+        resetCartState();
+      }
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["product"] });
       queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });

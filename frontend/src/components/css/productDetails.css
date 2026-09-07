@@ -192,6 +192,54 @@
   cursor: not-allowed;
 }
 
+/* Cart Quantity Control on Details Page */
+.pd-cart-qty-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(var(--accent-blue-rgb), 0.35);
+  border-radius: 8px;
+  padding: 6px 14px;
+}
+
+.pd-qty-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(var(--accent-blue-rgb), 0.15);
+  border: 1px solid rgba(var(--accent-blue-rgb), 0.3);
+  color: var(--text-primary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 1.1rem;
+  transition: var(--transition-smooth);
+}
+
+.pd-qty-btn:hover:not(:disabled) {
+  background: var(--gradient-neon);
+  color: #fff;
+  border-color: transparent;
+  transform: scale(1.06);
+}
+
+.pd-qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pd-qty-display {
+  font-family: var(--font-header);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 90px;
+  text-align: center;
+}
+
 /* --- Reviews Section --- */
 .pd-reviews {
   grid-column: 1 / -1; 

@@ -227,3 +227,78 @@
   transform: translateY(-2px);
   color: #fff;
 }
+
+/* Card Actions Container */
+.product-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Add Button on Product Card */
+.btn-add-cart-card {
+  padding: 0.45rem 0.8rem;
+  background: rgba(var(--accent-blue-rgb), 0.12);
+  color: var(--accent-blue);
+  border: 1px solid rgba(var(--accent-blue-rgb), 0.35);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.btn-add-cart-card:hover {
+  background: var(--gradient-neon);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: var(--shadow-neon);
+  transform: translateY(-2px);
+}
+
+/* Card Quantity Selector Control */
+.card-qty-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(var(--accent-blue-rgb), 0.3);
+  border-radius: 8px;
+  padding: 2px 4px;
+}
+
+.card-qty-btn {
+  width: 24px;
+  height: 24px;
+  background: rgba(var(--accent-blue-rgb), 0.15);
+  border: 1px solid rgba(var(--accent-blue-rgb), 0.3);
+  color: var(--text-primary);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: var(--transition-smooth);
+}
+
+.card-qty-btn:hover:not(:disabled) {
+  background: var(--gradient-neon);
+  color: #fff;
+  border-color: transparent;
+}
+
+.card-qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.card-qty-number {
+  font-family: var(--font-header);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 18px;
+  text-align: center;
+}

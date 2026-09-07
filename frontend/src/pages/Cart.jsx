@@ -1,47 +1,37 @@
-import { useEffect, useState, useContext } from "react";
+import { useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MdDeleteOutline } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
-
-import {
-    getCart,
-    updateQuantity,
-    removeFromCart,
-} from "../utils/cartUtils";
+import { useCart } from "../context/CartContext";
 
 import "../components/css/cart.css";
 
 export const Cart = () => {
-    const [cartItems, setCartItems] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { cartItems, loading, updateQuantity, removeFromCart, totalPrice, refreshCart } = useCart();
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchCart = async () => {
-            if (user) {
-                const data = await getCart();
-                setCartItems(data);
-            }
-            setLoading(false);
-        };
-        fetchCart();
+        if (user) {
+            refreshCart();
+        }
     }, [user]);
 
     const handleQuantity = async (productId, type) => {
-        const updatedCart = await updateQuantity(productId, type);
-        setCartItems(updatedCart);
+        try {
+            await updateQuantity(productId, type);
+        } catch (error) {
+            alert(error.message);
+        }
     };
 
     const handleRemove = async (productId) => {
-        const updatedCart = await removeFromCart(productId);
-        setCartItems(updatedCart);
+        try {
+            await removeFromCart(productId);
+        } catch (error) {
+            alert(error.message);
+        }
     };
-
-    const totalPrice = cartItems.reduce(
-        (total, item) => total + item.price * item.quantity,
-        0
-    );
 
     if (!user) {
         return (

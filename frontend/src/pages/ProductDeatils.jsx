@@ -4,14 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getProductById } from "../api/postApi";
 import "../components/css/productDetails.css";
-import { addToCart } from "../utils/cartUtils";
 import { AuthContext } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 
 export const ProductDetails = () => {
     const { productId } = useParams(); // ✅ MUST match route param
     const navigate = useNavigate();
     const [addingToCart, setAddingToCart] = useState(false);
     const { user } = useContext(AuthContext);
+    const { getItemQuantity, updateQuantity, addToCart } = useCart();
 
     /* ------------------ Product Query ------------------ */
     const {
@@ -142,17 +143,50 @@ export const ProductDetails = () => {
                     {/* Actions */}
                     {!user?.isAdmin && (
                         <div className="pd-actions">
-                            <button
-                                className="pd-btn add-cart-btn"
-                                onClick={handleAddToCart}
-                                disabled={addingToCart || product.stock <= 0}
-                            >
-                                {product.stock <= 0
-                                    ? "Out of Stock"
-                                    : addingToCart
-                                    ? "Adding..."
-                                    : "Add to Cart"}
-                            </button>
+                            {product.stock <= 0 ? (
+                                <button className="pd-btn add-cart-btn" disabled>
+                                    Out of Stock
+                                </button>
+                            ) : getItemQuantity(product._id || product.id || productId) > 0 ? (
+                                <div className="pd-cart-qty-control">
+                                    <button
+                                        type="button"
+                                        className="pd-qty-btn"
+                                        onClick={() => updateQuantity(product._id || product.id || productId, "dec")}
+                                        title="Decrease quantity"
+                                    >
+                                        −
+                                    </button>
+                                    <span className="pd-qty-display">
+                                        {getItemQuantity(product._id || product.id || productId)} in Cart
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className="pd-qty-btn"
+                                        onClick={() => {
+                                            const currentQty = getItemQuantity(product._id || product.id || productId);
+                                            if (product.stock !== undefined && currentQty >= product.stock) {
+                                                alert(`Only ${product.stock} items available in stock`);
+                                                return;
+                                            }
+                                            updateQuantity(product._id || product.id || productId, "inc");
+                                        }}
+                                        disabled={product.stock !== undefined && getItemQuantity(product._id || product.id || productId) >= product.stock}
+                                        title="Increase quantity"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    className="pd-btn add-cart-btn"
+                                    onClick={handleAddToCart}
+                                    disabled={addingToCart}
+                                >
+                                    {addingToCart ? "Adding..." : "Add to Cart"}
+                                </button>
+                            )}
+
                             <button 
                                 className="pd-btn buy-now-btn"
                                 onClick={handleBuyNow}

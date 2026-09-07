@@ -2,10 +2,12 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom"
 import { useContext, useState } from "react"
 import logo from '../../images/logo.jpg'
 import { AuthContext } from "../../context/AuthContext"
+import { useCart } from "../../context/CartContext"
 import { AddressModal } from "./AddressModal"
 
 export const Header = () => {
     const { user, logout } = useContext(AuthContext);
+    const { totalCartCount } = useCart();
     const navigate = useNavigate();
     const location = useLocation();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -66,7 +68,23 @@ export const Header = () => {
                                 <li className="nav-item">
                                     <NavLink to="/contact" className="nav-link" >Contact</NavLink> </li>
                                 <li className="nav-item">
-                                    <NavLink to="/cart" className="nav-link" >Cart</NavLink> </li>
+                                    <NavLink to="/cart" className="nav-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                        Cart
+                                        {totalCartCount > 0 && (
+                                            <span style={{
+                                                background: 'var(--gradient-neon)',
+                                                color: '#fff',
+                                                borderRadius: '10px',
+                                                padding: '2px 7px',
+                                                fontSize: '0.72rem',
+                                                fontWeight: 800,
+                                                lineHeight: 1,
+                                                boxShadow: 'var(--shadow-neon)'
+                                            }}>
+                                                {totalCartCount}
+                                            </span>
+                                        )}
+                                    </NavLink> </li>
                             </>
                         )}
 

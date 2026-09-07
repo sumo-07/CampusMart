@@ -1,15 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { ProductPreview3D } from "./ThreeDObjects";
-import { addToCart } from "../../utils/cartUtils";
+import { useCart } from "../../context/CartContext";
+import { AuthContext } from "../../context/AuthContext";
 import { FaTimes, FaShoppingCart, FaInfoCircle } from "react-icons/fa";
 import "../css/quickView.css";
 
 export const ProductQuickViewModal = ({ isOpen, onClose, product }) => {
   const [adding, setAdding] = useState(false);
+  const { getItemQuantity, updateQuantity, addToCart } = useCart();
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   if (!isOpen || !product) return null;
 
   const {
+    _id,
+    id,
     title,
     description,
     price,
@@ -19,7 +26,15 @@ export const ProductQuickViewModal = ({ isOpen, onClose, product }) => {
     stock
   } = product;
 
+  const productId = _id || id;
+  const cartQty = getItemQuantity(productId);
+
   const handleAddToCart = async () => {
+    if (!user) {
+      onClose();
+      navigate("/login");
+      return;
+    }
     setAdding(true);
     try {
       await addToCart(product);
@@ -72,14 +87,49 @@ export const ProductQuickViewModal = ({ isOpen, onClose, product }) => {
             </div>
 
             <div className="quickview-actions">
-              <button 
-                className="btn btn-primary" 
-                onClick={handleAddToCart}
-                disabled={adding || stock <= 0}
-              >
-                <FaShoppingCart style={{ marginRight: "8px" }} />
-                {stock <= 0 ? "Out of Stock" : adding ? "Adding..." : "Add to Cart"}
-              </button>
+              {stock <= 0 ? (
+                <button className="btn btn-primary" disabled>
+                  Out of Stock
+                </button>
+              ) : cartQty > 0 ? (
+                <div className="card-qty-control" style={{ padding: '6px 12px', gap: '10px' }}>
+                  <button 
+                    type="button"
+                    className="card-qty-btn"
+                    style={{ width: '32px', height: '32px', fontSize: '1.1rem' }}
+                    onClick={() => updateQuantity(productId, "dec")}
+                    title="Decrease quantity"
+                  >
+                    −
+                  </button>
+                  <span className="card-qty-number" style={{ fontSize: '0.95rem' }}>{cartQty} in Cart</span>
+                  <button 
+                    type="button"
+                    className="card-qty-btn"
+                    style={{ width: '32px', height: '32px', fontSize: '1.1rem' }}
+                    onClick={() => {
+                      if (stock !== undefined && cartQty >= stock) {
+                        alert(`Only ${stock} items available in stock`);
+                        return;
+                      }
+                      updateQuantity(productId, "inc");
+                    }}
+                    disabled={stock !== undefined && cartQty >= stock}
+                    title="Increase quantity"
+                  >
+                    +
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  className="btn btn-primary" 
+                  onClick={handleAddToCart}
+                  disabled={adding}
+                >
+                  <FaShoppingCart style={{ marginRight: "8px" }} />
+                  {adding ? "Adding..." : "Add to Cart"}
+                </button>
+              )}
             </div>
           </div>
         </div>

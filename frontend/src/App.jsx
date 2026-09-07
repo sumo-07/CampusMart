@@ -17,6 +17,7 @@ import { About } from "./pages/About";
 import { Cart } from "./pages/Cart";
 import './App.css';
 import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
 // import { ScrollToTop } from "./components/common/ScrollToTop";
 
 const router = createBrowserRouter([
@@ -24,7 +25,9 @@ const router = createBrowserRouter([
         path: "/",
         element: (
             <AuthProvider>
-                <AppLayout />
+                <CartProvider>
+                    <AppLayout />
+                </CartProvider>
             </AuthProvider>
         ),
         errorElement: <ErrorPage />,
