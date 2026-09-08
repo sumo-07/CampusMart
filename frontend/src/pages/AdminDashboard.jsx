@@ -140,7 +140,7 @@ export const AdminDashboard = () => {
     };
 
     // Calculate Overview Metrics
-    const totalSales = orders.reduce((acc, order) => acc + order.totalPrice, 0);
+    const totalSales = orders.reduce((acc, order) => acc + (order.amount || order.totalPrice || 0), 0);
     const totalOrders = orders.length;
     const totalProducts = products.length;
     const pendingOrders = orders.filter(o => (o.orderStatus || 'Pending') === 'Pending').length;
@@ -347,7 +347,7 @@ export const AdminDashboard = () => {
                                                 <small style={{ color: '#666' }}>{order.user ? order.user.email : ""}</small>
                                             </td>
                                             <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                                            <td><strong style={{ color: '#212121' }}>₹{order.totalPrice.toFixed(2)}</strong></td>
+                                            <td><strong style={{ color: '#212121' }}>₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</strong></td>
                                             <td>
                                                 <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
                                                     {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
@@ -355,9 +355,9 @@ export const AdminDashboard = () => {
                                                 <br />
                                                 <small style={{
                                                     fontWeight: 700,
-                                                    color: order.paymentStatus === "Paid" ? "#22c55e" : "#eab308"
+                                                    color: (order.status === "PAID" || order.paymentStatus === "Paid") ? "#22c55e" : "#eab308"
                                                 }}>
-                                                    ({order.paymentStatus || "Pending"})
+                                                    ({order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending")})
                                                 </small>
                                             </td>
                                             <td>

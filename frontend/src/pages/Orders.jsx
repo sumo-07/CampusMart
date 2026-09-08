@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { getMyOrders, cancelOrder } from "../utils/orderUtils";
+import { getMyOrders, cancelOrder, retryOrderPayment, verifyRazorpayPayment } from "../utils/orderUtils";
+import { loadRazorpayScript } from "../utils/loadRazorpay";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import '../components/css/orders.css';
@@ -9,6 +10,7 @@ export const Orders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [cancellingId, setCancellingId] = useState(null);
+    const [payingId, setPayingId] = useState(null);
     const { user, loading: authLoading } = useContext(AuthContext);
     const navigate = useNavigate();
     const queryClient = useQueryClient();
@@ -56,6 +58,75 @@ export const Orders = () => {
         }
     };
 
+    const handlePayNow = async (order) => {
+        setPayingId(order._id);
+        try {
+            const data = await retryOrderPayment(order._id);
+            if (!data.razorpayOrder) {
+                throw new Error("Failed to initialize Razorpay payment session.");
+            }
+
+            const isLoaded = await loadRazorpayScript();
+            if (!isLoaded) {
+                alert("Unable to load Razorpay SDK. Please check your internet connection.");
+                setPayingId(null);
+                return;
+            }
+
+            const options = {
+                key: data.keyId,
+                amount: data.razorpayOrder.amount,
+                currency: data.razorpayOrder.currency,
+                name: "CampusMart",
+                description: `Order #${order._id}`,
+                order_id: data.razorpayOrder.id,
+                prefill: {
+                    name: order.shippingAddress?.fullName || user?.name || "",
+                    email: user?.email || "",
+                    contact: order.shippingAddress?.phone || "",
+                },
+                theme: {
+                    color: "#4f46e5",
+                },
+                handler: async function (response) {
+                    try {
+                        await verifyRazorpayPayment({
+                            orderId: order._id,
+                            razorpayOrderId: response.razorpay_order_id,
+                            razorpayPaymentId: response.razorpay_payment_id,
+                            razorpaySignature: response.razorpay_signature,
+                        });
+                        queryClient.invalidateQueries({ queryKey: ["products"] });
+                        queryClient.invalidateQueries({ queryKey: ["product"] });
+                        queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
+                        await fetchOrders();
+                        alert("Payment successful! Your order is now confirmed.");
+                    } catch (err) {
+                        alert(err.response?.data?.message || "Payment verification failed.");
+                        await fetchOrders();
+                    } finally {
+                        setPayingId(null);
+                    }
+                },
+                modal: {
+                    ondismiss: function () {
+                        setPayingId(null);
+                    },
+                },
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.on("payment.failed", function (response) {
+                alert(`Payment failed: ${response.error.description || "Transaction declined."}`);
+                setPayingId(null);
+            });
+            rzp.open();
+        } catch (error) {
+            alert(error.response?.data?.message || error.message || "Failed to initiate payment.");
+            setPayingId(null);
+        }
+    };
+
     const renderStatusBadge = (status = "Pending") => {
         const lower = status.toLowerCase();
         let icon = "🟡";
@@ -99,7 +170,9 @@ export const Orders = () => {
                         const status = order.orderStatus || "Pending";
                         const canCancel = status === "Pending" || status === "Processing";
                         const paymentMethod = order.paymentMethod || "COD";
-                        const paymentStatus = order.paymentStatus || "Pending";
+                        const paymentStatus = order.status
+                            ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase())
+                            : (order.paymentStatus || "Pending");
 
                         return (
                             <div key={order._id} className="order-card">
@@ -153,7 +226,7 @@ export const Orders = () => {
                                         
                                         <div className="order-sidebar-block">
                                             <span className="sidebar-label">Order Total</span>
-                                            <span className="sidebar-total-price">₹{order.totalPrice.toFixed(2)}</span>
+                                            <span className="sidebar-total-price">₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</span>
                                         </div>
 
                                         <div className="sidebar-divider" />
@@ -176,7 +249,7 @@ export const Orders = () => {
                                             <span className="sidebar-label">Payment</span>
                                             <div className="sidebar-payment">
                                                 <span className="payment-method-name">
-                                                    {paymentMethod === "COD" ? "💵 Cash on Delivery" : paymentMethod}
+                                                    {paymentMethod === "COD" ? "💵 Cash on Delivery" : (paymentMethod === "Razorpay" ? "💳 Online (Razorpay)" : paymentMethod)}
                                                 </span>
                                                 <span className={`payment-status-tag ${paymentStatus.toLowerCase()}`}>
                                                     {paymentStatus}
@@ -184,17 +257,27 @@ export const Orders = () => {
                                             </div>
                                         </div>
 
-                                        {canCancel && (
-                                            <div className="sidebar-actions">
+                                        <div className="sidebar-actions">
+                                            {paymentMethod === "Razorpay" && (paymentStatus === "Pending" || paymentStatus === "Failed") && status !== "Cancelled" && (
+                                                <button
+                                                    className="btn-pay-now-sidebar"
+                                                    onClick={() => handlePayNow(order)}
+                                                    disabled={payingId === order._id || cancellingId === order._id}
+                                                >
+                                                    {payingId === order._id ? "Opening..." : "💳 Pay Now"}
+                                                </button>
+                                            )}
+
+                                            {canCancel && (
                                                 <button
                                                     className="btn-cancel-order-sidebar"
                                                     onClick={() => handleCancelOrder(order._id)}
-                                                    disabled={cancellingId === order._id}
+                                                    disabled={cancellingId === order._id || payingId === order._id}
                                                 >
                                                     {cancellingId === order._id ? "Cancelling..." : "Cancel Order"}
                                                 </button>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>

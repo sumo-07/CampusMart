@@ -30,8 +30,17 @@ app.use(cors({
 }));
 
 
-app.use(express.json());
+app.use(express.json({
+    verify: (req, res, buf) => {
+        req.rawBody = buf;
+    },
+}));
 app.use(cookieParser());
+
+// Direct Webhook endpoint matching user's zrok tunnel path: /orders/webhook/razorpay
+const { handleRazorpayWebhook } = require("./controllers/orderController");
+app.post("/orders/webhook/razorpay", handleRazorpayWebhook);
+
 app.use("/api/auth", authRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);

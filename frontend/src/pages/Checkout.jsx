@@ -1,7 +1,8 @@
 import { useEffect, useState, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { createOrder } from "../utils/orderUtils";
+import { createOrder, verifyRazorpayPayment } from "../utils/orderUtils";
+import { loadRazorpayScript } from "../utils/loadRazorpay";
 import { addAddress } from "../utils/addressUtils";
 import { AuthContext } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
@@ -96,7 +97,85 @@ export const Checkout = () => {
         paymentMethod: paymentMethod,
       };
 
-      await createOrder(orderData);
+      const data = await createOrder(orderData);
+
+      // Handle Razorpay Payment Flow
+      if (paymentMethod === "Razorpay") {
+        if (!data.razorpayOrder) {
+          throw new Error("Failed to initialize Razorpay order from server.");
+        }
+
+        const isLoaded = await loadRazorpayScript();
+        if (!isLoaded) {
+          alert("Unable to load Razorpay SDK. Please check your internet connection.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        const options = {
+          key: data.keyId,
+          amount: data.razorpayOrder.amount,
+          currency: data.razorpayOrder.currency,
+          name: "CampusMart",
+          description: `Order #${data._id}`,
+          order_id: data.razorpayOrder.id,
+          prefill: {
+            name: finalShippingAddress.fullName,
+            email: user?.email || "",
+            contact: finalShippingAddress.phone,
+          },
+          theme: {
+            color: "#4f46e5",
+          },
+          handler: async function (response) {
+            setIsSubmitting(true);
+            try {
+              await verifyRazorpayPayment({
+                orderId: data._id,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              });
+
+              if (!buyNowItem) {
+                resetCartState();
+              }
+              queryClient.invalidateQueries({ queryKey: ["products"] });
+              queryClient.invalidateQueries({ queryKey: ["product"] });
+              queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
+              navigate("/orders");
+            } catch (err) {
+              alert(err.response?.data?.message || "Payment verification failed. Please check your Orders page.");
+              navigate("/orders");
+            } finally {
+              setIsSubmitting(false);
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              alert("Payment window was closed. Your order has been placed in 'Pending' state. You can complete the payment anytime from My Orders.");
+              if (!buyNowItem) {
+                resetCartState();
+              }
+              queryClient.invalidateQueries({ queryKey: ["products"] });
+              queryClient.invalidateQueries({ queryKey: ["product"] });
+              queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
+              navigate("/orders");
+            },
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on("payment.failed", function (response) {
+          alert(`Payment failed: ${response.error.description || "Payment was rejected."}`);
+          navigate("/orders");
+        });
+        rzp.open();
+        setIsSubmitting(false);
+        return;
+      }
+
+      // COD Flow
       if (!buyNowItem) {
         resetCartState();
       }
@@ -105,7 +184,7 @@ export const Checkout = () => {
       queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
       navigate("/orders");
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to place order.");
+      alert(error.response?.data?.message || error.message || "Failed to place order.");
     } finally {
       setIsSubmitting(false);
     }
@@ -176,9 +255,58 @@ export const Checkout = () => {
 
       {/* Payment Method Configuration */}
       <div className="checkout-payment-section" style={{ marginTop: '2rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-        <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#1e293b' }}>Payment Method</h2>
+        <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#1e293b' }}>Select Payment Method</h2>
 
-        <label style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', border: '2px solid #4f46e5', borderRadius: '8px', background: '#fff', cursor: 'pointer', marginBottom: '12px', transition: 'all 0.2s ease' }}>
+        {/* Razorpay Option */}
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '14px',
+            border: paymentMethod === "Razorpay" ? '2px solid #4f46e5' : '1px solid #cbd5e1',
+            borderRadius: '8px',
+            background: paymentMethod === "Razorpay" ? '#eef2ff' : '#fff',
+            cursor: 'pointer',
+            marginBottom: '12px',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <input
+            type="radio"
+            name="paymentMethod"
+            value="Razorpay"
+            checked={paymentMethod === "Razorpay"}
+            onChange={() => setPaymentMethod("Razorpay")}
+            style={{ accentColor: '#4f46e5', width: '18px', height: '18px', cursor: 'pointer' }}
+          />
+          <div style={{ flex: 1 }}>
+            <strong style={{ display: 'block', color: '#1e293b', fontSize: '0.95rem' }}>
+              💳 Online Payment via Razorpay
+            </strong>
+            <small style={{ color: '#64748b' }}>
+              Instant & secure: UPI (GPay, PhonePe, Paytm), Debit/Credit Cards, NetBanking.
+            </small>
+          </div>
+          <span style={{ fontSize: '0.75rem', background: '#dcfce7', color: '#15803d', padding: '3px 10px', borderRadius: '12px', fontWeight: 700 }}>
+            Instant Active
+          </span>
+        </label>
+
+        {/* COD Option */}
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '14px',
+            border: paymentMethod === "COD" ? '2px solid #4f46e5' : '1px solid #cbd5e1',
+            borderRadius: '8px',
+            background: paymentMethod === "COD" ? '#eef2ff' : '#fff',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+        >
           <input
             type="radio"
             name="paymentMethod"
@@ -191,24 +319,21 @@ export const Checkout = () => {
             <strong style={{ display: 'block', color: '#1e293b', fontSize: '0.95rem' }}>💵 Cash on Delivery (COD)</strong>
             <small style={{ color: '#64748b' }}>Pay in cash upon physical delivery of your campus items.</small>
           </div>
-          <span style={{ fontSize: '0.75rem', background: '#dcfce7', color: '#15803d', padding: '3px 10px', borderRadius: '12px', fontWeight: 700 }}>Active</span>
+          <span style={{ fontSize: '0.75rem', background: '#e2e8f0', color: '#475569', padding: '3px 10px', borderRadius: '12px', fontWeight: 700 }}>
+            Available
+          </span>
         </label>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', border: '1px dashed #cbd5e1', borderRadius: '8px', background: '#f1f5f9', opacity: 0.75, cursor: 'not-allowed' }}>
-          <input type="radio" name="paymentMethod" disabled style={{ width: '18px', height: '18px' }} />
-          <div style={{ flex: 1 }}>
-            <strong style={{ display: 'block', color: '#475569', fontSize: '0.95rem' }}>💳 Razorpay (Cards, UPI, NetBanking)</strong>
-            <small style={{ color: '#64748b' }}>Fast and secure online instant payment.</small>
-          </div>
-          <span style={{ fontSize: '0.75rem', background: '#fef3c7', color: '#b45309', padding: '3px 10px', borderRadius: '12px', fontWeight: 700 }}>Coming Tomorrow</span>
-        </div>
       </div>
 
       {/* Actions */}
       <div className="checkout-actions">
         <button onClick={() => navigate("/cart")} disabled={isSubmitting}>Back to Cart</button>
         <button onClick={handlePlaceOrder} disabled={isSubmitting} style={{ background: "#4f46e5" }}>
-          {isSubmitting ? "Placing Order..." : "Place Order"}
+          {isSubmitting
+            ? "Processing..."
+            : paymentMethod === "Razorpay"
+            ? `Pay ₹${Number(totalPrice).toFixed(2)} with Razorpay`
+            : "Place Order (COD)"}
         </button>
       </div>
     </section>

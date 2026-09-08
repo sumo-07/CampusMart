@@ -40,3 +40,30 @@ export const updateOrderStatus = async (orderId, status) => {
     }
 };
 
+export const verifyRazorpayPayment = async (paymentDetails) => {
+    try {
+        const { data } = await api.post("/api/orders/razorpay/verify", paymentDetails);
+        return data;
+    } catch (error) {
+        console.error("Error verifying Razorpay payment:", error);
+        throw error;
+    }
+};
+
+export const retryOrderPayment = async (orderId) => {
+    try {
+        const { data } = await api.post(`/api/orders/razorpay/retry/${orderId}`);
+        return data;
+    } catch (error) {
+        console.error("Error retrying Razorpay payment:", error);
+        throw error;
+    }
+};
+
+// Backward compatibility helper for legacy/cached components
+export const createRazorpayOrder = async (orderData) => {
+    return createOrder({ ...orderData, paymentMethod: "Razorpay" });
+};
+
+
+
