@@ -83,7 +83,7 @@ const orderSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ["PENDING", "PAID", "FAILED", "REFUNDED"],
+            enum: ["PENDING", "PAID", "FAILED", "REFUNDED", "CANCELLED"],
             default: "PENDING",
         },
         payments: [paymentSchema],
@@ -109,11 +109,22 @@ const orderSchema = new mongoose.Schema(
         cancelledAt: {
             type: Date,
         },
+        isStockReserved: {
+            type: Boolean,
+            default: false,
+        },
+        expiresAt: {
+            type: Date,
+            default: null,
+        },
     },
     {
         timestamps: true,
     }
 );
+
+// TTL index to automatically delete expired pending orders after 10 days
+orderSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const Order = mongoose.model("Order", orderSchema);
 

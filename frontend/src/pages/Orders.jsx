@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { getMyOrders, cancelOrder, retryOrderPayment, verifyRazorpayPayment } from "../utils/orderUtils";
+import { getMyOrders, cancelOrder, deleteOrder, retryOrderPayment, verifyRazorpayPayment } from "../utils/orderUtils";
 import { loadRazorpayScript } from "../utils/loadRazorpay";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -27,7 +27,6 @@ export const Orders = () => {
     };
 
     useEffect(() => {
-        // Wait until AuthContext finishes checking token
         if (authLoading) return;
 
         if (!user) {
@@ -38,15 +37,21 @@ export const Orders = () => {
         fetchOrders();
     }, [user, authLoading, navigate]);
 
-    const handleCancelOrder = async (orderId) => {
-        if (!window.confirm("Are you sure you want to cancel this order? Items will be restocked to the store.")) {
+    const handleCancelOrder = async (orderId, isUnpaidPending = false) => {
+        const confirmMsg = isUnpaidPending
+            ? "Are you sure you want to cancel this pending order? It will be permanently removed from your orders."
+            : "Are you sure you want to cancel this order? Items will be restocked to the store.";
+        if (!window.confirm(confirmMsg)) {
             return;
         }
 
         setCancellingId(orderId);
         try {
-            await cancelOrder(orderId);
-            // Invalidate product queries so restocked inventory reflects immediately
+            if (isUnpaidPending) {
+                await deleteOrder(orderId);
+            } else {
+                await cancelOrder(orderId);
+            }
             queryClient.invalidateQueries({ queryKey: ["products"] });
             queryClient.invalidateQueries({ queryKey: ["product"] });
             queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
@@ -142,9 +147,7 @@ export const Orders = () => {
         );
     };
 
-    if (authLoading || loading) {
-        return <p className="loading-text">Loading orders...</p>;
-    }
+    if (loading) return <p className="loading-text">Loading your orders...</p>;
 
     return (
         <section className="orders-section">
@@ -170,9 +173,19 @@ export const Orders = () => {
                         const status = order.orderStatus || "Pending";
                         const canCancel = status === "Pending" || status === "Processing";
                         const paymentMethod = order.paymentMethod || "COD";
-                        const paymentStatus = order.status
+                        let paymentStatus = order.status
                             ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase())
                             : (order.paymentStatus || "Pending");
+
+                        if (status === "Cancelled") {
+                            if (order.status === "PAID" || order.paymentStatus === "Paid" || paymentStatus === "Paid") {
+                                paymentStatus = "Refunded";
+                            } else {
+                                paymentStatus = "Cancelled";
+                            }
+                        }
+
+                        const isUnpaidPending = paymentMethod === "Razorpay" && (paymentStatus === "Pending" || paymentStatus === "Failed") && status !== "Cancelled";
 
                         return (
                             <div key={order._id} className="order-card">
@@ -190,6 +203,14 @@ export const Orders = () => {
                                     </div>
                                 </div>
 
+                                {/* Out-of-Stock Alert Banner for Pending Orders */}
+                                {order.hasOutOfStockItems && (
+                                    <div className="order-out-of-stock-alert">
+                                        <span>⚠️</span>
+                                        <span>Items in this pending order are currently out of stock. Payment is disabled. You can cancel and remove this order below.</span>
+                                    </div>
+                                )}
+
                                 {/* Two-Column Grid */}
                                 <div className="order-body-grid">
                                     {/* Left: Ordered Items Column */}
@@ -203,8 +224,8 @@ export const Orders = () => {
                                                     </div>
                                                     <div className="item-details">
                                                         <p
-                                                            className="item-title"
-                                                            onClick={() => navigate(`/product/${item.productId}`)}
+                                                             className="item-title"
+                                                             onClick={() => navigate(`/product/${item.productId}`)}
                                                         >
                                                             {item.title}
                                                         </p>
@@ -214,6 +235,11 @@ export const Orders = () => {
                                                         <p className="item-subtotal">
                                                             Item Total: ₹{(item.quantity * Number(item.price)).toFixed(2)}
                                                         </p>
+                                                        {item.isOutOfStock && (
+                                                            <span className="item-out-of-stock-badge">
+                                                                ⚠️ Out of Stock (Only {item.availableStock ?? 0} left)
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
                                             ))}
@@ -255,27 +281,52 @@ export const Orders = () => {
                                                     {paymentStatus}
                                                 </span>
                                             </div>
+                                            {isUnpaidPending && order.expiresAt && (
+                                                <span className="order-expiry-notice">
+                                                    ⏱️ Unpaid order expires in {Math.max(1, Math.ceil((new Date(order.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)))} days
+                                                </span>
+                                            )}
                                         </div>
 
                                         <div className="sidebar-actions">
-                                            {paymentMethod === "Razorpay" && (paymentStatus === "Pending" || paymentStatus === "Failed") && status !== "Cancelled" && (
-                                                <button
-                                                    className="btn-pay-now-sidebar"
-                                                    onClick={() => handlePayNow(order)}
-                                                    disabled={payingId === order._id || cancellingId === order._id}
-                                                >
-                                                    {payingId === order._id ? "Opening..." : "💳 Pay Now"}
-                                                </button>
+                                            {isUnpaidPending && (
+                                                order.hasOutOfStockItems ? (
+                                                    <button
+                                                        className="btn-pay-now-sidebar btn-out-of-stock"
+                                                        disabled={true}
+                                                        title="Cannot proceed: items in this order are out of stock."
+                                                    >
+                                                        ⛔ Out of Stock
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        className="btn-pay-now-sidebar"
+                                                        onClick={() => handlePayNow(order)}
+                                                        disabled={payingId === order._id || cancellingId === order._id}
+                                                    >
+                                                        {payingId === order._id ? "Opening..." : "💳 Pay Now"}
+                                                    </button>
+                                                )
                                             )}
 
-                                            {canCancel && (
+                                            {isUnpaidPending ? (
                                                 <button
-                                                    className="btn-cancel-order-sidebar"
-                                                    onClick={() => handleCancelOrder(order._id)}
+                                                    className="btn-remove-order-sidebar"
+                                                    onClick={() => handleCancelOrder(order._id, true)}
                                                     disabled={cancellingId === order._id || payingId === order._id}
                                                 >
-                                                    {cancellingId === order._id ? "Cancelling..." : "Cancel Order"}
+                                                    {cancellingId === order._id ? "Removing..." : "🗑️ Cancel & Remove Order"}
                                                 </button>
+                                            ) : (
+                                                canCancel && (
+                                                    <button
+                                                        className="btn-cancel-order-sidebar"
+                                                        onClick={() => handleCancelOrder(order._id, false)}
+                                                        disabled={cancellingId === order._id || payingId === order._id}
+                                                    >
+                                                        {cancellingId === order._id ? "Cancelling..." : "Cancel Order"}
+                                                    </button>
+                                                )
                                             )}
                                         </div>
                                     </div>
@@ -288,4 +339,3 @@ export const Orders = () => {
         </section>
     );
 };
-

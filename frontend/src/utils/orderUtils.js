@@ -60,10 +60,17 @@ export const retryOrderPayment = async (orderId) => {
     }
 };
 
+export const deleteOrder = async (orderId) => {
+    try {
+        const { data } = await api.delete(`/api/orders/${orderId}`);
+        return data;
+    } catch (error) {
+        console.error("Error deleting order:", error);
+        throw error;
+    }
+};
+
 // Backward compatibility helper for legacy/cached components
 export const createRazorpayOrder = async (orderData) => {
     return createOrder({ ...orderData, paymentMethod: "Razorpay" });
 };
-
-
-

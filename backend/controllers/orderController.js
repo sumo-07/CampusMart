@@ -61,15 +61,27 @@ const addOrderItems = async (req, res) => {
             productsToUpdate.push({ product, quantity: qty });
         }
 
-        // 2. Decrement stock for all verified products
-        for (const { product, quantity } of productsToUpdate) {
-            product.stock -= quantity;
-            await product.save();
+        // 2. Handle stock reservation and expiration
+        const paymentMethod = req.body.paymentMethod || "COD";
+        const numericAmount = Number(calculatedTotalPrice.toFixed(2));
+        const isOnlinePayment = paymentMethod === "Razorpay";
+
+        let isStockReserved = false;
+        let expiresAt = null;
+
+        if (!isOnlinePayment) {
+            // For COD: Decrement stock immediately
+            for (const { product, quantity } of productsToUpdate) {
+                product.stock -= quantity;
+                await product.save();
+            }
+            isStockReserved = true;
+        } else {
+            // For Razorpay: Stock is NOT held in pending state; set 10-day expiration
+            expiresAt = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
         }
 
         // 3. Create and save the order with server-verified prices
-        const paymentMethod = req.body.paymentMethod || "COD";
-        const numericAmount = Number(calculatedTotalPrice.toFixed(2));
         const order = new Order({
             user: req.user._id,
             orderItems: verifiedOrderItems,
@@ -79,7 +91,9 @@ const addOrderItems = async (req, res) => {
             currency: "INR",
             status: "PENDING",
             paymentMethod: paymentMethod,
-            orderStatus: "Pending",
+            orderStatus: isOnlinePayment ? "Pending" : "Processing",
+            isStockReserved,
+            expiresAt,
             payments: [],
             refund: {},
         });
@@ -134,8 +148,48 @@ const addOrderItems = async (req, res) => {
 // @access  Private
 const getMyOrders = async (req, res) => {
     try {
+        // 1. Auto-cleanup any pending unpaid orders that crossed their 10-day expiration
+        const now = new Date();
+        await Order.deleteMany({
+            user: req.user._id,
+            status: "PENDING",
+            isStockReserved: false,
+            expiresAt: { $ne: null, $lte: now }
+        });
+
         const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
-        res.json(orders);
+
+        // 2. Dynamically evaluate real-time stock for pending unpaid orders
+        const pendingOrders = orders.filter(o => o.status === "PENDING" && !o.isStockReserved);
+        if (pendingOrders.length === 0) {
+            return res.json(orders);
+        }
+
+        const productIds = [...new Set(pendingOrders.flatMap(o => o.orderItems.map(i => i.productId)))];
+        const liveProducts = await Product.find({ _id: { $in: productIds } }).select("_id stock title");
+        const productMap = new Map(liveProducts.map(p => [p._id.toString(), p]));
+
+        const evaluatedOrders = orders.map(orderDoc => {
+            const orderObj = orderDoc.toObject();
+            if (orderObj.status === "PENDING" && !orderObj.isStockReserved) {
+                let hasOutOfStockItems = false;
+                orderObj.orderItems = orderObj.orderItems.map(item => {
+                    const liveProd = productMap.get(item.productId.toString());
+                    const availableStock = liveProd ? liveProd.stock : 0;
+                    const isOutOfStock = !liveProd || availableStock < item.quantity;
+                    if (isOutOfStock) hasOutOfStockItems = true;
+                    return {
+                        ...item,
+                        isOutOfStock,
+                        availableStock,
+                    };
+                });
+                orderObj.hasOutOfStockItems = hasOutOfStockItems;
+            }
+            return orderObj;
+        });
+
+        res.json(evaluatedOrders);
     } catch (error) {
         console.error("Fetch Orders Error:", error);
         res.status(500).json({ message: "Server Error while fetching orders" });
@@ -174,18 +228,29 @@ const updateOrderStatus = async (req, res) => {
 
         const previousStatus = order.orderStatus;
 
-        // If transitioning to Cancelled and wasn't already cancelled, restock inventory
+        // If transitioning to Cancelled and wasn't already cancelled, restock inventory if reserved
         if (status === "Cancelled" && previousStatus !== "Cancelled") {
-            for (const item of order.orderItems) {
-                if (mongoose.isValidObjectId(item.productId)) {
-                    const product = await Product.findById(item.productId);
-                    if (product) {
-                        product.stock += item.quantity;
-                        await product.save();
+            if (order.isStockReserved) {
+                for (const item of order.orderItems) {
+                    if (mongoose.isValidObjectId(item.productId)) {
+                        const product = await Product.findById(item.productId);
+                        if (product) {
+                            product.stock += item.quantity;
+                            await product.save();
+                        }
                     }
                 }
+                order.isStockReserved = false;
             }
             order.cancelledAt = new Date();
+            const wasPaid = order.status === "PAID" || order.paymentStatus === "Paid";
+            if (wasPaid) {
+                order.status = "REFUNDED";
+                order.paymentStatus = "Refunded";
+            } else {
+                order.status = "CANCELLED";
+                order.paymentStatus = "Cancelled";
+            }
         }
 
         // If marked as Delivered
@@ -228,6 +293,30 @@ const cancelMyOrder = async (req, res) => {
             return res.status(403).json({ message: "Not authorized to cancel this order" });
         }
 
+        const isPaid = order.status === "PAID" || order.paymentStatus === "Paid";
+        const isUnpaidRazorpay = order.paymentMethod === "Razorpay" && !isPaid;
+
+        // If it's an unpaid Razorpay order or pending order without held stock, permanently remove from DB
+        if (isUnpaidRazorpay || (!isPaid && !order.isStockReserved && order.orderStatus === "Pending")) {
+            if (order.isStockReserved) {
+                for (const item of order.orderItems) {
+                    if (mongoose.isValidObjectId(item.productId)) {
+                        const product = await Product.findById(item.productId);
+                        if (product) {
+                            product.stock += item.quantity;
+                            await product.save();
+                        }
+                    }
+                }
+            }
+            await Order.findByIdAndDelete(order._id);
+            return res.json({
+                message: "Pending order cancelled and removed from database",
+                deletedOrderId: order._id,
+                isDeleted: true,
+            });
+        }
+
         const currentStatus = order.orderStatus;
         if (currentStatus === "Cancelled") {
             return res.status(400).json({ message: "Order is already cancelled" });
@@ -239,24 +328,78 @@ const cancelMyOrder = async (req, res) => {
             });
         }
 
-        // Restock products into catalog
-        for (const item of order.orderItems) {
-            if (mongoose.isValidObjectId(item.productId)) {
-                const product = await Product.findById(item.productId);
-                if (product) {
-                    product.stock += item.quantity;
-                    await product.save();
+        // Restock products into catalog only if stock was reserved
+        if (order.isStockReserved) {
+            for (const item of order.orderItems) {
+                if (mongoose.isValidObjectId(item.productId)) {
+                    const product = await Product.findById(item.productId);
+                    if (product) {
+                        product.stock += item.quantity;
+                        await product.save();
+                    }
                 }
             }
+            order.isStockReserved = false;
         }
 
         order.orderStatus = "Cancelled";
         order.cancelledAt = new Date();
+        if (isPaid) {
+            order.status = "REFUNDED";
+            order.paymentStatus = "Refunded";
+        } else {
+            order.status = "CANCELLED";
+            order.paymentStatus = "Cancelled";
+        }
         const updatedOrder = await order.save();
         res.json(updatedOrder);
     } catch (error) {
         console.error("Cancel Order Error:", error);
         res.status(500).json({ message: "Server error while cancelling order", error: error.message });
+    }
+};
+
+// @desc    Explicitly delete an unpaid pending order
+// @route   DELETE /api/orders/:id
+// @access  Private
+const deletePendingOrder = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        if (order.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+            return res.status(403).json({ message: "Not authorized to delete this order" });
+        }
+
+        if (order.status === "PAID") {
+            return res.status(400).json({ message: "Cannot delete a paid order" });
+        }
+
+        // If stock was reserved for any reason, restock it
+        if (order.isStockReserved) {
+            for (const item of order.orderItems) {
+                if (mongoose.isValidObjectId(item.productId)) {
+                    const product = await Product.findById(item.productId);
+                    if (product) {
+                        product.stock += item.quantity;
+                        await product.save();
+                    }
+                }
+            }
+            order.isStockReserved = false;
+        }
+
+        await Order.findByIdAndDelete(order._id);
+        res.json({
+            message: "Order removed from database",
+            deletedOrderId: order._id,
+            isDeleted: true,
+        });
+    } catch (error) {
+        console.error("Delete Order Error:", error);
+        res.status(500).json({ message: "Server error while deleting order", error: error.message });
     }
 };
 
@@ -306,6 +449,22 @@ const verifyRazorpayPayment = async (req, res) => {
             return res.status(400).json({ message: "Payment verification failed: Invalid signature" });
         }
 
+        // Deduct inventory if not already reserved
+        if (!order.isStockReserved) {
+            for (const item of order.orderItems) {
+                if (mongoose.isValidObjectId(item.productId)) {
+                    const product = await Product.findById(item.productId);
+                    if (product) {
+                        product.stock = Math.max(0, product.stock - item.quantity);
+                        await product.save();
+                    }
+                }
+            }
+            order.isStockReserved = true;
+        }
+
+        order.expiresAt = null; // Clear expiration since order is confirmed & paid
+
         // Update status and append to payments transaction array
         order.status = "PAID";
         order.paymentMethod = "Razorpay";
@@ -354,6 +513,24 @@ const retryOrderPayment = async (req, res) => {
             return res.status(400).json({ message: "Cannot pay for a cancelled order" });
         }
 
+        // Check if order expired (10 days)
+        if (order.expiresAt && order.expiresAt < new Date()) {
+            await Order.findByIdAndDelete(order._id);
+            return res.status(400).json({ message: "This pending order has expired and was removed." });
+        }
+
+        // Check live stock for every item in this pending order
+        for (const item of order.orderItems) {
+            const product = await Product.findById(item.productId);
+            if (!product || product.stock < item.quantity) {
+                return res.status(400).json({
+                    message: !product || product.stock === 0
+                        ? `Cannot proceed to payment: "${item.title}" is out of stock.`
+                        : `Cannot proceed to payment: Only ${product.stock} left for "${item.title}" (need ${item.quantity}).`,
+                });
+            }
+        }
+
         const razorpay = getRazorpayInstance();
         const razorpayOrder = await razorpay.orders.create({
             amount: Math.round(order.amount * 100),
@@ -373,6 +550,10 @@ const retryOrderPayment = async (req, res) => {
             order,
             razorpayOrder,
             keyId: process.env.RAZORPAY_KEY_ID,
+            key: process.env.RAZORPAY_KEY_ID,
+            id: razorpayOrder.id,
+            amount: razorpayOrder.amount,
+            currency: razorpayOrder.currency,
         });
     } catch (error) {
         console.error("Retry Payment Error:", error);
@@ -431,6 +612,22 @@ const handleRazorpayWebhook = async (req, res) => {
                 if (razorpayOrderId) {
                     order.razorpayOrderId = razorpayOrderId;
                 }
+
+                // Deduct stock if not already reserved
+                if (!order.isStockReserved) {
+                    for (const item of order.orderItems) {
+                        if (mongoose.isValidObjectId(item.productId)) {
+                            const product = await Product.findById(item.productId);
+                            if (product) {
+                                product.stock = Math.max(0, product.stock - item.quantity);
+                                await product.save();
+                            }
+                        }
+                    }
+                    order.isStockReserved = true;
+                }
+                order.expiresAt = null; // Clear 10-day expiration
+
                 order.payments.push({
                     paymentId: paymentEntity?.id,
                     orderId: razorpayOrderId,
@@ -548,6 +745,7 @@ module.exports = {
     getAllOrders,
     updateOrderStatus,
     cancelMyOrder,
+    deletePendingOrder,
     verifyRazorpayPayment,
     retryOrderPayment,
     handleRazorpayWebhook,

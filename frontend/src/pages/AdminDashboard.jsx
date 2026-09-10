@@ -355,9 +355,13 @@ export const AdminDashboard = () => {
                                                 <br />
                                                 <small style={{
                                                     fontWeight: 700,
-                                                    color: (order.status === "PAID" || order.paymentStatus === "Paid") ? "#22c55e" : "#eab308"
+                                                    color: (order.orderStatus === "Cancelled")
+                                                        ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "#06b6d4" : "#ef4444")
+                                                        : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "#22c55e" : "#eab308")
                                                 }}>
-                                                    ({order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending")})
+                                                    ({order.orderStatus === "Cancelled"
+                                                        ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "Refunded" : "Cancelled")
+                                                        : (order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending"))})
                                                 </small>
                                             </td>
                                             <td>

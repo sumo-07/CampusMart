@@ -5,6 +5,7 @@ const {
     getAllOrders,
     updateOrderStatus,
     cancelMyOrder,
+    deletePendingOrder,
     verifyRazorpayPayment,
     retryOrderPayment,
     handleRazorpayWebhook,
@@ -31,6 +32,7 @@ router.route("/").post(protect, addOrderItems).get(protect, admin, getAllOrders)
 router.get("/myorders", protect, getMyOrders);
 router.put("/:id/status", protect, admin, updateOrderStatus);
 router.put("/:id/cancel", protect, cancelMyOrder);
+router.delete("/:id", protect, deletePendingOrder);
 
 module.exports = router;
 
