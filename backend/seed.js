@@ -1,9 +1,13 @@
-require("dotenv").config();
+require("./config/env");
+
 const mongoose = require("mongoose");
 const Product = require("./models/Product");
 
 const seedProducts = async () => {
     try {
+        if (!process.env.MONGODB_URI) {
+            throw new Error("MONGODB_URI is not set. Please check backend/.env");
+        }
         console.log("Connecting to MongoDB...");
         await mongoose.connect(process.env.MONGODB_URI);
         console.log("Connected successfully.");
