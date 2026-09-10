@@ -20,7 +20,7 @@ export const Checkout = () => {
   const [city, setCity] = useState("");
   const [pincode, setPincode] = useState("");
   const [phone, setPhone] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [paymentMethod, setPaymentMethod] = useState("Razorpay");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
