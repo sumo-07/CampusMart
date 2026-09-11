@@ -387,7 +387,19 @@ export const Orders = () => {
             )}
 
             {/* Dedicated Single-Page Tabular Black & White Printable Order Slip */}
-            {printingOrder && <PrintableOrderSlip order={printingOrder} />}
+            {printingOrder && (
+                <PrintableOrderSlip
+                    order={{
+                        ...printingOrder,
+                        user: (printingOrder.user && typeof printingOrder.user === "object" && printingOrder.user.email)
+                            ? printingOrder.user
+                            : {
+                                name: (printingOrder.user && typeof printingOrder.user === "object" && printingOrder.user.name) || user?.name || printingOrder.shippingAddress?.fullName,
+                                email: user?.email,
+                            },
+                    }}
+                />
+            )}
         </section>
     );
 };

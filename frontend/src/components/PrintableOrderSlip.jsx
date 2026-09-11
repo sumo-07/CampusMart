@@ -11,7 +11,7 @@ export const PrintableOrderSlip = ({ order }) => {
 
     const customerEmail = (order.user && typeof order.user === "object" && order.user.email)
         ? order.user.email
-        : "N/A";
+        : (order.shippingAddress?.email || "");
 
     const totalAmount = Number(order.amount ?? order.totalPrice ?? 0);
     const itemsSubtotal = order.orderItems?.reduce((acc, item) => acc + (Number(item.price) * Number(item.quantity)), 0) || totalAmount;

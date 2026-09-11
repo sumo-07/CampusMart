@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import api from "../api/axiosConfig";
@@ -11,6 +11,7 @@ export const AdminDashboard = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const initialTab = searchParams.get("tab") || "overview";
     const [activeTab, setActiveTab] = useState(initialTab);
+    const lastOrdersFetchRef = useRef(Date.now());
 
     useEffect(() => {
         const tab = searchParams.get("tab");
@@ -29,19 +30,43 @@ export const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [refreshingOrders, setRefreshingOrders] = useState(false);
 
-    const handleRefreshOrders = async () => {
+    const handleRefreshOrders = async (silent = false) => {
         try {
-            setRefreshingOrders(true);
+            if (!silent) setRefreshingOrders(true);
             const res = await api.get("/api/orders");
             setOrders(res.data);
+            lastOrdersFetchRef.current = Date.now();
             queryClient.invalidateQueries({ queryKey: ["myOrders"] });
         } catch (error) {
             console.error("Failed to refresh orders:", error);
-            alert(error.response?.data?.message || "Failed to fetch orders");
+            if (!silent) {
+                alert(error.response?.data?.message || "Failed to fetch orders");
+            }
         } finally {
-            setRefreshingOrders(false);
+            if (!silent) setRefreshingOrders(false);
         }
     };
+
+    // Smart auto-refresh: When admin switches back to this browser tab after > 2 minutes, quietly fetch new orders
+    useEffect(() => {
+        const handleFocusOrVisible = () => {
+            if (document.visibilityState === "visible") {
+                const now = Date.now();
+                // 2 minutes throttle (120,000 ms)
+                if (now - lastOrdersFetchRef.current > 1000 * 60 * 2) {
+                    handleRefreshOrders(true);
+                }
+            }
+        };
+
+        window.addEventListener("focus", handleFocusOrVisible);
+        document.addEventListener("visibilitychange", handleFocusOrVisible);
+
+        return () => {
+            window.removeEventListener("focus", handleFocusOrVisible);
+            document.removeEventListener("visibilitychange", handleFocusOrVisible);
+        };
+    }, []);
 
     const [editingProduct, setEditingProduct] = useState(null); // For inline stock edit
     const [editFormProduct, setEditFormProduct] = useState(null); // For full form edit
@@ -83,6 +108,7 @@ export const AdminDashboard = () => {
             ]);
             setOrders(ordersRes.data);
             setProducts(productsRes.data.products);
+            lastOrdersFetchRef.current = Date.now();
         } catch (error) {
             console.error("Failed to fetch dashboard data:", error);
         } finally {
