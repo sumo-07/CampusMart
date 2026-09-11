@@ -27,6 +27,21 @@ export const AdminDashboard = () => {
     const [orders, setOrders] = useState([]);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshingOrders, setRefreshingOrders] = useState(false);
+
+    const handleRefreshOrders = async () => {
+        try {
+            setRefreshingOrders(true);
+            const res = await api.get("/api/orders");
+            setOrders(res.data);
+            queryClient.invalidateQueries({ queryKey: ["myOrders"] });
+        } catch (error) {
+            console.error("Failed to refresh orders:", error);
+            alert(error.response?.data?.message || "Failed to fetch orders");
+        } finally {
+            setRefreshingOrders(false);
+        }
+    };
 
     const [editingProduct, setEditingProduct] = useState(null); // For inline stock edit
     const [editFormProduct, setEditFormProduct] = useState(null); // For full form edit
@@ -386,6 +401,40 @@ export const AdminDashboard = () => {
 
                 {activeTab === "orders" && (
                     <div className="admin-orders">
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '1.25rem',
+                            flexWrap: 'wrap',
+                            gap: '12px'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <h2 style={{ margin: 0, fontSize: '1.4rem' }}>Customer Orders</h2>
+                                <span style={{
+                                    background: 'rgba(255, 255, 255, 0.08)',
+                                    padding: '4px 12px',
+                                    borderRadius: '20px',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600,
+                                    color: 'var(--text-secondary)'
+                                }}>
+                                    {orders.length} {orders.length === 1 ? 'Order' : 'Orders'}
+                                </span>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={handleRefreshOrders}
+                                className="orders-refresh-btn"
+                                disabled={refreshingOrders || loading}
+                                title="Fetch latest incoming orders from database"
+                            >
+                                <span className={`refresh-icon ${refreshingOrders ? "spinning" : ""}`}>🔄</span>
+                                {refreshingOrders ? "Checking New Orders..." : "Refresh Orders"}
+                            </button>
+                        </div>
+
                         <div className="products-table-wrapper">
                             <table className="products-table">
                                 <thead>

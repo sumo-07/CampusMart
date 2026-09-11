@@ -159,7 +159,18 @@ export const AdminOrderDetails = () => {
                         <span className="breadcrumb-current">Order #{order._id.substring(order._id.length - 8)}</span>
                     </div>
 
-                    <div className="admin-details-actions">
+                    <div className="admin-details-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <button
+                            type="button"
+                            onClick={fetchOrderDetails}
+                            className="orders-refresh-btn"
+                            disabled={loading || updatingStatus}
+                            title="Refresh order details from server"
+                            style={{ padding: '7px 14px', fontSize: '0.85rem' }}
+                        >
+                            <span className={`refresh-icon ${loading ? "spinning" : ""}`}>🔄</span>
+                            {loading ? "Refreshing..." : "Refresh Status"}
+                        </button>
                         <button onClick={handlePrint} className="admin-btn-print" title="Print packing slip or invoice">
                             🖨️ Print Order Slip
                         </button>

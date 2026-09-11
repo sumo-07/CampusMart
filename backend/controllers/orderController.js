@@ -285,12 +285,43 @@ const updateOrderStatus = async (req, res) => {
             }
         }
 
+        // If reviving an order from "Cancelled" back to an active status ("Pending", "Processing", "Shipped", "Delivered")
+        if (previousStatus === "Cancelled" && status !== "Cancelled") {
+            // 1. Clear cancellation timestamp
+            order.cancelledAt = null;
+
+            // 2. Restore correct payment status
+            const hasCapturedPayment = order.payments && order.payments.some(p => p.status === "captured");
+            if (hasCapturedPayment && !order.refund?.refundId) {
+                order.status = "PAID";
+                order.paymentStatus = "Paid";
+            } else {
+                order.status = "PENDING";
+                order.paymentStatus = "Pending";
+            }
+
+            // 3. Re-reserve stock from catalog if needed
+            if (!order.isStockReserved) {
+                for (const item of order.orderItems) {
+                    if (mongoose.isValidObjectId(item.productId)) {
+                        const product = await Product.findById(item.productId);
+                        if (product) {
+                            product.stock = Math.max(0, product.stock - item.quantity);
+                            await product.save();
+                        }
+                    }
+                }
+                order.isStockReserved = true;
+            }
+        }
+
         // If marked as Delivered
         if (status === "Delivered") {
             order.deliveredAt = new Date();
             // If COD, delivery implies collection of cash
             if (order.paymentMethod === "COD" && order.status !== "PAID") {
                 order.status = "PAID";
+                order.paymentStatus = "Paid";
                 order.payments.push({
                     method: "COD",
                     amount: order.amount,
@@ -299,6 +330,11 @@ const updateOrderStatus = async (req, res) => {
                     capturedAt: new Date(),
                 });
             }
+        }
+
+        // If reverted from Delivered to another status
+        if (previousStatus === "Delivered" && status !== "Delivered") {
+            order.deliveredAt = null;
         }
 
         order.orderStatus = status;
@@ -409,6 +445,13 @@ const deletePendingOrder = async (req, res) => {
 
         if (order.status === "PAID") {
             return res.status(400).json({ message: "Cannot delete a paid order" });
+        }
+
+        // Restrict deletion strictly to unpaid online checkout attempts (Razorpay) in "Pending" status
+        if (order.paymentMethod !== "Razorpay" || order.orderStatus !== "Pending") {
+            return res.status(400).json({
+                message: "Only unpaid pending Razorpay orders can be permanently deleted. Active or COD orders must be cancelled via the cancellation flow."
+            });
         }
 
         // If stock was reserved for any reason, restock it
