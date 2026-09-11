@@ -140,12 +140,14 @@ export const Checkout = () => {
               if (!buyNowItem) {
                 resetCartState();
               }
+              queryClient.invalidateQueries({ queryKey: ["myOrders"] });
               queryClient.invalidateQueries({ queryKey: ["products"] });
               queryClient.invalidateQueries({ queryKey: ["product"] });
               queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
               navigate("/orders");
             } catch (err) {
               alert(err.response?.data?.message || "Payment verification failed. Please check your Orders page.");
+              queryClient.invalidateQueries({ queryKey: ["myOrders"] });
               navigate("/orders");
             } finally {
               setIsSubmitting(false);
@@ -157,6 +159,7 @@ export const Checkout = () => {
               if (!buyNowItem) {
                 resetCartState();
               }
+              queryClient.invalidateQueries({ queryKey: ["myOrders"] });
               queryClient.invalidateQueries({ queryKey: ["products"] });
               queryClient.invalidateQueries({ queryKey: ["product"] });
               queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
@@ -168,6 +171,7 @@ export const Checkout = () => {
         const rzp = new window.Razorpay(options);
         rzp.on("payment.failed", function (response) {
           alert(`Payment failed: ${response.error.description || "Payment was rejected."}`);
+          queryClient.invalidateQueries({ queryKey: ["myOrders"] });
           navigate("/orders");
         });
         rzp.open();
@@ -179,6 +183,7 @@ export const Checkout = () => {
       if (!buyNowItem) {
         resetCartState();
       }
+      queryClient.invalidateQueries({ queryKey: ["myOrders"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["product"] });
       queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });

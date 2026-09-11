@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyOrders, cancelOrder, deleteOrder, retryOrderPayment, verifyRazorpayPayment } from "../utils/orderUtils";
 import { loadRazorpayScript } from "../utils/loadRazorpay";
 import { AuthContext } from "../context/AuthContext";
@@ -8,14 +8,33 @@ import { PrintableOrderSlip } from "../components/PrintableOrderSlip";
 import '../components/css/orders.css';
 
 export const Orders = () => {
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [cancellingId, setCancellingId] = useState(null);
     const [payingId, setPayingId] = useState(null);
     const [printingOrder, setPrintingOrder] = useState(null);
     const { user, loading: authLoading } = useContext(AuthContext);
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+
+    const {
+        data: orders = [],
+        isLoading: loading,
+        isFetching: refreshing,
+        refetch: refetchOrders,
+    } = useQuery({
+        queryKey: ["myOrders"],
+        queryFn: getMyOrders,
+        staleTime: 1000 * 60 * 5, // 5 minutes (Industry standard production sweet-spot for order tracking)
+        gcTime: 1000 * 60 * 15,   // 15 minutes memory retention
+        enabled: Boolean(user && !authLoading),
+    });
+
+    const handleManualRefresh = async () => {
+        try {
+            await refetchOrders();
+        } catch (error) {
+            console.error("Failed to refresh orders", error);
+        }
+    };
 
     useEffect(() => {
         if (printingOrder) {
@@ -40,26 +59,12 @@ export const Orders = () => {
         setPrintingOrder(order);
     };
 
-    const fetchOrders = async () => {
-        try {
-            const data = await getMyOrders();
-            setOrders(data);
-        } catch (error) {
-            console.error("Failed to fetch orders", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
         if (authLoading) return;
 
         if (!user) {
             navigate("/login");
-            return;
         }
-
-        fetchOrders();
     }, [user, authLoading, navigate]);
 
     const handleCancelOrder = async (orderId, isUnpaidPending = false) => {
@@ -77,10 +82,10 @@ export const Orders = () => {
             } else {
                 await cancelOrder(orderId);
             }
+            queryClient.invalidateQueries({ queryKey: ["myOrders"] });
             queryClient.invalidateQueries({ queryKey: ["products"] });
             queryClient.invalidateQueries({ queryKey: ["product"] });
             queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
-            await fetchOrders();
         } catch (error) {
             alert(error.response?.data?.message || "Failed to cancel order.");
         } finally {
@@ -126,14 +131,14 @@ export const Orders = () => {
                             razorpayPaymentId: response.razorpay_payment_id,
                             razorpaySignature: response.razorpay_signature,
                         });
+                        queryClient.invalidateQueries({ queryKey: ["myOrders"] });
                         queryClient.invalidateQueries({ queryKey: ["products"] });
                         queryClient.invalidateQueries({ queryKey: ["product"] });
                         queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
-                        await fetchOrders();
                         alert("Payment successful! Your order is now confirmed.");
                     } catch (err) {
                         alert(err.response?.data?.message || "Payment verification failed.");
-                        await fetchOrders();
+                        queryClient.invalidateQueries({ queryKey: ["myOrders"] });
                     } finally {
                         setPayingId(null);
                     }
@@ -178,6 +183,16 @@ export const Orders = () => {
         <section className="orders-section">
             <div className="orders-header-bar">
                 <h1 className="orders-title">My Orders</h1>
+                <button
+                    type="button"
+                    onClick={handleManualRefresh}
+                    className="orders-refresh-btn no-print"
+                    disabled={refreshing || loading}
+                    title="Check latest order status from server"
+                >
+                    <span className={`refresh-icon ${refreshing ? "spinning" : ""}`}>🔄</span>
+                    {refreshing ? "Checking..." : "Refresh Status"}
+                </button>
             </div>
 
             {orders.length === 0 ? (

@@ -147,6 +147,7 @@ const addOrderItems = async (req, res) => {
 // @route   GET /api/orders/myorders
 // @access  Private
 const getMyOrders = async (req, res) => {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
     try {
         // 1. Auto-cleanup any pending unpaid orders that crossed their 10-day expiration
         const now = new Date();
@@ -200,6 +201,7 @@ const getMyOrders = async (req, res) => {
 // @route   GET /api/orders
 // @access  Private/Admin
 const getAllOrders = async (req, res) => {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
     try {
         const orders = await Order.find({}).populate("user", "id name email").sort({ createdAt: -1 });
         res.json(orders);
@@ -213,6 +215,7 @@ const getAllOrders = async (req, res) => {
 // @route   GET /api/orders/:id
 // @access  Private (Admin can view any order, customer can view their own)
 const getOrderById = async (req, res) => {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
     try {
         if (!mongoose.isValidObjectId(req.params.id)) {
             return res.status(400).json({ message: "Invalid order ID format" });

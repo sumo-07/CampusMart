@@ -60,6 +60,7 @@ export const AdminOrderDetails = () => {
 
             setStatusMessage({ type: "success", text: `Order status successfully updated to "${newStatus}"` });
 
+            queryClient.invalidateQueries({ queryKey: ["myOrders"] });
             // If cancelled or status changed, sync products cache
             if (newStatus === "Cancelled") {
                 queryClient.invalidateQueries({ queryKey: ["products"] });

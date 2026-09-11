@@ -154,6 +154,7 @@ export const AdminDashboard = () => {
                 }
                 return o;
             }));
+            queryClient.invalidateQueries({ queryKey: ["myOrders"] });
             if (newStatus === "Cancelled") {
                 queryClient.invalidateQueries({ queryKey: ["products"] });
                 queryClient.invalidateQueries({ queryKey: ["product"] });
