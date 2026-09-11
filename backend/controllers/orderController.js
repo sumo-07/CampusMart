@@ -114,6 +114,7 @@ const addOrderItems = async (req, res) => {
         }
 
         const createdOrder = await order.save();
+        await createdOrder.populate("user", "id name email");
 
         // 4. Clear the user's cart after successfully placing an order (UNLESS it was a 'Buy Now' bypass)
         if (!req.body.isBuyNow) {
@@ -158,7 +159,7 @@ const getMyOrders = async (req, res) => {
             expiresAt: { $ne: null, $lte: now }
         });
 
-        const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+        const orders = await Order.find({ user: req.user._id }).populate("user", "id name email").sort({ createdAt: -1 });
 
         // 2. Dynamically evaluate real-time stock for pending unpaid orders
         const pendingOrders = orders.filter(o => o.status === "PENDING" && !o.isStockReserved);
@@ -526,6 +527,28 @@ const verifyRazorpayPayment = async (req, res) => {
             return res.status(400).json({ message: "Payment verification failed: Invalid signature" });
         }
 
+        // If order was cancelled prior to payment verification, do not resurrect it
+        if (order.orderStatus === "Cancelled" || order.status === "CANCELLED") {
+            order.status = "REFUNDED";
+            order.paymentStatus = "Refunded";
+            order.payments.push({
+                paymentId: razorpayPaymentId,
+                orderId: razorpayOrderId,
+                signature: razorpaySignature,
+                method: "Razorpay",
+                amount: order.amount,
+                currency: order.currency || "INR",
+                status: "captured_after_cancellation",
+                capturedAt: new Date(),
+            });
+            const updatedOrder = await order.save();
+            return res.status(400).json({
+                message: "Order was cancelled before payment could be verified. Your payment has been received and flagged for refund.",
+                order: updatedOrder,
+                isCancelled: true,
+            });
+        }
+
         // Deduct inventory if not already reserved
         if (!order.isStockReserved) {
             for (const item of order.orderItems) {
@@ -684,7 +707,29 @@ const handleRazorpayWebhook = async (req, res) => {
             }
 
             if (order && order.status !== "PAID") {
+                // If order was cancelled prior to webhook delivery, do NOT resurrect it into Processing
+                if (order.orderStatus === "Cancelled" || order.status === "CANCELLED") {
+                    order.status = "REFUNDED";
+                    order.paymentStatus = "Refunded";
+                    if (razorpayOrderId) {
+                        order.razorpayOrderId = razorpayOrderId;
+                    }
+                    order.payments.push({
+                        paymentId: paymentEntity?.id,
+                        orderId: razorpayOrderId,
+                        method: paymentEntity?.method || "Razorpay",
+                        amount: (paymentEntity?.amount || 0) / 100,
+                        currency: paymentEntity?.currency || "INR",
+                        status: "captured_after_cancellation",
+                        capturedAt: new Date(),
+                    });
+                    await order.save();
+                    console.warn(`[Razorpay Webhook] Order ${order._id} was captured AFTER being cancelled. Marked as REFUNDED.`);
+                    return res.json({ status: "ok", message: "Order was already cancelled; recorded for refund" });
+                }
+
                 order.status = "PAID";
+                order.paymentStatus = "Paid";
                 order.paymentMethod = "Razorpay";
                 if (razorpayOrderId) {
                     order.razorpayOrderId = razorpayOrderId;
@@ -734,7 +779,10 @@ const handleRazorpayWebhook = async (req, res) => {
             }
 
             if (order && order.status !== "PAID") {
-                order.status = "FAILED";
+                if (order.orderStatus !== "Cancelled" && order.status !== "CANCELLED") {
+                    order.status = "FAILED";
+                    order.paymentStatus = "Failed";
+                }
                 order.payments.push({
                     paymentId: paymentEntity?.id,
                     orderId: razorpayOrderId,
