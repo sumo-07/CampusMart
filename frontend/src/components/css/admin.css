@@ -483,6 +483,28 @@
   background: var(--accent-blue);
 }
 
+.admin-btn-sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.6rem 1.1rem;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  color: #818cf8;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
 
+.admin-btn-sync:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.3);
+  color: #a5b4fc;
+  border-color: #6366f1;
+}
 
-
+.admin-btn-sync:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

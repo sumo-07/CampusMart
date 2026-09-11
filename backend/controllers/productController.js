@@ -114,6 +114,24 @@ const deleteProduct = async (req, res) => {
     }
 };
 
+// @desc    Seed or sync products from DummyJSON
+// @route   POST /api/products/seed
+// @access  Private/Admin
+const seedProductsCatalog = async (req, res) => {
+    try {
+        const { syncCatalog } = require("../services/seederService");
+        const isClean = req.body?.clean === true;
+        const result = await syncCatalog({ clean: isClean });
+        res.json({
+            message: "Products catalog synced successfully",
+            ...result,
+        });
+    } catch (error) {
+        console.error("Seed Catalog Error:", error);
+        res.status(500).json({ message: "Failed to sync products catalog", error: error.message });
+    }
+};
+
 module.exports = {
     getProducts,
     getProductById,
@@ -122,4 +140,5 @@ module.exports = {
     createProduct,
     updateProduct,
     deleteProduct,
+    seedProductsCatalog,
 };

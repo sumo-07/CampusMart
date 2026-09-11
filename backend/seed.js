@@ -1,49 +1,32 @@
 require("./config/env");
 
 const mongoose = require("mongoose");
-const Product = require("./models/Product");
+const { syncCatalog } = require("./services/seederService");
 
-const seedProducts = async () => {
+const runSeed = async () => {
     try {
         if (!process.env.MONGODB_URI) {
             throw new Error("MONGODB_URI is not set. Please check backend/.env");
         }
+
         console.log("Connecting to MongoDB...");
         await mongoose.connect(process.env.MONGODB_URI);
-        console.log("Connected successfully.");
+        console.log("Connected successfully to MongoDB.");
 
-        console.log("Fetching products from DummyJSON...");
-        const response = await fetch("https://dummyjson.com/products?limit=200");
-        const data = await response.json();
-        const products = data.products;
+        const isClean = process.argv.includes("--clean");
+        const result = await syncCatalog({ clean: isClean });
 
-        console.log(`Fetched ${products.length} products. Mapping to local schema...`);
-        
-        const mappedProducts = products.map((p) => ({
-            title: p.title,
-            description: p.description,
-            price: p.price,
-            discountPercentage: p.discountPercentage,
-            rating: p.rating,
-            stock: p.stock,
-            brand: p.brand || "Generic",
-            category: p.category,
-            thumbnail: p.thumbnail,
-            images: p.images,
-        }));
-
-        console.log("Clearing existing products...");
-        await Product.deleteMany();
-
-        console.log("Inserting new products...");
-        await Product.insertMany(mappedProducts);
-
-        console.log("Seeding complete!");
-        process.exit();
+        console.log("Seeding finished successfully:", result);
+        await mongoose.disconnect();
+        console.log("Disconnected from MongoDB.");
+        process.exit(0);
     } catch (error) {
-        console.error("Error during seeding:", error);
+        console.error("Error during seeding:", error.message);
+        if (mongoose.connection.readyState !== 0) {
+            await mongoose.disconnect();
+        }
         process.exit(1);
     }
 };
 
-seedProducts();
+runSeed();

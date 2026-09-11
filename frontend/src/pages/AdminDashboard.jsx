@@ -18,6 +18,7 @@ export const AdminDashboard = () => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [isSeeding, setIsSeeding] = useState(false);
 
     const closeFormWithAnimation = () => {
         setIsAnimatingOut(true);
@@ -139,6 +140,29 @@ export const AdminDashboard = () => {
         }
     };
 
+    const handleSyncCatalog = async () => {
+        const confirmed = window.confirm(
+            "Sync product catalog from DummyJSON?\n\nThis will safely fetch and update catalog items without removing existing product IDs or breaking orders."
+        );
+        if (!confirmed) return;
+
+        setIsSeeding(true);
+        try {
+            const { data } = await api.post("/api/products/seed");
+            alert(`Catalog Synced Successfully!\n\nMatched & Updated: ${data.matchedCount || 0}\nNewly Inserted: ${data.upsertedCount || 0}\nTotal in Catalog: ${data.totalCount || 0}`);
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+            queryClient.invalidateQueries({ queryKey: ["categories"] });
+            queryClient.invalidateQueries({ queryKey: ["featuredProducts"] });
+            const res = await api.get("/api/products");
+            setProducts(res.data.products);
+        } catch (error) {
+            console.error("Failed to sync catalog:", error);
+            alert(error.response?.data?.message || "Failed to sync products catalog from DummyJSON.");
+        } finally {
+            setIsSeeding(false);
+        }
+    };
+
     // Calculate Overview Metrics
     const totalSales = orders.reduce((acc, order) => acc + (order.amount || order.totalPrice || 0), 0);
     const totalOrders = orders.length;
@@ -224,9 +248,20 @@ export const AdminDashboard = () => {
                                     className="admin-search-input"
                                 />
                             </div>
-                            <button onClick={toggleAddForm} className={`admin-btn-action ${showAddForm ? "cancel" : ""}`}>
-                                {showAddForm ? "Cancel" : "+ Add New Product"}
-                            </button>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                <button
+                                    type="button"
+                                    onClick={handleSyncCatalog}
+                                    disabled={isSeeding}
+                                    className="admin-btn-sync"
+                                    title="Fetch and sync products from DummyJSON"
+                                >
+                                    {isSeeding ? "Syncing..." : "🔄 Sync / Seed Catalog"}
+                                </button>
+                                <button onClick={toggleAddForm} className={`admin-btn-action ${showAddForm ? "cancel" : ""}`}>
+                                    {showAddForm ? "Cancel" : "+ Add New Product"}
+                                </button>
+                            </div>
                         </div>
 
                         {(showAddForm || isAnimatingOut) && (

@@ -8,10 +8,12 @@ const {
     createProduct,
     updateProduct,
     deleteProduct,
+    seedProductsCatalog,
 } = require("../controllers/productController");
 const { protect, admin } = require("../middleware/authMiddleware");
 
 router.route("/").get(getProducts).post(protect, admin, createProduct);
+router.post("/seed", protect, admin, seedProductsCatalog);
 router.route("/categories").get(getCategories);
 router.route("/category/:category").get(getProductsByCategory);
 router
