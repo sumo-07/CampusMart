@@ -11,6 +11,7 @@ import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
 import { Orders } from "./pages/Orders";
 import { AdminDashboard } from "./pages/AdminDashboard";
+import { AdminOrderDetails } from "./pages/AdminOrderDetails";
 import { AdminRequire } from "./components/AdminRequire";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { About } from "./pages/About";
@@ -79,6 +80,10 @@ const router = createBrowserRouter([
                     {
                         path: "",
                         element: <AdminDashboard />,
+                    },
+                    {
+                        path: "orders/:orderId",
+                        element: <AdminOrderDetails />,
                     }
                 ]
             },

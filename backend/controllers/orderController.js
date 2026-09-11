@@ -209,6 +209,35 @@ const getAllOrders = async (req, res) => {
     }
 };
 
+// @desc    Get order by ID
+// @route   GET /api/orders/:id
+// @access  Private (Admin can view any order, customer can view their own)
+const getOrderById = async (req, res) => {
+    try {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).json({ message: "Invalid order ID format" });
+        }
+
+        const order = await Order.findById(req.params.id).populate("user", "id name email");
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        const isAdmin = Boolean(req.user && req.user.isAdmin);
+        const orderUserId = order.user?._id?.toString() || order.user?.toString();
+        const isOwner = Boolean(orderUserId && orderUserId === req.user._id.toString());
+
+        if (!isAdmin && !isOwner) {
+            return res.status(403).json({ message: "Not authorized to view this order" });
+        }
+
+        res.json(order);
+    } catch (error) {
+        console.error("Get Order By ID Error:", error);
+        res.status(500).json({ message: "Server error while fetching order", error: error.message });
+    }
+};
+
 // @desc    Update order status
 // @route   PUT /api/orders/:id/status
 // @access  Private/Admin
@@ -271,6 +300,7 @@ const updateOrderStatus = async (req, res) => {
 
         order.orderStatus = status;
         const updatedOrder = await order.save();
+        await updatedOrder.populate("user", "id name email");
         res.json(updatedOrder);
     } catch (error) {
         console.error("Update Order Status Error:", error);
@@ -352,6 +382,7 @@ const cancelMyOrder = async (req, res) => {
             order.paymentStatus = "Cancelled";
         }
         const updatedOrder = await order.save();
+        await updatedOrder.populate("user", "id name email");
         res.json(updatedOrder);
     } catch (error) {
         console.error("Cancel Order Error:", error);
@@ -743,6 +774,7 @@ module.exports = {
     addOrderItems,
     getMyOrders,
     getAllOrders,
+    getOrderById,
     updateOrderStatus,
     cancelMyOrder,
     deletePendingOrder,

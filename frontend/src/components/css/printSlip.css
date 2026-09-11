@@ -1,0 +1,289 @@
+/* ==========================================================================
+   Printable Order Slip (Strictly 1-Page, Tabular, Black & White)
+   ========================================================================== */
+
+/* Normal Screen Display: Hidden */
+.printable-slip-wrapper {
+  display: none;
+}
+
+/* Button styles on screen */
+.btn-print-order-slip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-glass);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.btn-print-order-slip:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-print-order-slip-sidebar {
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: var(--transition-smooth);
+}
+
+.btn-print-order-slip-sidebar:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ==========================================================================
+   Print Mode Styles (@media print)
+   ========================================================================== */
+@media print {
+  @page {
+    size: portrait;
+    margin: 8mm 10mm;
+  }
+
+  /* Reset body and html for single-page print */
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    height: auto !important;
+    min-height: auto !important;
+    font-size: 9pt !important;
+    line-height: 1.25 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide the entire regular web application */
+  #root,
+  header,
+  footer,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Show ONLY the printable slip container (portaled directly to document.body) */
+  #printable-order-slip.printable-slip-wrapper,
+  body > #printable-order-slip,
+  #printable-order-slip {
+    display: block !important;
+    visibility: visible !important;
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* Enforce pure black and white */
+  .printable-slip-wrapper * {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    background: transparent !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Top Slip Header */
+  .slip-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    border-bottom: 2px solid #000000 !important;
+    padding-bottom: 6px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .slip-brand {
+    text-align: left !important;
+  }
+
+  .slip-store-name {
+    font-size: 15pt !important;
+    font-weight: 900 !important;
+    letter-spacing: 1px !important;
+    margin: 0 0 2px 0 !important;
+    line-height: 1 !important;
+  }
+
+  .slip-doc-type {
+    font-size: 8pt !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    margin: 0 !important;
+    text-transform: uppercase !important;
+  }
+
+  .slip-meta-table table {
+    border-collapse: collapse !important;
+    font-size: 8.5pt !important;
+  }
+
+  .slip-meta-table th {
+    text-align: left !important;
+    padding: 1px 6px 1px 0 !important;
+    font-weight: 700 !important;
+  }
+
+  .slip-meta-table td {
+    padding: 1px 0 !important;
+  }
+
+  /* Information Table (Customer, Delivery, Payment) */
+  .slip-info-section {
+    margin-bottom: 8px !important;
+  }
+
+  .slip-info-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: 1.5px solid #000000 !important;
+    font-size: 8.5pt !important;
+  }
+
+  .slip-info-table th {
+    background: #f2f2f2 !important;
+    border-bottom: 1px solid #000000 !important;
+    border-right: 1px solid #000000 !important;
+    padding: 4px 6px !important;
+    text-align: left !important;
+    font-size: 8pt !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.3px !important;
+  }
+
+  .slip-info-table th:last-child {
+    border-right: none !important;
+  }
+
+  .slip-info-table td {
+    border-right: 1px solid #000000 !important;
+    padding: 5px 6px !important;
+    vertical-align: top !important;
+    line-height: 1.3 !important;
+  }
+
+  .slip-info-table td:last-child {
+    border-right: none !important;
+  }
+
+  .info-cell strong {
+    display: block !important;
+    font-size: 9pt !important;
+    margin-bottom: 2px !important;
+  }
+
+  .slip-muted-ref {
+    font-size: 7.5pt !important;
+    font-family: monospace !important;
+  }
+
+  /* Items Table */
+  .slip-items-section {
+    margin-bottom: 8px !important;
+  }
+
+  .slip-items-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: 1.5px solid #000000 !important;
+    font-size: 8.5pt !important;
+  }
+
+  .slip-items-table th {
+    background: #f2f2f2 !important;
+    border-bottom: 1.5px solid #000000 !important;
+    border-right: 1px solid #000000 !important;
+    padding: 4px 6px !important;
+    font-weight: 800 !important;
+    font-size: 8pt !important;
+    letter-spacing: 0.3px !important;
+  }
+
+  .slip-items-table th:last-child {
+    border-right: none !important;
+  }
+
+  .slip-items-table td {
+    border-bottom: 1px solid #000000 !important;
+    border-right: 1px solid #000000 !important;
+    padding: 4px 6px !important;
+    vertical-align: middle !important;
+  }
+
+  .slip-items-table td:last-child {
+    border-right: none !important;
+  }
+
+  .slip-item-id {
+    font-size: 7.5pt !important;
+    font-weight: normal !important;
+  }
+
+  /* Totals Section */
+  .slip-totals-section {
+    display: flex !important;
+    justify-content: flex-end !important;
+    margin-bottom: 8px !important;
+  }
+
+  .slip-totals-table {
+    width: 240px !important;
+    border-collapse: collapse !important;
+    font-size: 8.5pt !important;
+  }
+
+  .slip-totals-table td {
+    padding: 2px 0 !important;
+  }
+
+  .slip-grand-total-row td {
+    border-top: 1.5px solid #000000 !important;
+    border-bottom: 2px solid #000000 !important;
+    padding: 4px 0 !important;
+    font-size: 10pt !important;
+  }
+
+  /* Footer */
+  .slip-footer {
+    border-top: 1px dashed #000000 !important;
+    padding-top: 4px !important;
+    text-align: center !important;
+    font-size: 7.5pt !important;
+    margin-top: 6px !important;
+  }
+
+  .slip-footer p {
+    margin: 0 !important;
+  }
+}

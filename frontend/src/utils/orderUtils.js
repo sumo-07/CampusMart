@@ -20,6 +20,16 @@ export const getMyOrders = async () => {
     }
 };
 
+export const getOrderById = async (orderId) => {
+    try {
+        const { data } = await api.get(`/api/orders/${orderId}`);
+        return data;
+    } catch (error) {
+        console.error("Error fetching order details:", error);
+        throw error;
+    }
+};
+
 export const cancelOrder = async (orderId) => {
     try {
         const { data } = await api.put(`/api/orders/${orderId}/cancel`);

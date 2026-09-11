@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import api from "../api/axiosConfig";
 import { updateOrderStatus } from "../utils/orderUtils";
@@ -7,7 +8,21 @@ import "../components/css/orders.css";
 
 export const AdminDashboard = () => {
     const queryClient = useQueryClient();
-    const [activeTab, setActiveTab] = useState("overview"); // "overview" | "products" | "orders"
+    const [searchParams, setSearchParams] = useSearchParams();
+    const initialTab = searchParams.get("tab") || "overview";
+    const [activeTab, setActiveTab] = useState(initialTab);
+
+    useEffect(() => {
+        const tab = searchParams.get("tab");
+        if (tab && ["overview", "products", "orders"].includes(tab)) {
+            setActiveTab(tab);
+        }
+    }, [searchParams]);
+
+    const handleTabSelect = (tab) => {
+        setActiveTab(tab);
+        setSearchParams({ tab });
+    };
 
     const [orders, setOrders] = useState([]);
     const [products, setProducts] = useState([]);
@@ -126,7 +141,19 @@ export const AdminDashboard = () => {
     const handleOrderStatusChange = async (orderId, newStatus) => {
         try {
             const updated = await updateOrderStatus(orderId, newStatus);
-            setOrders(orders.map(o => o._id === orderId ? { ...o, ...updated } : o));
+            setOrders(prevOrders => prevOrders.map(o => {
+                if (o._id === orderId) {
+                    return {
+                        ...o,
+                        ...updated,
+                        // Preserve populated user object if updated.user is an unpopulated ID string
+                        user: (updated.user && typeof updated.user === 'object' && updated.user.name)
+                            ? updated.user
+                            : (o.user || updated.user)
+                    };
+                }
+                return o;
+            }));
             if (newStatus === "Cancelled") {
                 queryClient.invalidateQueries({ queryKey: ["products"] });
                 queryClient.invalidateQueries({ queryKey: ["product"] });
@@ -191,19 +218,19 @@ export const AdminDashboard = () => {
                     <div className="admin-tabs">
                         <button
                             className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
-                            onClick={() => setActiveTab("overview")}
+                            onClick={() => handleTabSelect("overview")}
                         >
                             Overview
                         </button>
                         <button
                             className={`tab-btn ${activeTab === "products" ? "active" : ""}`}
-                            onClick={() => setActiveTab("products")}
+                            onClick={() => handleTabSelect("products")}
                         >
                             Manage Products
                         </button>
                         <button
                             className={`tab-btn ${activeTab === "orders" ? "active" : ""}`}
-                            onClick={() => setActiveTab("orders")}
+                            onClick={() => handleTabSelect("orders")}
                         >
                             View Orders
                         </button>
@@ -375,14 +402,29 @@ export const AdminDashboard = () => {
                                 <tbody>
                                     {orders.map(order => (
                                         <tr key={order._id}>
-                                            <td>{order._id.substring(order._id.length - 8)}</td>
                                             <td>
-                                                {order.user ? order.user.name : "Guest"}
-                                                <br />
-                                                <small style={{ color: '#666' }}>{order.user ? order.user.email : ""}</small>
+                                                <Link
+                                                    to={`/admin/orders/${order._id}`}
+                                                    className="admin-order-id-link"
+                                                    title="View full order details"
+                                                >
+                                                    #{order._id.substring(order._id.length - 8)}
+                                                </Link>
+                                            </td>
+                                            <td>
+                                                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                                                    {(order.user && typeof order.user === 'object' && order.user.name)
+                                                        ? order.user.name
+                                                        : (order.shippingAddress?.fullName || (order.user ? "Customer" : "Guest"))}
+                                                </div>
+                                                {((order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone) && (
+                                                    <small style={{ color: 'var(--text-secondary)', display: 'block', marginTop: '2px' }}>
+                                                        {(order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone}
+                                                    </small>
+                                                )}
                                             </td>
                                             <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                                            <td><strong style={{ color: '#212121' }}>₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</strong></td>
+                                            <td><strong style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 700 }}>₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</strong></td>
                                             <td>
                                                 <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
                                                     {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
@@ -408,26 +450,34 @@ export const AdminDashboard = () => {
                                                 <ul className="admin-order-items-list" style={{ listStyleType: "none", paddingLeft: "0", margin: 0, fontSize: "0.9rem" }}>
                                                     {order.orderItems.map((item, idx) => (
                                                         <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                                                            <img src={item.thumbnail} alt={item.title} width="30" height="30" style={{ objectFit: 'cover', borderRadius: '4px', border: '1px solid #eee' }} />
+                                                            <img src={item.thumbnail} alt={item.title} width="30" height="30" style={{ objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-glass)' }} />
                                                             <span>
-                                                                {item.title} <span style={{ color: '#666' }}>(x{item.quantity})</span>
+                                                                {item.title} <span style={{ color: 'var(--text-secondary)' }}>(x{item.quantity})</span>
                                                             </span>
                                                         </li>
                                                     ))}
                                                 </ul>
                                             </td>
                                             <td>
-                                                <select
-                                                    className="admin-status-select"
-                                                    value={order.orderStatus || "Pending"}
-                                                    onChange={(e) => handleOrderStatusChange(order._id, e.target.value)}
-                                                >
-                                                    <option value="Pending">Pending</option>
-                                                    <option value="Processing">Processing</option>
-                                                    <option value="Shipped">Shipped</option>
-                                                    <option value="Delivered">Delivered</option>
-                                                    <option value="Cancelled">Cancelled</option>
-                                                </select>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                    <Link
+                                                        to={`/admin/orders/${order._id}`}
+                                                        className="admin-btn-view-order"
+                                                    >
+                                                        👁️ Details
+                                                    </Link>
+                                                    <select
+                                                        className="admin-status-select"
+                                                        value={order.orderStatus || "Pending"}
+                                                        onChange={(e) => handleOrderStatusChange(order._id, e.target.value)}
+                                                    >
+                                                        <option value="Pending">Pending</option>
+                                                        <option value="Processing">Processing</option>
+                                                        <option value="Shipped">Shipped</option>
+                                                        <option value="Delivered">Delivered</option>
+                                                        <option value="Cancelled">Cancelled</option>
+                                                    </select>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}

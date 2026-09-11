@@ -4,6 +4,7 @@ import { getMyOrders, cancelOrder, deleteOrder, retryOrderPayment, verifyRazorpa
 import { loadRazorpayScript } from "../utils/loadRazorpay";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { PrintableOrderSlip } from "../components/PrintableOrderSlip";
 import '../components/css/orders.css';
 
 export const Orders = () => {
@@ -11,9 +12,33 @@ export const Orders = () => {
     const [loading, setLoading] = useState(true);
     const [cancellingId, setCancellingId] = useState(null);
     const [payingId, setPayingId] = useState(null);
+    const [printingOrder, setPrintingOrder] = useState(null);
     const { user, loading: authLoading } = useContext(AuthContext);
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (printingOrder) {
+            const timer = setTimeout(() => {
+                window.print();
+            }, 120);
+
+            const handleAfterPrint = () => {
+                setPrintingOrder(null);
+            };
+
+            window.addEventListener("afterprint", handleAfterPrint);
+
+            return () => {
+                clearTimeout(timer);
+                window.removeEventListener("afterprint", handleAfterPrint);
+            };
+        }
+    }, [printingOrder]);
+
+    const handlePrintOrder = (order) => {
+        setPrintingOrder(order);
+    };
 
     const fetchOrders = async () => {
         try {
@@ -328,6 +353,15 @@ export const Orders = () => {
                                                     </button>
                                                 )
                                             )}
+
+                                            <button
+                                                type="button"
+                                                className="btn-print-order-slip-sidebar no-print"
+                                                onClick={() => handlePrintOrder(order)}
+                                                title="Print packing slip or invoice"
+                                            >
+                                                🖨️ Print Order Slip
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -336,6 +370,9 @@ export const Orders = () => {
                     })}
                 </div>
             )}
+
+            {/* Dedicated Single-Page Tabular Black & White Printable Order Slip */}
+            {printingOrder && <PrintableOrderSlip order={printingOrder} />}
         </section>
     );
 };
