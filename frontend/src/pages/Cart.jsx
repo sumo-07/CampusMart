@@ -102,7 +102,15 @@ export const Cart = () => {
 
             <h2>Total Price: ₹{totalPrice.toFixed(2)}</h2>
 
-            <button onClick={() => navigate("/checkout")}>
+            <button
+                onClick={() => {
+                    if (!user) {
+                        navigate("/login?redirect=/checkout");
+                        return;
+                    }
+                    navigate("/checkout");
+                }}
+            >
                 Checkout
             </button>
         </section>

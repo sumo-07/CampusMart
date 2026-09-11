@@ -24,7 +24,7 @@ export const Checkout = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { user, setUser } = useContext(AuthContext);
+  const { user, setUser, loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -33,16 +33,31 @@ export const Checkout = () => {
   const cartItems = buyNowItem ? [buyNowItem] : contextCartItems;
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      navigate("/login?redirect=/checkout", {
+        replace: true,
+        state: location.state,
+      });
+    }
+  }, [user, authLoading, navigate, location.state]);
+
+  useEffect(() => {
     if (user?.addresses && user.addresses.length > 0) {
       setAddressMode("0"); // First address
     }
   }, [user]);
 
-  if (cartLoading) return <p style={{ textAlign: 'center', padding: '4rem' }}>Loading checkout...</p>;
+  if (authLoading || cartLoading) return <p style={{ textAlign: 'center', padding: '4rem' }}>Loading checkout...</p>;
+  if (!user) return null;
 
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const handlePlaceOrder = async () => {
+    if (!user) {
+      navigate("/login?redirect=/checkout", { state: location.state });
+      return;
+    }
     if (cartItems.length === 0) {
       alert("Your cart is empty");
       return;

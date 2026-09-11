@@ -94,6 +94,10 @@ export const ProductDetails = () => {
             thumbnail: product.thumbnail,
             quantity: 1
         };
+        if (!user) {
+            navigate("/login?redirect=/checkout", { state: { buyNowItem } });
+            return;
+        }
         navigate("/checkout", { state: { buyNowItem } });
     };
 

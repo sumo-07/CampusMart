@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axiosConfig";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
@@ -16,6 +16,10 @@ export const Signup = () => {
 
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const redirect = searchParams.get("redirect") || "/";
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -28,7 +32,7 @@ export const Signup = () => {
     try {
       const { data } = await api.post("/api/auth/signup", { name, email, password });
       login(data);
-      navigate("/");
+      navigate(redirect, { state: location.state, replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Signup failed");
     }
@@ -128,7 +132,11 @@ export const Signup = () => {
 
         <p className="auth-switch">
           Already have an account?{" "}
-          <Link to="/login" className="auth-link">
+          <Link
+            to={`/login${location.search}`}
+            state={location.state}
+            className="auth-link"
+          >
             Login
           </Link>
         </p>
