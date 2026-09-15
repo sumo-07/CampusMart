@@ -140,6 +140,79 @@ const setDefaultAddress = async (req, res) => {
     }
 };
 
+// @desc    Update user address
+// @route   PUT /api/auth/address/:id
+// @access  Private
+const updateUserAddress = async (req, res) => {
+    const { id } = req.params;
+    const { fullName, address, city, pincode, phone, isDefault } = req.body;
+
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const addressSubdoc = user.addresses.id ? user.addresses.id(id) : null;
+        const targetAddress = addressSubdoc || user.addresses.find((a) => a._id.toString() === id);
+
+        if (!targetAddress) {
+            return res.status(404).json({ message: "Address not found" });
+        }
+
+        if (fullName !== undefined) targetAddress.fullName = fullName;
+        if (address !== undefined) targetAddress.address = address;
+        if (city !== undefined) targetAddress.city = city;
+        if (pincode !== undefined) targetAddress.pincode = pincode;
+        if (phone !== undefined) targetAddress.phone = phone;
+
+        if (isDefault !== undefined && isDefault) {
+            user.addresses.forEach((addr) => {
+                addr.isDefault = addr._id.toString() === id;
+            });
+        }
+
+        await user.save();
+        res.status(200).json(user.addresses);
+    } catch (error) {
+        console.error("Error updating address", error);
+        res.status(500).json({ message: "Error updating address", error: error.message });
+    }
+};
+
+// @desc    Delete user address
+// @route   DELETE /api/auth/address/:id
+// @access  Private
+const deleteUserAddress = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const addressIndex = user.addresses.findIndex((addr) => addr._id.toString() === id);
+        if (addressIndex === -1) {
+            return res.status(404).json({ message: "Address not found" });
+        }
+
+        const wasDefault = user.addresses[addressIndex].isDefault;
+        user.addresses.splice(addressIndex, 1);
+
+        // If the deleted address was default, make the first remaining address default
+        if (wasDefault && user.addresses.length > 0) {
+            user.addresses[0].isDefault = true;
+        }
+
+        await user.save();
+        res.status(200).json(user.addresses);
+    } catch (error) {
+        console.error("Error deleting address", error);
+        res.status(500).json({ message: "Error deleting address", error: error.message });
+    }
+};
+
 // @desc    Logout user & clear cookie
 // @route   POST /api/auth/logout
 // @access  Public
@@ -156,6 +229,8 @@ module.exports = {
     registerUser,
     getProfile,
     addUserAddress,
+    updateUserAddress,
+    deleteUserAddress,
     setDefaultAddress,
     logoutUser,
 };
