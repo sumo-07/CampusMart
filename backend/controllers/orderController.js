@@ -5,6 +5,9 @@ const User = require("../models/User");
 const Product = require("../models/Product");
 const { getRazorpayInstance } = require("../config/razorpay");
 
+// Maximum allowed purchase quantity per product per order
+const MAX_ITEM_QUANTITY = 5;
+
 // @desc    Create new order
 // @route   POST /api/orders
 // @access  Private
@@ -29,6 +32,12 @@ const addOrderItems = async (req, res) => {
             const qty = Number(item.quantity);
             if (!qty || qty <= 0) {
                 return res.status(400).json({ message: `Invalid quantity for item: ${item.title || item.productId}` });
+            }
+
+            if (qty > MAX_ITEM_QUANTITY) {
+                return res.status(400).json({
+                    message: `Maximum ${MAX_ITEM_QUANTITY} units allowed per item. You requested ${qty} units of "${item.title || "an item"}".`,
+                });
             }
 
             if (!mongoose.isValidObjectId(item.productId)) {

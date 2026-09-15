@@ -16,7 +16,7 @@ export const ProductCard = ({ product }) => {
     stock,
   } = product;
 
-  const { getItemQuantity, updateQuantity, addToCart } = useCart();
+  const { getItemQuantity, updateQuantity, addToCart, MAX_ITEM_QUANTITY } = useCart();
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -86,14 +86,18 @@ export const ProductCard = ({ product }) => {
                   className="card-qty-btn"
                   onClick={(e) => {
                     e.preventDefault();
+                    if (cartQty >= (MAX_ITEM_QUANTITY || 5)) {
+                      alert(`Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item`);
+                      return;
+                    }
                     if (stock !== undefined && cartQty >= stock) {
                       alert(`Only ${stock} items available in stock`);
                       return;
                     }
                     updateQuantity(productId, "inc");
                   }}
-                  disabled={stock !== undefined && cartQty >= stock}
-                  title="Increase quantity"
+                  disabled={cartQty >= (MAX_ITEM_QUANTITY || 5) || (stock !== undefined && cartQty >= stock)}
+                  title={cartQty >= (MAX_ITEM_QUANTITY || 5) ? `Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item` : "Increase quantity"}
                 >
                   +
                 </button>

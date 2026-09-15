@@ -12,7 +12,7 @@ export const ProductDetails = () => {
     const navigate = useNavigate();
     const [addingToCart, setAddingToCart] = useState(false);
     const { user } = useContext(AuthContext);
-    const { getItemQuantity, updateQuantity, addToCart } = useCart();
+    const { getItemQuantity, updateQuantity, addToCart, MAX_ITEM_QUANTITY } = useCart();
 
     /* ------------------ Product Query ------------------ */
     const {
@@ -169,14 +169,18 @@ export const ProductDetails = () => {
                                         className="pd-qty-btn"
                                         onClick={() => {
                                             const currentQty = getItemQuantity(product._id || product.id || productId);
+                                            if (currentQty >= (MAX_ITEM_QUANTITY || 5)) {
+                                                alert(`Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item`);
+                                                return;
+                                            }
                                             if (product.stock !== undefined && currentQty >= product.stock) {
                                                 alert(`Only ${product.stock} items available in stock`);
                                                 return;
                                             }
                                             updateQuantity(product._id || product.id || productId, "inc");
                                         }}
-                                        disabled={product.stock !== undefined && getItemQuantity(product._id || product.id || productId) >= product.stock}
-                                        title="Increase quantity"
+                                        disabled={getItemQuantity(product._id || product.id || productId) >= (MAX_ITEM_QUANTITY || 5) || (product.stock !== undefined && getItemQuantity(product._id || product.id || productId) >= product.stock)}
+                                        title={getItemQuantity(product._id || product.id || productId) >= (MAX_ITEM_QUANTITY || 5) ? `Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item` : "Increase quantity"}
                                     >
                                         +
                                     </button>

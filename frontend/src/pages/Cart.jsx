@@ -7,7 +7,7 @@ import { useCart } from "../context/CartContext";
 import "../components/css/cart.css";
 
 export const Cart = () => {
-    const { cartItems, loading, updateQuantity, removeFromCart, totalPrice, refreshCart } = useCart();
+    const { cartItems, loading, updateQuantity, removeFromCart, totalPrice, refreshCart, MAX_ITEM_QUANTITY } = useCart();
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
 
@@ -18,6 +18,13 @@ export const Cart = () => {
     }, [user]);
 
     const handleQuantity = async (productId, type) => {
+        if (type === "inc") {
+            const currentItem = cartItems.find((i) => String(i.productId) === String(productId));
+            if (currentItem && currentItem.quantity >= (MAX_ITEM_QUANTITY || 5)) {
+                alert(`Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item`);
+                return;
+            }
+        }
         try {
             await updateQuantity(productId, type);
         } catch (error) {
@@ -76,7 +83,11 @@ export const Cart = () => {
 
                             <span>{item.quantity}</span>
 
-                            <button onClick={() => handleQuantity(item.productId, "inc")}>
+                            <button
+                                onClick={() => handleQuantity(item.productId, "inc")}
+                                disabled={item.quantity >= (MAX_ITEM_QUANTITY || 5)}
+                                title={item.quantity >= (MAX_ITEM_QUANTITY || 5) ? `Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item` : "Increase quantity"}
+                            >
                                 +
                             </button>
 

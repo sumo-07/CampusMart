@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect } from "react";
 import api from "../api/axiosConfig";
 import { AuthContext } from "./AuthContext";
 
+export const MAX_ITEM_QUANTITY = 5;
+
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
@@ -39,6 +41,12 @@ export const CartProvider = ({ children }) => {
     // Add new product or increment existing
     const addToCart = async (product, quantity = 1) => {
         const productId = product._id || product.id;
+        const currentQty = getItemQuantity(productId);
+
+        if (currentQty + quantity > MAX_ITEM_QUANTITY) {
+            throw new Error(`Maximum ${MAX_ITEM_QUANTITY} units allowed per item (${currentQty} already in your cart).`);
+        }
+
         try {
             const { data } = await api.post("/api/cart/add", {
                 productId,
@@ -57,6 +65,12 @@ export const CartProvider = ({ children }) => {
 
     // Update quantity ('inc' or 'dec')
     const updateQuantity = async (productId, action) => {
+        const currentQty = getItemQuantity(productId);
+
+        if (action === "inc" && currentQty >= MAX_ITEM_QUANTITY) {
+            throw new Error(`Maximum ${MAX_ITEM_QUANTITY} units allowed per item.`);
+        }
+
         const prevCart = [...cartItems];
 
         // Optimistic UI update for instant feedback
@@ -154,6 +168,7 @@ export const CartProvider = ({ children }) => {
                 resetCartState,
                 totalCartCount,
                 totalPrice,
+                MAX_ITEM_QUANTITY,
             }}
         >
             {children}

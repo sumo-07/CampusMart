@@ -8,7 +8,7 @@ import "../css/quickView.css";
 
 export const ProductQuickViewModal = ({ isOpen, onClose, product }) => {
   const [adding, setAdding] = useState(false);
-  const { getItemQuantity, updateQuantity, addToCart } = useCart();
+  const { getItemQuantity, updateQuantity, addToCart, MAX_ITEM_QUANTITY } = useCart();
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -108,14 +108,18 @@ export const ProductQuickViewModal = ({ isOpen, onClose, product }) => {
                     className="card-qty-btn"
                     style={{ width: '32px', height: '32px', fontSize: '1.1rem' }}
                     onClick={() => {
+                      if (cartQty >= (MAX_ITEM_QUANTITY || 5)) {
+                        alert(`Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item`);
+                        return;
+                      }
                       if (stock !== undefined && cartQty >= stock) {
                         alert(`Only ${stock} items available in stock`);
                         return;
                       }
                       updateQuantity(productId, "inc");
                     }}
-                    disabled={stock !== undefined && cartQty >= stock}
-                    title="Increase quantity"
+                    disabled={cartQty >= (MAX_ITEM_QUANTITY || 5) || (stock !== undefined && cartQty >= stock)}
+                    title={cartQty >= (MAX_ITEM_QUANTITY || 5) ? `Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item` : "Increase quantity"}
                   >
                     +
                   </button>
