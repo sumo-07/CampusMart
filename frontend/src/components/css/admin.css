@@ -1118,4 +1118,221 @@
   border-color: var(--accent-blue);
 }
 
+/* =========================================================
+   Admin Sorting, Filtering & Search Controls
+   ========================================================= */
+
+.admin-toolbar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.admin-toolbar-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-toolbar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.admin-search-wrapper .search-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 0.85rem;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.admin-search-wrapper .admin-search-input {
+  padding-left: 36px;
+  padding-right: 32px;
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+}
+
+.clear-search-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.admin-sort-wrapper,
+.admin-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-control-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.admin-sort-select {
+  padding: 8px 14px;
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: rgba(20, 20, 35, 0.85);
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  backdrop-filter: blur(10px);
+}
+
+.admin-sort-select:hover {
+  border-color: rgba(var(--accent-blue-rgb), 0.5);
+  background: rgba(30, 30, 50, 0.95);
+}
+
+.admin-sort-select:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 12px rgba(var(--accent-blue-rgb), 0.3);
+}
+
+.admin-sort-select option {
+  background-color: #121220;
+  color: #fff;
+  padding: 8px;
+}
+
+.admin-btn-reset-filters {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #ff4757;
+  background: rgba(255, 71, 87, 0.1);
+  border: 1px solid rgba(255, 71, 87, 0.25);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  white-space: nowrap;
+}
+
+.admin-btn-reset-filters:hover {
+  background: #ff4757;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(255, 71, 87, 0.4);
+}
+
+/* Sortable Table Headers */
+.sortable-th {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sortable-th:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: var(--accent-blue);
+}
+
+.th-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sort-icon {
+  font-size: 0.75rem;
+  line-height: 1;
+  display: inline-block;
+  transition: transform 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+.sort-icon.inactive {
+  opacity: 0.35;
+}
+
+.sortable-th:hover .sort-icon.inactive {
+  opacity: 0.8;
+  color: var(--accent-blue);
+}
+
+.sort-icon.active {
+  color: var(--accent-blue);
+  opacity: 1;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(var(--accent-blue-rgb), 0.6);
+}
+
+/* Admin Orders Toolbar & Controls */
+.admin-orders-controls {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-orders-search-filter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-glass);
+  padding: 12px 16px;
+  border-radius: 12px;
+}
+
+.admin-orders-count-indicator {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  padding-left: 4px;
+}
+
+.admin-orders-count-indicator strong {
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .admin-toolbar-row,
+  .admin-toolbar-group,
+  .admin-orders-search-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-search-wrapper,
+  .admin-search-input,
+  .admin-sort-select {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+
 

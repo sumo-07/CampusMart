@@ -74,6 +74,10 @@ export const AdminDashboard = () => {
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [isSeeding, setIsSeeding] = useState(false);
+    const [productSort, setProductSort] = useState("default");
+    const [orderSort, setOrderSort] = useState("date-desc");
+    const [orderStatusFilter, setOrderStatusFilter] = useState("all");
+    const [orderSearchQuery, setOrderSearchQuery] = useState("");
 
     const closeFormWithAnimation = () => {
         setIsAnimatingOut(true);
@@ -241,16 +245,104 @@ export const AdminDashboard = () => {
     const pendingOrders = orders.filter(o => (o.orderStatus || 'Pending') === 'Pending').length;
     const deliveredOrders = orders.filter(o => o.orderStatus === 'Delivered').length;
 
-    // Pagination & Search Logic
-    const filteredProducts = products.filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()) || p._id.includes(searchQuery));
-    const itemsPerPage = 10;
-    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-    const paginatedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    // Filter & Sort Products
+    const filteredProducts = products.filter(p =>
+        (p.title && p.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (p._id && p._id.includes(searchQuery))
+    );
 
-    // Reset page on search
+    const sortedProducts = [...filteredProducts].sort((a, b) => {
+        switch (productSort) {
+            case "stock-asc":
+                return (a.stock ?? 0) - (b.stock ?? 0);
+            case "stock-desc":
+                return (b.stock ?? 0) - (a.stock ?? 0);
+            case "price-asc":
+                return (a.price ?? 0) - (b.price ?? 0);
+            case "price-desc":
+                return (b.price ?? 0) - (a.price ?? 0);
+            case "title-asc":
+                return (a.title || "").localeCompare(b.title || "");
+            case "title-desc":
+                return (b.title || "").localeCompare(a.title || "");
+            default:
+                return 0;
+        }
+    });
+
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
+    const paginatedProducts = sortedProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    // Reset page on search or sort change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery]);
+    }, [searchQuery, productSort]);
+
+    // Filter & Sort Orders
+    const filteredOrders = orders.filter(order => {
+        if (orderStatusFilter !== "all") {
+            const currentStatus = order.orderStatus || "Pending";
+            if (currentStatus !== orderStatusFilter) return false;
+        }
+        if (orderSearchQuery.trim()) {
+            const q = orderSearchQuery.toLowerCase().trim();
+            const idMatch = order._id && order._id.toLowerCase().includes(q);
+            const customerName = (order.user && typeof order.user === 'object' && order.user.name)
+                ? order.user.name.toLowerCase()
+                : (order.shippingAddress?.fullName?.toLowerCase() || "");
+            const customerEmail = (order.user && typeof order.user === 'object' && order.user.email)
+                ? order.user.email.toLowerCase()
+                : "";
+            const customerPhone = order.shippingAddress?.phone ? String(order.shippingAddress.phone) : "";
+            const paymentMethod = order.paymentMethod ? order.paymentMethod.toLowerCase() : "";
+
+            if (!idMatch && !customerName.includes(q) && !customerEmail.includes(q) && !customerPhone.includes(q) && !paymentMethod.includes(q)) {
+                return false;
+            }
+        }
+        return true;
+    });
+
+    const sortedOrders = [...filteredOrders].sort((a, b) => {
+        switch (orderSort) {
+            case "date-asc":
+                return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+            case "date-desc":
+                return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+            case "amount-asc":
+                return Number(a.amount ?? a.totalPrice ?? 0) - Number(b.amount ?? b.totalPrice ?? 0);
+            case "amount-desc":
+                return Number(b.amount ?? b.totalPrice ?? 0) - Number(a.amount ?? a.totalPrice ?? 0);
+            default:
+                return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        }
+    });
+
+    const handleProductSortToggle = (field) => {
+        if (field === "title") {
+            setProductSort(prev => prev === "title-asc" ? "title-desc" : "title-asc");
+        } else if (field === "price") {
+            setProductSort(prev => prev === "price-asc" ? "price-desc" : "price-asc");
+        } else if (field === "stock") {
+            setProductSort(prev => prev === "stock-asc" ? "stock-desc" : "stock-asc");
+        }
+    };
+
+    const handleOrderSortToggle = (field) => {
+        if (field === "date") {
+            setOrderSort(prev => prev === "date-desc" ? "date-asc" : "date-desc");
+        } else if (field === "amount") {
+            setOrderSort(prev => prev === "amount-desc" ? "amount-asc" : "amount-desc");
+        }
+    };
+
+    const getSortIcon = (currentSort, ascVal, descVal) => {
+        if (currentSort === ascVal) return <span className="sort-icon active" aria-label="Sorted ascending">▲</span>;
+        if (currentSort === descVal) return <span className="sort-icon active" aria-label="Sorted descending">▼</span>;
+        return <span className="sort-icon inactive" aria-label="Sortable">↕</span>;
+    };
 
     if (loading) return <div className="admin-loading">Loading Dashboard...</div>;
 
@@ -308,18 +400,61 @@ export const AdminDashboard = () => {
 
                 {activeTab === "products" && (
                     <div className="admin-products">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <div className="admin-toolbar-row">
+                            <div className="admin-toolbar-group">
                                 <h2>Manage Inventory</h2>
-                                <input
-                                    type="text"
-                                    placeholder="Search products by title or ID..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="admin-search-input"
-                                />
+                                <div className="admin-search-wrapper">
+                                    <span className="search-icon">🔍</span>
+                                    <input
+                                        type="text"
+                                        placeholder="Search products by title, category, ID..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="admin-search-input"
+                                    />
+                                    {searchQuery && (
+                                        <button
+                                            type="button"
+                                            className="clear-search-btn"
+                                            onClick={() => setSearchQuery("")}
+                                            title="Clear search"
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="admin-sort-wrapper">
+                                    <label htmlFor="product-sort-select" className="admin-control-label">Sort:</label>
+                                    <select
+                                        id="product-sort-select"
+                                        value={productSort}
+                                        onChange={(e) => setProductSort(e.target.value)}
+                                        className="admin-sort-select"
+                                    >
+                                        <option value="default">Default / Catalog</option>
+                                        <option value="stock-asc">⚠️ Stock: Low to High</option>
+                                        <option value="stock-desc">Stock: High to Low</option>
+                                        <option value="price-asc">Price: Low to High</option>
+                                        <option value="price-desc">Price: High to Low</option>
+                                        <option value="title-asc">Title: A to Z</option>
+                                        <option value="title-desc">Title: Z to A</option>
+                                    </select>
+                                </div>
+                                {(productSort !== "default" || searchQuery) && (
+                                    <button
+                                        type="button"
+                                        className="admin-btn-reset-filters"
+                                        onClick={() => {
+                                            setProductSort("default");
+                                            setSearchQuery("");
+                                        }}
+                                        title="Reset filters & sort"
+                                    >
+                                        Reset
+                                    </button>
+                                )}
                             </div>
-                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <div className="admin-toolbar-actions">
                                 <button
                                     type="button"
                                     onClick={handleSyncCatalog}
@@ -327,7 +462,7 @@ export const AdminDashboard = () => {
                                     className="admin-btn-sync"
                                     title="Fetch and sync products from DummyJSON"
                                 >
-                                    {isSeeding ? "Syncing..." : "🔄 Sync / Seed Catalog"}
+                                    {isSeeding ? "Syncing..." : "🔄 Sync Catalog"}
                                 </button>
                                 <button onClick={toggleAddForm} className={`admin-btn-action ${showAddForm ? "cancel" : ""}`}>
                                     {showAddForm ? "Cancel" : "+ Add New Product"}
@@ -357,42 +492,65 @@ export const AdminDashboard = () => {
                                 <thead>
                                     <tr>
                                         <th>Image</th>
-                                        <th>Title</th>
-                                        <th>Price</th>
-                                        <th>Stock</th>
+                                        <th className="sortable-th" onClick={() => handleProductSortToggle("title")} title="Sort by Title">
+                                            <div className="th-content">
+                                                <span>Title</span>
+                                                {getSortIcon(productSort, "title-asc", "title-desc")}
+                                            </div>
+                                        </th>
+                                        <th className="sortable-th" onClick={() => handleProductSortToggle("price")} title="Sort by Price">
+                                            <div className="th-content">
+                                                <span>Price</span>
+                                                {getSortIcon(productSort, "price-asc", "price-desc")}
+                                            </div>
+                                        </th>
+                                        <th className="sortable-th" onClick={() => handleProductSortToggle("stock")} title="Sort by Stock">
+                                            <div className="th-content">
+                                                <span>Stock</span>
+                                                {getSortIcon(productSort, "stock-asc", "stock-desc")}
+                                            </div>
+                                        </th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {paginatedProducts.map(product => (
-                                        <tr key={product._id}>
-                                            <td>
-                                                <img src={product.thumbnail} alt={product.title} width="50" />
-                                            </td>
-                                            <td>{product.title}</td>
-                                            <td>₹{product.price}</td>
-                                            <td>
-                                                {editingProduct === product._id ? (
-                                                    <input
-                                                        type="number"
-                                                        defaultValue={product.stock}
-                                                        onBlur={(e) => handleStockUpdate(product._id, e.target.value)}
-                                                        autoFocus
-                                                    />
-                                                ) : (
-                                                    <span onClick={() => setEditingProduct(product._id)}>
-                                                        {product.stock} <small>(click to edit)</small>
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td>
-                                                <div style={{ display: 'flex', gap: '8px' }}>
-                                                    <button onClick={() => startEditProduct(product)} className="btn-edit">Edit</button>
-                                                    <button onClick={() => handleDeleteProduct(product._id)} className="btn-delete">Delete</button>
-                                                </div>
+                                    {paginatedProducts.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="5" style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
+                                                No products found matching your search or filters.
                                             </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        paginatedProducts.map(product => (
+                                            <tr key={product._id}>
+                                                <td>
+                                                    <img src={product.thumbnail} alt={product.title} width="50" />
+                                                </td>
+                                                <td>{product.title}</td>
+                                                <td>₹{product.price}</td>
+                                                <td>
+                                                    {editingProduct === product._id ? (
+                                                        <input
+                                                            type="number"
+                                                            defaultValue={product.stock}
+                                                            onBlur={(e) => handleStockUpdate(product._id, e.target.value)}
+                                                            autoFocus
+                                                        />
+                                                    ) : (
+                                                        <span onClick={() => setEditingProduct(product._id)}>
+                                                            {product.stock} <small>(click to edit)</small>
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <button onClick={() => startEditProduct(product)} className="btn-edit">Edit</button>
+                                                        <button onClick={() => handleDeleteProduct(product._id)} className="btn-delete">Delete</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -463,14 +621,100 @@ export const AdminDashboard = () => {
                             </button>
                         </div>
 
+                        <div className="admin-orders-controls">
+                            <div className="admin-orders-search-filter">
+                                <div className="admin-search-wrapper">
+                                    <span className="search-icon">🔍</span>
+                                    <input
+                                        type="text"
+                                        placeholder="Search orders (ID, customer, email, phone)..."
+                                        value={orderSearchQuery}
+                                        onChange={(e) => setOrderSearchQuery(e.target.value)}
+                                        className="admin-search-input"
+                                    />
+                                    {orderSearchQuery && (
+                                        <button
+                                            type="button"
+                                            className="clear-search-btn"
+                                            onClick={() => setOrderSearchQuery("")}
+                                            title="Clear search"
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="admin-filter-group">
+                                    <label htmlFor="order-status-select" className="admin-control-label">Status:</label>
+                                    <select
+                                        id="order-status-select"
+                                        value={orderStatusFilter}
+                                        onChange={(e) => setOrderStatusFilter(e.target.value)}
+                                        className="admin-sort-select"
+                                    >
+                                        <option value="all">All Statuses ({orders.length})</option>
+                                        <option value="Pending">Pending ({orders.filter(o => (o.orderStatus || 'Pending') === 'Pending').length})</option>
+                                        <option value="Processing">Processing ({orders.filter(o => o.orderStatus === 'Processing').length})</option>
+                                        <option value="Shipped">Shipped ({orders.filter(o => o.orderStatus === 'Shipped').length})</option>
+                                        <option value="Delivered">Delivered ({orders.filter(o => o.orderStatus === 'Delivered').length})</option>
+                                        <option value="Cancelled">Cancelled ({orders.filter(o => o.orderStatus === 'Cancelled').length})</option>
+                                    </select>
+                                </div>
+
+                                <div className="admin-filter-group">
+                                    <label htmlFor="order-sort-select" className="admin-control-label">Sort:</label>
+                                    <select
+                                        id="order-sort-select"
+                                        value={orderSort}
+                                        onChange={(e) => setOrderSort(e.target.value)}
+                                        className="admin-sort-select"
+                                    >
+                                        <option value="date-desc">📅 Date: Newest First</option>
+                                        <option value="date-asc">📅 Date: Oldest First</option>
+                                        <option value="amount-desc">💰 Total: High to Low</option>
+                                        <option value="amount-asc">💰 Total: Low to High</option>
+                                    </select>
+                                </div>
+
+                                {(orderStatusFilter !== "all" || orderSearchQuery || orderSort !== "date-desc") && (
+                                    <button
+                                        type="button"
+                                        className="admin-btn-reset-filters"
+                                        onClick={() => {
+                                            setOrderStatusFilter("all");
+                                            setOrderSearchQuery("");
+                                            setOrderSort("date-desc");
+                                        }}
+                                        title="Reset filters & sort"
+                                    >
+                                        Reset
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="admin-orders-count-indicator">
+                                Showing <strong>{sortedOrders.length}</strong> of <strong>{orders.length}</strong> {orders.length === 1 ? 'order' : 'orders'}
+                            </div>
+                        </div>
+
                         <div className="products-table-wrapper">
                             <table className="products-table">
                                 <thead>
                                     <tr>
                                         <th>Order ID</th>
                                         <th>Customer</th>
-                                        <th>Date</th>
-                                        <th>Total</th>
+                                        <th className="sortable-th" onClick={() => handleOrderSortToggle("date")} title="Sort by Date">
+                                            <div className="th-content">
+                                                <span>Date</span>
+                                                {getSortIcon(orderSort, "date-asc", "date-desc")}
+                                            </div>
+                                        </th>
+                                        <th className="sortable-th" onClick={() => handleOrderSortToggle("amount")} title="Sort by Total Amount">
+                                            <div className="th-content">
+                                                <span>Total</span>
+                                                {getSortIcon(orderSort, "amount-asc", "amount-desc")}
+                                            </div>
+                                        </th>
                                         <th>Payment</th>
                                         <th>Status</th>
                                         <th>Items Ordered</th>
@@ -478,87 +722,95 @@ export const AdminDashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {orders.map(order => (
-                                        <tr key={order._id}>
-                                            <td>
-                                                <Link
-                                                    to={`/admin/orders/${order._id}`}
-                                                    className="admin-order-id-link"
-                                                    title="View full order details"
-                                                >
-                                                    #{order._id.substring(order._id.length - 8)}
-                                                </Link>
-                                            </td>
-                                            <td>
-                                                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                                                    {(order.user && typeof order.user === 'object' && order.user.name)
-                                                        ? order.user.name
-                                                        : (order.shippingAddress?.fullName || (order.user ? "Customer" : "Guest"))}
-                                                </div>
-                                                {((order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone) && (
-                                                    <small style={{ color: 'var(--text-secondary)', display: 'block', marginTop: '2px' }}>
-                                                        {(order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone}
-                                                    </small>
-                                                )}
-                                            </td>
-                                            <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                                            <td><strong style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 700 }}>₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</strong></td>
-                                            <td>
-                                                <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                                                    {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
-                                                </span>
-                                                <br />
-                                                <small style={{
-                                                    fontWeight: 700,
-                                                    color: (order.orderStatus === "Cancelled")
-                                                        ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "#06b6d4" : "#ef4444")
-                                                        : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "#22c55e" : "#eab308")
-                                                }}>
-                                                    ({order.orderStatus === "Cancelled"
-                                                        ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "Refunded" : "Cancelled")
-                                                        : (order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending"))})
-                                                </small>
-                                            </td>
-                                            <td>
-                                                <span className={`status-badge ${(order.orderStatus || "Pending").toLowerCase()}`}>
-                                                    {order.orderStatus || "Pending"}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <ul className="admin-order-items-list" style={{ listStyleType: "none", paddingLeft: "0", margin: 0, fontSize: "0.9rem" }}>
-                                                    {order.orderItems.map((item, idx) => (
-                                                        <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                                                            <img src={item.thumbnail} alt={item.title} width="30" height="30" style={{ objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-glass)' }} />
-                                                            <span>
-                                                                {item.title} <span style={{ color: 'var(--text-secondary)' }}>(x{item.quantity})</span>
-                                                            </span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </td>
-                                            <td>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                                    <Link
-                                                        to={`/admin/orders/${order._id}`}
-                                                        className="admin-btn-view-order"
-                                                    >
-                                                        👁️ Details
-                                                    </Link>
-                                                    <select
-                                                        className="admin-status-select"
-                                                        value={order.orderStatus || "Pending"}
-                                                        onChange={(e) => handleOrderStatusChange(order._id, e.target.value)}
-                                                    >
-                                                        <option value="Pending">Pending</option>
-                                                        <option value="Processing">Processing</option>
-                                                        <option value="Shipped">Shipped</option>
-                                                        <option value="Delivered">Delivered</option>
-                                                        <option value="Cancelled">Cancelled</option>
-                                                    </select>
-                                                </div>
+                                    {sortedOrders.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="8" style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
+                                                No customer orders found matching your search or filters.
                                             </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        sortedOrders.map(order => (
+                                            <tr key={order._id}>
+                                                <td>
+                                                    <Link
+                                                        to={`/admin/orders/${order._id}`}
+                                                        className="admin-order-id-link"
+                                                        title="View full order details"
+                                                    >
+                                                        #{order._id.substring(order._id.length - 8)}
+                                                    </Link>
+                                                </td>
+                                                <td>
+                                                    <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                                                        {(order.user && typeof order.user === 'object' && order.user.name)
+                                                            ? order.user.name
+                                                            : (order.shippingAddress?.fullName || (order.user ? "Customer" : "Guest"))}
+                                                    </div>
+                                                    {((order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone) && (
+                                                        <small style={{ color: 'var(--text-secondary)', display: 'block', marginTop: '2px' }}>
+                                                            {(order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone}
+                                                        </small>
+                                                    )}
+                                                </td>
+                                                <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                                                <td><strong style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 700 }}>₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</strong></td>
+                                                <td>
+                                                    <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                                                        {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
+                                                    </span>
+                                                    <br />
+                                                    <small style={{
+                                                        fontWeight: 700,
+                                                        color: (order.orderStatus === "Cancelled")
+                                                            ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "#06b6d4" : "#ef4444")
+                                                            : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "#22c55e" : "#eab308")
+                                                    }}>
+                                                        ({order.orderStatus === "Cancelled"
+                                                            ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "Refunded" : "Cancelled")
+                                                            : (order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending"))})
+                                                    </small>
+                                                </td>
+                                                <td>
+                                                    <span className={`status-badge ${(order.orderStatus || "Pending").toLowerCase()}`}>
+                                                        {order.orderStatus || "Pending"}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <ul className="admin-order-items-list" style={{ listStyleType: "none", paddingLeft: "0", margin: 0, fontSize: "0.9rem" }}>
+                                                        {order.orderItems.map((item, idx) => (
+                                                            <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                                                                <img src={item.thumbnail} alt={item.title} width="30" height="30" style={{ objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-glass)' }} />
+                                                                <span>
+                                                                    {item.title} <span style={{ color: 'var(--text-secondary)' }}>(x{item.quantity})</span>
+                                                                </span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </td>
+                                                <td>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                        <Link
+                                                            to={`/admin/orders/${order._id}`}
+                                                            className="admin-btn-view-order"
+                                                        >
+                                                            👁️ Details
+                                                        </Link>
+                                                        <select
+                                                            className="admin-status-select"
+                                                            value={order.orderStatus || "Pending"}
+                                                            onChange={(e) => handleOrderStatusChange(order._id, e.target.value)}
+                                                        >
+                                                            <option value="Pending">Pending</option>
+                                                            <option value="Processing">Processing</option>
+                                                            <option value="Shipped">Shipped</option>
+                                                            <option value="Delivered">Delivered</option>
+                                                            <option value="Cancelled">Cancelled</option>
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
