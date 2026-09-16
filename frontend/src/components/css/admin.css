@@ -99,31 +99,75 @@
 /* Products Table */
 .products-table-wrapper {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: clamp(380px, 62vh, 650px);
   background: rgba(255, 255, 255, 0.01);
   border-radius: 16px;
   box-shadow: 0 15px 35px rgba(0,0,0,0.3);
   border: 1px solid var(--border-glass);
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--accent-blue-rgb), 0.45) rgba(255, 255, 255, 0.03);
+}
+
+.products-table-wrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.products-table-wrapper::-webkit-scrollbar-track {
+  background: rgba(11, 15, 25, 0.7);
+  border-radius: 8px;
+}
+
+.products-table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(var(--accent-blue-rgb), 0.4);
+  border-radius: 8px;
+  border: 2px solid rgba(11, 15, 25, 0.7);
+}
+
+.products-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-blue);
+  box-shadow: 0 0 10px rgba(var(--accent-blue-rgb), 0.6);
+}
+
+.products-table-wrapper::-webkit-scrollbar-corner {
+  background: rgba(11, 15, 25, 0.7);
 }
 
 .products-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .products-table th,
 .products-table td {
-  padding: 1.2rem 1.5rem;
+  padding: 1.1rem 1.4rem;
   text-align: left;
   border-bottom: 1px solid var(--border-glass);
 }
 
 .products-table th {
-  background-color: rgba(255, 255, 255, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #0d121f;
+  backdrop-filter: blur(16px);
+  box-shadow: inset 0 -1px 0 var(--border-glass);
   font-weight: 700;
   color: var(--text-primary);
   text-transform: uppercase;
   font-size: 0.8rem;
   letter-spacing: 1px;
+}
+
+.products-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.products-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.025);
 }
 
 .products-table td {
@@ -1256,7 +1300,7 @@
 }
 
 .sortable-th:hover {
-  background-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: #171e30 !important;
   color: var(--accent-blue);
 }
 
