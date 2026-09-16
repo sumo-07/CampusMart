@@ -232,8 +232,10 @@ export const AdminDashboard = () => {
         }
     };
 
-    // Calculate Overview Metrics
-    const totalSales = orders.reduce((acc, order) => acc + (order.amount || order.totalPrice || 0), 0);
+    // Calculate Overview Metrics (Only include valid orders: PAID or active COD, excluding Cancelled & Refunded)
+    const totalSales = orders
+        .filter(o => (o.status === "PAID" || o.paymentMethod === "COD") && o.orderStatus !== "Cancelled" && o.status !== "CANCELLED" && o.status !== "REFUNDED")
+        .reduce((acc, order) => acc + (order.amount || order.totalPrice || 0), 0);
     const totalOrders = orders.length;
     const totalProducts = products.length;
     const pendingOrders = orders.filter(o => (o.orderStatus || 'Pending') === 'Pending').length;
