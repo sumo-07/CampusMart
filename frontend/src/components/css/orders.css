@@ -565,6 +565,13 @@
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
+.status-badge.abandoned,
+.status-badge.draft {
+  background: rgba(244, 63, 94, 0.15);
+  color: #f43f5e;
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
 /* ==================== RESPONSIVE DESIGN ==================== */
 @media (max-width: 820px) {
   .order-body-grid {

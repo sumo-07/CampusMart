@@ -96,6 +96,43 @@
   -webkit-text-fill-color: transparent;
 }
 
+.metric-card.clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.metric-card.clickable:hover {
+  transform: translateY(-4px);
+  border-color: rgba(var(--accent-blue-rgb), 0.45);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.metric-card p.pending-val {
+  background: none;
+  -webkit-text-fill-color: #eab308;
+  color: #eab308;
+}
+
+.metric-card p.delivered-val {
+  background: none;
+  -webkit-text-fill-color: #22c55e;
+  color: #22c55e;
+}
+
+.metric-card p.abandoned-val {
+  background: none;
+  -webkit-text-fill-color: #f43f5e;
+  color: #f43f5e;
+}
+
+.metric-card .metric-subtext {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
 /* Products Table */
 .products-table-wrapper {
   overflow-x: auto;

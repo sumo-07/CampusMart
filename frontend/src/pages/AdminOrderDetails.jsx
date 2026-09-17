@@ -130,10 +130,19 @@ export const AdminOrderDetails = () => {
         );
     }
 
+    const isAbandonedDraft = order.paymentMethod !== "COD" &&
+        order.status !== "PAID" &&
+        order.paymentStatus !== "Paid" &&
+        order.orderStatus !== "Cancelled" &&
+        order.status !== "CANCELLED" &&
+        order.status !== "REFUNDED";
+
     const currentStatus = order.orderStatus || "Pending";
-    const paymentStatus = (order.orderStatus === "Cancelled")
-        ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "Refunded" : "Cancelled")
-        : (order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending"));
+    const paymentStatus = isAbandonedDraft
+        ? "Unpaid Draft"
+        : ((order.orderStatus === "Cancelled")
+            ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "Refunded" : "Cancelled")
+            : (order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending")));
 
     const customerName = (order.user && typeof order.user === "object" && order.user.name)
         ? order.user.name
@@ -177,6 +186,26 @@ export const AdminOrderDetails = () => {
                     </div>
                 </div>
 
+                {isAbandonedDraft && (
+                    <div style={{
+                        background: 'rgba(244, 63, 94, 0.12)',
+                        border: '1px solid rgba(244, 63, 94, 0.35)',
+                        borderRadius: '12px',
+                        padding: '14px 20px',
+                        marginBottom: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        color: '#f43f5e',
+                        fontSize: '0.95rem'
+                    }} className="no-print">
+                        <span style={{ fontSize: '1.4rem' }}>⚠️</span>
+                        <div>
+                            <strong>Abandoned Checkout Draft:</strong> The customer initiated checkout via {order.paymentMethod || "Razorpay"}, but payment was never completed. This order is <strong>not confirmed for fulfillment</strong> and should not be shipped.
+                        </div>
+                    </div>
+                )}
+
                 {/* Main Order Header Banner */}
                 <div className="admin-order-header-card">
                     <div className="order-header-info">
@@ -217,8 +246,8 @@ export const AdminOrderDetails = () => {
                     <div className="order-header-status-controls no-print">
                         <div className="current-status-display">
                             <span className="status-label">Lifecycle Status:</span>
-                            <span className={`status-badge ${currentStatus.toLowerCase()}`}>
-                                {currentStatus}
+                            <span className={`status-badge ${isAbandonedDraft ? "draft" : currentStatus.toLowerCase()}`}>
+                                {isAbandonedDraft ? "🛒 Abandoned Draft" : currentStatus}
                             </span>
                         </div>
 

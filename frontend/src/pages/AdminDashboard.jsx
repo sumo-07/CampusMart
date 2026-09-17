@@ -236,14 +236,43 @@ export const AdminDashboard = () => {
         }
     };
 
-    // Calculate Overview Metrics (Only include valid orders: PAID or active COD, excluding Cancelled & Refunded)
+    // Helper to identify abandoned checkout drafts (unpaid online checkouts)
+    const isAbandonedDraft = (o) => {
+        // Active COD orders are confirmed customer orders
+        if (o.paymentMethod === "COD") return false;
+        // Verified paid online orders are confirmed
+        if (o.status === "PAID" || o.paymentStatus === "Paid") return false;
+        // Explicitly cancelled or refunded orders belong in their own category
+        if (o.orderStatus === "Cancelled" || o.status === "CANCELLED" || o.status === "REFUNDED") return false;
+        // Remaining unverified/unpaid online checkouts are abandoned drafts
+        return true;
+    };
+
+    // Calculate Overview Metrics (Standard E-Commerce Isolation)
+    // 1. Total Revenue: Only includes confirmed revenue (PAID or active COD, excluding Cancelled/Refunded/Drafts)
     const totalSales = orders
         .filter(o => (o.status === "PAID" || o.paymentMethod === "COD") && o.orderStatus !== "Cancelled" && o.status !== "CANCELLED" && o.status !== "REFUNDED")
         .reduce((acc, order) => acc + (order.amount || order.totalPrice || 0), 0);
-    const totalOrders = orders.length;
+
+    const confirmedOrders = orders.filter(o => !isAbandonedDraft(o));
+    const abandonedOrders = orders.filter(o => isAbandonedDraft(o));
+
+    // 2. Confirmed Orders count: excludes abandoned checkout attempts
+    const totalOrders = confirmedOrders.length;
     const totalProducts = products.length;
-    const pendingOrders = orders.filter(o => (o.orderStatus || 'Pending') === 'Pending').length;
-    const deliveredOrders = orders.filter(o => o.orderStatus === 'Delivered').length;
+
+    // 3. Fulfillment Queue: Only confirmed orders that actually need shipping
+    // Counts: All active COD orders + all verified PAID online orders with Pending status
+    const pendingOrders = orders.filter(o => 
+        (o.orderStatus || 'Pending') === 'Pending' && 
+        !isAbandonedDraft(o) &&
+        o.orderStatus !== 'Cancelled' && 
+        o.status !== 'CANCELLED' && 
+        o.status !== 'REFUNDED' &&
+        (o.paymentMethod === 'COD' || o.status === 'PAID' || o.paymentStatus === 'Paid')
+    ).length;
+
+    const deliveredOrders = orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Delivered').length;
 
     // Filter & Sort Products
     const filteredProducts = products.filter(p =>
@@ -282,10 +311,30 @@ export const AdminDashboard = () => {
 
     // Filter & Sort Orders
     const filteredOrders = orders.filter(order => {
-        if (orderStatusFilter !== "all") {
+        const isDraft = isAbandonedDraft(order);
+
+        if (orderStatusFilter === "all") {
+            // Standard active store view: Confirmed orders only (excludes abandoned drafts so operations aren't polluted)
+            if (isDraft) return false;
+        } else if (orderStatusFilter === "Pending") {
+            // Fulfillment queue: Only active COD and verified PAID online orders needing shipping
+            if (isDraft) return false;
+            const currentStatus = order.orderStatus || "Pending";
+            if (currentStatus !== "Pending") return false;
+            if (order.orderStatus === "Cancelled" || order.status === "CANCELLED" || order.status === "REFUNDED") return false;
+            if (order.paymentMethod !== "COD" && order.status !== "PAID" && order.paymentStatus !== "Paid") return false;
+        } else if (orderStatusFilter === "Abandoned") {
+            // Dedicated Abandoned Checkouts Section
+            if (!isDraft) return false;
+        } else if (orderStatusFilter === "all-with-drafts") {
+            // Show everything including drafts for raw inspection
+        } else {
+            // Specific order statuses (Processing, Shipped, Delivered, Cancelled)
+            if (isDraft) return false;
             const currentStatus = order.orderStatus || "Pending";
             if (currentStatus !== orderStatusFilter) return false;
         }
+
         if (orderSearchQuery.trim()) {
             const q = orderSearchQuery.toLowerCase().trim();
             const idMatch = order._id && order._id.toLowerCase().includes(q);
@@ -378,22 +427,52 @@ export const AdminDashboard = () => {
                         <div className="metric-card">
                             <h3>Total Revenue</h3>
                             <p>₹{totalSales.toFixed(2)}</p>
+                            <span className="metric-subtext">Verified Paid & COD</span>
                         </div>
-                        <div className="metric-card">
-                            <h3>Total Orders</h3>
+                        <div
+                            className="metric-card clickable"
+                            onClick={() => { setOrderStatusFilter("all"); handleTabSelect("orders"); }}
+                            title="View all confirmed orders"
+                        >
+                            <h3>Confirmed Orders</h3>
                             <p>{totalOrders}</p>
+                            <span className="metric-subtext">Active store orders</span>
                         </div>
-                        <div className="metric-card">
-                            <h3>Pending</h3>
-                            <p style={{ color: '#eab308' }}>{pendingOrders}</p>
+                        <div
+                            className="metric-card clickable"
+                            onClick={() => { setOrderStatusFilter("Pending"); handleTabSelect("orders"); }}
+                            title="View fulfillment queue"
+                        >
+                            <h3>Pending Fulfillment</h3>
+                            <p className="pending-val">{pendingOrders}</p>
+                            <span className="metric-subtext">Needs packing & shipping</span>
                         </div>
-                        <div className="metric-card">
+                        <div
+                            className="metric-card clickable"
+                            onClick={() => { setOrderStatusFilter("Delivered"); handleTabSelect("orders"); }}
+                            title="View delivered orders"
+                        >
                             <h3>Delivered</h3>
-                            <p style={{ color: '#22c55e' }}>{deliveredOrders}</p>
+                            <p className="delivered-val">{deliveredOrders}</p>
+                            <span className="metric-subtext">Completed shipments</span>
                         </div>
-                        <div className="metric-card">
+                        <div
+                            className="metric-card clickable"
+                            onClick={() => { setOrderStatusFilter("Abandoned"); handleTabSelect("orders"); }}
+                            title="View abandoned checkout drafts"
+                        >
+                            <h3>Abandoned Drafts</h3>
+                            <p className={abandonedOrders.length > 0 ? "abandoned-val" : ""}>{abandonedOrders.length}</p>
+                            <span className="metric-subtext">Unpaid online checkouts</span>
+                        </div>
+                        <div
+                            className="metric-card clickable"
+                            onClick={() => handleTabSelect("products")}
+                            title="Manage product inventory"
+                        >
                             <h3>Total Products</h3>
                             <p>{totalProducts}</p>
+                            <span className="metric-subtext">In store catalog</span>
                         </div>
                     </div>
                 )}
@@ -652,12 +731,14 @@ export const AdminDashboard = () => {
                                         onChange={(e) => setOrderStatusFilter(e.target.value)}
                                         className="admin-sort-select"
                                     >
-                                        <option value="all">All Statuses ({orders.length})</option>
-                                        <option value="Pending">Pending ({orders.filter(o => (o.orderStatus || 'Pending') === 'Pending').length})</option>
-                                        <option value="Processing">Processing ({orders.filter(o => o.orderStatus === 'Processing').length})</option>
-                                        <option value="Shipped">Shipped ({orders.filter(o => o.orderStatus === 'Shipped').length})</option>
-                                        <option value="Delivered">Delivered ({orders.filter(o => o.orderStatus === 'Delivered').length})</option>
-                                        <option value="Cancelled">Cancelled ({orders.filter(o => o.orderStatus === 'Cancelled').length})</option>
+                                        <option value="all">📦 Confirmed Orders ({confirmedOrders.length})</option>
+                                        <option value="Pending">⏳ Pending Fulfillment ({pendingOrders})</option>
+                                        <option value="Processing">⚙️ Processing ({orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Processing').length})</option>
+                                        <option value="Shipped">🚚 Shipped ({orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Shipped').length})</option>
+                                        <option value="Delivered">✅ Delivered ({deliveredOrders})</option>
+                                        <option value="Cancelled">❌ Cancelled ({orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Cancelled').length})</option>
+                                        <option value="Abandoned">🛒 Abandoned Drafts ({abandonedOrders.length})</option>
+                                        <option value="all-with-drafts">📋 All Records (inc. Drafts) ({orders.length})</option>
                                     </select>
                                 </div>
 
@@ -693,7 +774,12 @@ export const AdminDashboard = () => {
                             </div>
 
                             <div className="admin-orders-count-indicator">
-                                Showing <strong>{sortedOrders.length}</strong> of <strong>{orders.length}</strong> {orders.length === 1 ? 'order' : 'orders'}
+                                Showing <strong>{sortedOrders.length}</strong> {orderStatusFilter === "Abandoned" ? "abandoned checkout(s)" : "order(s)"}
+                                {orderStatusFilter === "all" && abandonedOrders.length > 0 && (
+                                    <span style={{ marginLeft: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                                        ({abandonedOrders.length} unpaid draft{abandonedOrders.length > 1 ? 's' : ''} segregated in <button type="button" onClick={() => setOrderStatusFilter("Abandoned")} style={{ background: 'none', border: 'none', color: '#f43f5e', textDecoration: 'underline', cursor: 'pointer', padding: 0, font: 'inherit', fontWeight: 600 }}>Abandoned Drafts</button>)
+                                    </span>
+                                )}
                             </div>
                         </div>
 
@@ -761,19 +847,29 @@ export const AdminDashboard = () => {
                                                     <br />
                                                     <small style={{
                                                         fontWeight: 700,
-                                                        color: (order.orderStatus === "Cancelled")
-                                                            ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "#06b6d4" : "#ef4444")
-                                                            : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "#22c55e" : "#eab308")
+                                                        color: isAbandonedDraft(order)
+                                                            ? "#f43f5e"
+                                                            : (order.orderStatus === "Cancelled")
+                                                                ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "#06b6d4" : "#ef4444")
+                                                                : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "#22c55e" : "#eab308")
                                                     }}>
-                                                        ({order.orderStatus === "Cancelled"
-                                                            ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "Refunded" : "Cancelled")
-                                                            : (order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending"))})
+                                                        {isAbandonedDraft(order)
+                                                            ? "(Unpaid Draft)"
+                                                            : (order.orderStatus === "Cancelled")
+                                                                ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "(Refunded)" : "(Cancelled)")
+                                                                : (order.status ? `(${order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()})` : `(${order.paymentStatus || "Pending"})`)}
                                                     </small>
                                                 </td>
                                                 <td>
-                                                    <span className={`status-badge ${(order.orderStatus || "Pending").toLowerCase()}`}>
-                                                        {order.orderStatus || "Pending"}
-                                                    </span>
+                                                    {isAbandonedDraft(order) ? (
+                                                        <span className="status-badge draft" title="Unpaid online checkout draft - not confirmed for fulfillment">
+                                                            🛒 Abandoned Draft
+                                                        </span>
+                                                    ) : (
+                                                        <span className={`status-badge ${(order.orderStatus || "Pending").toLowerCase()}`}>
+                                                            {order.orderStatus || "Pending"}
+                                                        </span>
+                                                    )}
                                                 </td>
                                                 <td>
                                                     <ul className="admin-order-items-list" style={{ listStyleType: "none", paddingLeft: "0", margin: 0, fontSize: "0.9rem" }}>
