@@ -398,6 +398,25 @@ export const AdminDashboard = () => {
     return (
         <section className="section-admin">
             <div className="container">
+                {activeTab !== "overview" && (
+                    <div className="admin-details-top-bar no-print" style={{ marginBottom: '1.25rem' }}>
+                        <div className="admin-breadcrumb">
+                            <button
+                                type="button"
+                                onClick={() => handleTabSelect("overview")}
+                                className="admin-back-btn"
+                                title="Back to Dashboard Overview"
+                            >
+                                ← Back to Overview
+                            </button>
+                            <span className="breadcrumb-separator">/</span>
+                            <span className="breadcrumb-current">
+                                {activeTab === "products" ? "Manage Products" : "View Orders"}
+                            </span>
+                        </div>
+                    </div>
+                )}
+
                 <div className="admin-header">
                     <h1>Admin Dashboard</h1>
                     <div className="admin-tabs">

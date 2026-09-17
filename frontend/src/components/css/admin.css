@@ -629,6 +629,34 @@
   transform: translateX(-3px);
 }
 
+.admin-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.admin-back-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(var(--accent-blue-rgb), 0.4);
+  color: #fff;
+  transform: translateX(-3px);
+}
+
+.admin-back-btn.mini {
+  padding: 5px 12px;
+  font-size: 0.82rem;
+}
+
 .breadcrumb-separator {
   color: var(--text-muted);
 }

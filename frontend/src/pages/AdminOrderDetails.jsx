@@ -161,8 +161,12 @@ export const AdminOrderDetails = () => {
                 {/* Breadcrumbs & Navigation Header */}
                 <div className="admin-details-top-bar no-print">
                     <div className="admin-breadcrumb">
-                        <Link to="/admin?tab=orders" className="admin-back-link">
-                            ← Back to Orders
+                        <Link to="/admin?tab=overview" className="admin-back-btn" title="Back to Dashboard Overview">
+                            ← Back to Overview
+                        </Link>
+                        <span className="breadcrumb-separator">/</span>
+                        <Link to="/admin?tab=orders" className="admin-back-link" style={{ color: 'var(--text-secondary)' }}>
+                            Orders
                         </Link>
                         <span className="breadcrumb-separator">/</span>
                         <span className="breadcrumb-current">Order #{order._id.substring(order._id.length - 8)}</span>
