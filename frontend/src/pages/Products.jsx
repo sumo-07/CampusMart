@@ -83,7 +83,6 @@ export const Products = () => {
 
   const handlePriceSort = (type) => {
     setActiveSort(type);
-    setSearchParams({});
     setCurrentPage(1);
     setShowPrice(false);
   };
