@@ -4,7 +4,7 @@ import { AppLayout } from "./components/layout/AppLayout";
 import { Home } from "./pages/Home";
 import { ErrorPage } from "./pages/ErrorPage";
 import { Products } from "./pages/Products";
-import { ProductDetails } from "./pages/ProductDeatils";
+import { ProductDetails } from "./pages/ProductDetails";
 import { Contact } from "./pages/Contact";
 import { Checkout } from "./pages/Checkout";
 import { Login } from "./pages/Login";

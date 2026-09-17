@@ -44,7 +44,7 @@ export const Cart = () => {
         return (
             <section style={{ textAlign: 'center', padding: '4rem' }}>
                 <h2>Please Login to view your cart</h2>
-                <Link to="/login" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>Login</Link>
+                <Link to="/login?redirect=/cart" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>Login</Link>
             </section>
         );
     }

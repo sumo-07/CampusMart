@@ -15,7 +15,12 @@ export const Login = () => {
   const location = useLocation();
 
   const searchParams = new URLSearchParams(location.search);
-  const redirect = searchParams.get("redirect") || "/";
+  const fromState = location.state?.from
+    ? (typeof location.state.from === "object" && location.state.from.pathname
+        ? `${location.state.from.pathname}${location.state.from.search || ""}`
+        : String(location.state.from))
+    : (location.state?.redirect || null);
+  const redirect = searchParams.get("redirect") || fromState || "/";
 
   const handleLogin = async (e) => {
     e.preventDefault();

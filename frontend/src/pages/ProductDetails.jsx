@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { getProductById } from "../api/postApi";
@@ -10,6 +10,7 @@ import { useCart } from "../context/CartContext";
 export const ProductDetails = () => {
     const { productId } = useParams(); // ✅ MUST match route param
     const navigate = useNavigate();
+    const location = useLocation();
     const [addingToCart, setAddingToCart] = useState(false);
     const { user } = useContext(AuthContext);
     const { getItemQuantity, updateQuantity, addToCart, MAX_ITEM_QUANTITY } = useCart();
@@ -78,7 +79,7 @@ export const ProductDetails = () => {
         } catch (error) {
             alert(error.message);
             if (error.message.toLowerCase().includes("login") || error.message.toLowerCase().includes("authorized")) {
-                navigate("/login");
+                navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`, { state: { from: location } });
             }
         } finally {
             setAddingToCart(false);

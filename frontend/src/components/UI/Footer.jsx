@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaPaperPlane } from "react-icons/fa";
@@ -6,6 +6,7 @@ import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaPaperPlane } from 
 export const Footer = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
 
   const handleLogout = () => {
@@ -57,8 +58,8 @@ export const Footer = () => {
             <li><NavLink to="/cart" className="footer-link">View Cart</NavLink></li>
             {!user ? (
               <>
-                <li><NavLink to="/login" className="footer-link">Login</NavLink></li>
-                <li><NavLink to="/signup" className="footer-link">Register</NavLink></li>
+                <li><NavLink to={location.pathname === "/login" || location.pathname === "/signup" ? "/login" : `/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} state={{ from: location }} className="footer-link">Login</NavLink></li>
+                <li><NavLink to={location.pathname === "/login" || location.pathname === "/signup" ? "/signup" : `/signup?redirect=${encodeURIComponent(location.pathname + location.search)}`} state={{ from: location }} className="footer-link">Register</NavLink></li>
               </>
             ) : (
               <>

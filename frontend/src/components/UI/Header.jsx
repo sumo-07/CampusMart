@@ -109,13 +109,22 @@ export const Header = () => {
                             </>
                         ) : (
                             <li className="nav-item">
-                                <NavLink to="/login" className="nav-link" style={{
-                                    background: 'var(--gradient-neon)',
-                                    color: '#ffffff',
-                                    padding: '0.5rem 1.2rem',
-                                    borderRadius: '8px',
-                                    boxShadow: '0 4px 10px rgba(var(--accent-blue-rgb), 0.2)'
-                                }}>Login/Signup</NavLink> 
+                                <NavLink
+                                    to={location.pathname === "/login" || location.pathname === "/signup"
+                                        ? "/login"
+                                        : `/login?redirect=${encodeURIComponent(location.pathname + location.search)}`}
+                                    state={{ from: location }}
+                                    className="nav-link"
+                                    style={{
+                                        background: 'var(--gradient-neon)',
+                                        color: '#ffffff',
+                                        padding: '0.5rem 1.2rem',
+                                        borderRadius: '8px',
+                                        boxShadow: '0 4px 10px rgba(var(--accent-blue-rgb), 0.2)'
+                                    }}
+                                >
+                                    Login/Signup
+                                </NavLink> 
                             </li>
                         )}
                     </ul>

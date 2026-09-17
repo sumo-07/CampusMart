@@ -63,7 +63,7 @@ export const Orders = () => {
         if (authLoading) return;
 
         if (!user) {
-            navigate("/login");
+            navigate("/login?redirect=/orders", { state: { from: "/orders" } });
         }
     }, [user, authLoading, navigate]);
 

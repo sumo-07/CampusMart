@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ProductPreview3D } from "./ThreeDObjects";
 import { useCart } from "../../context/CartContext";
 import { AuthContext } from "../../context/AuthContext";
@@ -11,6 +11,7 @@ export const ProductQuickViewModal = ({ isOpen, onClose, product }) => {
   const { getItemQuantity, updateQuantity, addToCart, MAX_ITEM_QUANTITY } = useCart();
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   if (!isOpen || !product) return null;
 
@@ -32,7 +33,7 @@ export const ProductQuickViewModal = ({ isOpen, onClose, product }) => {
   const handleAddToCart = async () => {
     if (!user) {
       onClose();
-      navigate("/login");
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`, { state: { from: location } });
       return;
     }
     setAdding(true);
