@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Float, Sparkles, PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
@@ -138,7 +138,7 @@ const FloatingEssentials = () => {
 // Interactive Mouse Follower Wrapper
 const InteractiveScene = () => {
   const sceneRef = useRef();
-  const { size, viewport } = useThree();
+  const { viewport } = useThree();
 
   useFrame((state) => {
     const mouseX = (state.pointer.x * viewport.width) / 6;
@@ -383,10 +383,10 @@ export const GlassGlobe = () => {
 // ----------------------------------------------------
 // 5. PRODUCT 3D ROTATABLE PREVIEW
 // ----------------------------------------------------
-const DisplayProductModel = ({ category, thumbnail }) => {
+const DisplayProductModel = ({ category }) => {
   const meshRef = useRef();
 
-  useFrame((state) => {
+  useFrame(() => {
     // Idle rotation
     if (meshRef.current) {
       meshRef.current.rotation.y += 0.005;

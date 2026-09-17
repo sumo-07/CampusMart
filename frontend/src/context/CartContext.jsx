@@ -1,9 +1,10 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import api from "../api/axiosConfig";
 import { AuthContext } from "./AuthContext";
 
 export const MAX_ITEM_QUANTITY = 5;
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
@@ -127,7 +128,7 @@ export const CartProvider = ({ children }) => {
     };
 
     // Re-fetch cart from server to synchronize with backend state
-    const refreshCart = async () => {
+    const refreshCart = useCallback(async () => {
         if (user) {
             try {
                 const { data } = await api.get("/api/cart");
@@ -141,7 +142,7 @@ export const CartProvider = ({ children }) => {
         } else {
             setCartItems([]);
         }
-    };
+    }, [user]);
 
     // Reset local cart state immediately (e.g. after order checkout)
     const resetCartState = () => {
@@ -176,6 +177,7 @@ export const CartProvider = ({ children }) => {
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCart = () => {
     const context = useContext(CartContext);
     if (!context) {

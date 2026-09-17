@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import api from "../api/axiosConfig";
@@ -30,7 +30,7 @@ export const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [refreshingOrders, setRefreshingOrders] = useState(false);
 
-    const handleRefreshOrders = async (silent = false) => {
+    const handleRefreshOrders = useCallback(async (silent = false) => {
         try {
             if (!silent) setRefreshingOrders(true);
             const res = await api.get("/api/orders");
@@ -45,7 +45,7 @@ export const AdminDashboard = () => {
         } finally {
             if (!silent) setRefreshingOrders(false);
         }
-    };
+    }, [queryClient]);
 
     // Smart auto-refresh: When admin switches back to this browser tab after > 2 minutes, quietly fetch new orders
     useEffect(() => {
@@ -66,7 +66,7 @@ export const AdminDashboard = () => {
             window.removeEventListener("focus", handleFocusOrVisible);
             document.removeEventListener("visibilitychange", handleFocusOrVisible);
         };
-    }, []);
+    }, [handleRefreshOrders]);
 
     const [editingProduct, setEditingProduct] = useState(null); // For inline stock edit
     const [editFormProduct, setEditFormProduct] = useState(null); // For full form edit

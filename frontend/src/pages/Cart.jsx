@@ -15,7 +15,7 @@ export const Cart = () => {
         if (user) {
             refreshCart();
         }
-    }, [user]);
+    }, [user, refreshCart]);
 
     const handleQuantity = async (productId, type) => {
         if (type === "inc") {

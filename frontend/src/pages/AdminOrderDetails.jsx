@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { getOrderById, updateOrderStatus } from "../utils/orderUtils";
 import { PrintableOrderSlip } from "../components/PrintableOrderSlip";
-import api from "../api/axiosConfig";
 import "../components/css/admin.css";
 import "../components/css/orders.css";
 
@@ -19,11 +18,7 @@ export const AdminOrderDetails = () => {
     const [statusMessage, setStatusMessage] = useState(null);
     const [copied, setCopied] = useState(false);
 
-    useEffect(() => {
-        fetchOrderDetails();
-    }, [orderId]);
-
-    const fetchOrderDetails = async () => {
+    const fetchOrderDetails = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
@@ -35,7 +30,11 @@ export const AdminOrderDetails = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [orderId]);
+
+    useEffect(() => {
+        fetchOrderDetails();
+    }, [fetchOrderDetails]);
 
     const handleStatusChange = async (newStatus) => {
         if (!order || order.orderStatus === newStatus) return;

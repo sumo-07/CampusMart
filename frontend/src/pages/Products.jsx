@@ -16,23 +16,17 @@ const ITEMS_PER_PAGE = 16;
 export const Products = () => {
   /* ------------------ Search & Modal State ------------------ */
   const [searchParams, setSearchParams] = useSearchParams();
-  const categoryParam = searchParams.get("category");
+  const activeCategory = searchParams.get("category") || null;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const [activeCategory, setActiveCategory] = useState(categoryParam || null);
   const [activeSort, setActiveSort] = useState(null);
 
   const [showCategories, setShowCategories] = useState(false);
   const [showPrice, setShowPrice] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Sync category parameter
-  useEffect(() => {
-    setActiveCategory(categoryParam || null);
-  }, [categoryParam]);
 
   /* ------------------ Products Query ------------------ */
   const {
