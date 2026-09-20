@@ -39,6 +39,10 @@ const productSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        thumbnailPublicId: {
+            type: String,
+            default: null,
+        },
         images: [
             {
                 type: String,

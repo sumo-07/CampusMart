@@ -79,13 +79,47 @@ export const AdminDashboard = () => {
     const [orderStatusFilter, setOrderStatusFilter] = useState("all");
     const [orderSearchQuery, setOrderSearchQuery] = useState("");
 
+    const [imageInputMode, setImageInputMode] = useState("file"); // "file" | "url"
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) {
+            alert("Please select a valid image file (PNG, JPG, WebP, GIF).");
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert("Image size must be less than 5MB.");
+            return;
+        }
+
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
+    };
+
+    const clearSelectedFile = () => {
+        setImageFile(null);
+        setImagePreview(editFormProduct ? newProduct.thumbnail : null);
+        const fileInput = document.getElementById("product-image-file");
+        if (fileInput) fileInput.value = "";
+    };
+
     const closeFormWithAnimation = () => {
         setIsAnimatingOut(true);
         setTimeout(() => {
             setShowAddForm(false);
             setIsAnimatingOut(false);
             setEditFormProduct(null);
-            setNewProduct({ title: '', price: 0, stock: 0, category: '', description: '', thumbnail: '' });
+            setNewProduct({ title: '', price: 0, stock: 0, category: '', description: '', thumbnail: '', thumbnailPublicId: null });
+            setImageFile(null);
+            setImagePreview(null);
+            setIsUploadingImage(false);
+            setImageInputMode("file");
         }, 350);
     };
 
@@ -97,7 +131,7 @@ export const AdminDashboard = () => {
         }
     };
     const [currentPage, setCurrentPage] = useState(1);
-    const [newProduct, setNewProduct] = useState({ title: '', price: 0, stock: 0, category: '', description: '', thumbnail: '' });
+    const [newProduct, setNewProduct] = useState({ title: '', price: 0, stock: 0, category: '', description: '', thumbnail: '', thumbnailPublicId: null });
 
     useEffect(() => {
         fetchDashboardData();
@@ -149,14 +183,53 @@ export const AdminDashboard = () => {
 
     const handleSaveProduct = async (e) => {
         e.preventDefault();
+
+        let finalThumbnail = newProduct.thumbnail;
+        let finalThumbnailPublicId = newProduct.thumbnailPublicId;
+
+        // If an image file was selected, upload to Cloudinary first
+        if (imageFile) {
+            try {
+                setIsUploadingImage(true);
+                const formData = new FormData();
+                formData.append("image", imageFile);
+
+                const uploadRes = await api.post("/api/products/upload-image", formData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                });
+
+                finalThumbnail = uploadRes.data.url;
+                finalThumbnailPublicId = uploadRes.data.publicId;
+            } catch (uploadError) {
+                console.error("Image upload failed:", uploadError);
+                alert(uploadError.response?.data?.message || "Failed to upload image to Cloudinary. Please verify backend/.env credentials.");
+                setIsUploadingImage(false);
+                return;
+            } finally {
+                setIsUploadingImage(false);
+            }
+        }
+
+        if (!finalThumbnail || !finalThumbnail.trim()) {
+            alert("Please provide a product image either by uploading a file or entering an image URL.");
+            return;
+        }
+
+        const productPayload = {
+            ...newProduct,
+            thumbnail: finalThumbnail.trim(),
+            thumbnailPublicId: finalThumbnailPublicId,
+            images: [finalThumbnail.trim()],
+        };
+
         try {
             if (editFormProduct) {
                 // Update existing product
-                const { data } = await api.put(`/api/products/${editFormProduct}`, newProduct);
+                const { data } = await api.put(`/api/products/${editFormProduct}`, productPayload);
                 setProducts(products.map(p => p._id === editFormProduct ? data : p));
             } else {
                 // Create new product
-                const { data } = await api.post("/api/products", newProduct);
+                const { data } = await api.post("/api/products", productPayload);
                 setProducts([data, ...products]);
             }
             queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -165,7 +238,7 @@ export const AdminDashboard = () => {
             closeFormWithAnimation();
         } catch (error) {
             console.error("Failed to save product", error);
-            alert("Failed to save product");
+            alert(error.response?.data?.message || "Failed to save product");
         }
     };
 
@@ -177,8 +250,12 @@ export const AdminDashboard = () => {
             stock: product.stock,
             category: product.category,
             description: product.description,
-            thumbnail: product.thumbnail
+            thumbnail: product.thumbnail,
+            thumbnailPublicId: product.thumbnailPublicId || null,
         });
+        setImageFile(null);
+        setImagePreview(product.thumbnail);
+        setImageInputMode("file");
         setShowAddForm(true);
         window.scrollTo(0, 0); // Scroll to form
     };
@@ -263,11 +340,11 @@ export const AdminDashboard = () => {
 
     // 3. Fulfillment Queue: Only confirmed orders that actually need shipping
     // Counts: All active COD orders + all verified PAID online orders with Pending status
-    const pendingOrders = orders.filter(o => 
-        (o.orderStatus || 'Pending') === 'Pending' && 
+    const pendingOrders = orders.filter(o =>
+        (o.orderStatus || 'Pending') === 'Pending' &&
         !isAbandonedDraft(o) &&
-        o.orderStatus !== 'Cancelled' && 
-        o.status !== 'CANCELLED' && 
+        o.orderStatus !== 'Cancelled' &&
+        o.status !== 'CANCELLED' &&
         o.status !== 'REFUNDED' &&
         (o.paymentMethod === 'COD' || o.status === 'PAID' || o.paymentStatus === 'Paid')
     ).length;
@@ -576,10 +653,92 @@ export const AdminDashboard = () => {
                                     <input required type="number" placeholder="Price (₹)" value={newProduct.price || ''} onChange={e => setNewProduct({ ...newProduct, price: Number(e.target.value) })} className="admin-form-input" />
                                     <input required type="number" placeholder="Initial Stock" value={newProduct.stock || ''} onChange={e => setNewProduct({ ...newProduct, stock: Number(e.target.value) })} className="admin-form-input" />
                                     <input required type="text" placeholder="Category" value={newProduct.category} onChange={e => setNewProduct({ ...newProduct, category: e.target.value })} className="admin-form-input" />
-                                    <input required type="text" placeholder="Image URL (Thumbnail)" value={newProduct.thumbnail} onChange={e => setNewProduct({ ...newProduct, thumbnail: e.target.value })} className="admin-form-input full-width" />
-                                    <textarea required placeholder="Description" rows="3" value={newProduct.description} onChange={e => setNewProduct({ ...newProduct, description: e.target.value })} className="admin-form-textarea"></textarea>
-                                    <button type="submit" className="admin-form-submit-btn">
-                                        {editFormProduct ? "Save Changes" : "Create Product"}
+
+                                    {/* Product Image Section */}
+                                    <div className="admin-form-image-section full-width">
+                                        <div className="admin-image-mode-row">
+                                            <label className="admin-form-label">Product Thumbnail Image</label>
+                                            <div className="admin-image-mode-tabs">
+                                                <button
+                                                    type="button"
+                                                    className={`admin-image-tab ${imageInputMode === "file" ? "active" : ""}`}
+                                                    onClick={() => setImageInputMode("file")}
+                                                >
+                                                    ☁️ Upload File
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className={`admin-image-tab ${imageInputMode === "url" ? "active" : ""}`}
+                                                    onClick={() => setImageInputMode("url")}
+                                                >
+                                                    🔗 Image URL
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {imageInputMode === "file" ? (
+                                            <div className="admin-file-upload-box">
+                                                <input
+                                                    type="file"
+                                                    id="product-image-file"
+                                                    accept="image/png, image/jpeg, image/webp, image/gif"
+                                                    onChange={handleFileChange}
+                                                    style={{ display: "none" }}
+                                                />
+                                                <label htmlFor="product-image-file" className={`admin-file-dropzone ${imageFile ? 'has-file' : ''}`}>
+                                                    <span className="upload-icon">{imageFile ? '✅' : '📤'}</span>
+                                                    <span className="upload-text">
+                                                        {imageFile ? imageFile.name : (editFormProduct ? "Choose new image to replace current thumbnail" : "Click to select or drop image here")}
+                                                    </span>
+                                                    <span className="upload-hint">PNG, JPG, WebP, or GIF (Max 5MB)</span>
+                                                </label>
+                                            </div>
+                                        ) : (
+                                            <input
+                                                type="url"
+                                                placeholder="Paste image URL (e.g. https://...)"
+                                                value={newProduct.thumbnail}
+                                                onChange={e => {
+                                                    setNewProduct({ ...newProduct, thumbnail: e.target.value });
+                                                    setImagePreview(e.target.value);
+                                                }}
+                                                className="admin-form-input full-width"
+                                            />
+                                        )}
+
+                                        {/* Image Preview Box */}
+                                        {imagePreview && (
+                                            <div className="admin-image-preview-card">
+                                                <img
+                                                    src={imagePreview}
+                                                    alt="Thumbnail Preview"
+                                                    className="preview-img"
+                                                    onError={(e) => { e.target.style.display = "none"; }}
+                                                    onLoad={(e) => { e.target.style.display = "block"; }}
+                                                />
+                                                <div className="preview-meta">
+                                                    <span className="preview-status">
+                                                        {imageFile ? "New file ready for Cloudinary upload" : "Active product thumbnail"}
+                                                    </span>
+                                                    {imageFile && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={clearSelectedFile}
+                                                            className="admin-btn-clear-file"
+                                                        >
+                                                            ✕ Remove Selected File
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <textarea required placeholder="Description" rows="3" value={newProduct.description} onChange={e => setNewProduct({ ...newProduct, description: e.target.value })} className="admin-form-textarea full-width"></textarea>
+                                    <button type="submit" disabled={isUploadingImage} className="admin-form-submit-btn">
+                                        {isUploadingImage
+                                            ? "Uploading to Cloudinary..."
+                                            : (editFormProduct ? "Save Changes" : "Create Product")}
                                     </button>
                                 </form>
                             </div>

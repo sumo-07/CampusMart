@@ -1443,5 +1443,157 @@
   }
 }
 
+/* ==================== PRODUCT IMAGE UPLOAD & PREVIEW ==================== */
+.admin-form-image-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0.35rem 0 0.75rem;
+}
+
+.admin-image-mode-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-image-mode-tabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border-glass);
+}
+
+.admin-image-tab {
+  background: transparent;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.admin-image-tab:hover {
+  color: var(--text-primary);
+}
+
+.admin-image-tab.active {
+  background: var(--gradient-neon);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(var(--accent-blue-rgb), 0.3);
+}
+
+.admin-file-upload-box {
+  width: 100%;
+}
+
+.admin-file-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 2px dashed rgba(var(--accent-blue-rgb), 0.35);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  text-align: center;
+  gap: 4px;
+  user-select: none;
+}
+
+.admin-file-dropzone:hover {
+  border-color: var(--accent-blue);
+  background: rgba(var(--accent-blue-rgb), 0.06);
+  box-shadow: 0 0 15px rgba(var(--accent-blue-rgb), 0.1);
+}
+
+.admin-file-dropzone.has-file {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.admin-file-dropzone .upload-icon {
+  font-size: 1.6rem;
+}
+
+.admin-file-dropzone .upload-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.admin-file-dropzone .upload-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.admin-image-preview-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
+}
+
+.admin-image-preview-card .preview-img {
+  width: 54px;
+  height: 54px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--border-glass);
+  background: #0f131d;
+}
+
+.admin-image-preview-card .preview-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.admin-image-preview-card .preview-status {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.admin-btn-clear-file {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+  transition: var(--transition-smooth);
+}
+
+.admin-btn-clear-file:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #ffffff;
+}
+
+
 
 

@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const { uploadImageBuffer, deleteCloudinaryImage } = require("../services/cloudinaryService");
 
 // @desc    Fetch all products
 // @route   GET /api/products
@@ -75,6 +76,29 @@ const createProduct = async (req, res) => {
     }
 };
 
+// @desc    Upload product image to Cloudinary
+// @route   POST /api/products/upload-image
+// @access  Private/Admin
+const uploadProductImage = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: "No image file provided" });
+        }
+
+        const result = await uploadImageBuffer(req.file.buffer, "campusMart/products");
+        res.status(200).json({
+            message: "Image uploaded successfully",
+            url: result.url,
+            publicId: result.publicId,
+        });
+    } catch (error) {
+        console.error("Upload Product Image Error:", error);
+        res.status(500).json({
+            message: error.message || "Failed to upload image to Cloudinary",
+        });
+    }
+};
+
 // @desc    Update a product
 // @route   PUT /api/products/:id
 // @access  Private/Admin
@@ -83,8 +107,25 @@ const updateProduct = async (req, res) => {
         const product = await Product.findById(req.params.id);
 
         if (product) {
+            const oldThumbnailPublicId = product.thumbnailPublicId;
+            const newThumbnail = req.body.thumbnail;
+            const newThumbnailPublicId = req.body.thumbnailPublicId;
+
+            // Check if image changed
+            const imageChanged =
+                (newThumbnail && newThumbnail !== product.thumbnail) ||
+                (newThumbnailPublicId !== undefined && newThumbnailPublicId !== oldThumbnailPublicId);
+
             Object.assign(product, req.body);
             const updatedProduct = await product.save();
+
+            // Only delete the old image if it was previously hosted on Cloudinary and was replaced
+            if (imageChanged && oldThumbnailPublicId && oldThumbnailPublicId !== updatedProduct.thumbnailPublicId) {
+                deleteCloudinaryImage(oldThumbnailPublicId).catch((err) =>
+                    console.warn("[Cloudinary] Async cleanup failed for previous image:", err.message)
+                );
+            }
+
             res.json(updatedProduct);
         } else {
             res.status(404).json({ message: "Product not found" });
@@ -103,7 +144,16 @@ const deleteProduct = async (req, res) => {
         const product = await Product.findById(req.params.id);
 
         if (product) {
+            const thumbnailPublicId = product.thumbnailPublicId;
             await Product.deleteOne({ _id: product._id });
+
+            // If this product had an image hosted on Cloudinary, remove it
+            if (thumbnailPublicId) {
+                deleteCloudinaryImage(thumbnailPublicId).catch((err) =>
+                    console.warn("[Cloudinary] Async deletion failed on product delete:", err.message)
+                );
+            }
+
             res.json({ message: "Product removed" });
         } else {
             res.status(404).json({ message: "Product not found" });
@@ -138,6 +188,7 @@ module.exports = {
     getCategories,
     getProductsByCategory,
     createProduct,
+    uploadProductImage,
     updateProduct,
     deleteProduct,
     seedProductsCatalog,

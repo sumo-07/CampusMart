@@ -671,7 +671,7 @@ const retryOrderPayment = async (req, res) => {
 };
 
 // @desc    Handle Razorpay Webhook notifications
-// @route   POST /api/orders/razorpay/webhook
+// @route   POST /orders/webhook/razorpay
 // @access  Public
 const handleRazorpayWebhook = async (req, res) => {
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;

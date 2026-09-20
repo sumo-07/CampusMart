@@ -6,13 +6,16 @@ const {
     getCategories,
     getProductsByCategory,
     createProduct,
+    uploadProductImage,
     updateProduct,
     deleteProduct,
     seedProductsCatalog,
 } = require("../controllers/productController");
 const { protect, admin } = require("../middleware/authMiddleware");
+const upload = require("../middleware/uploadMiddleware");
 
 router.route("/").get(getProducts).post(protect, admin, createProduct);
+router.post("/upload-image", protect, admin, upload.single("image"), uploadProductImage);
 router.post("/seed", protect, admin, seedProductsCatalog);
 router.route("/categories").get(getCategories);
 router.route("/category/:category").get(getProductsByCategory);
