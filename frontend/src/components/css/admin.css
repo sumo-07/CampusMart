@@ -1547,20 +1547,27 @@
 .admin-image-preview-card {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.65rem 1rem;
-  background: rgba(255, 255, 255, 0.03);
+  gap: 14px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-glass);
-  border-radius: 10px;
+  border-radius: 12px;
+  margin-top: 10px;
 }
 
 .admin-image-preview-card .preview-img {
-  width: 54px;
-  height: 54px;
-  border-radius: 8px;
-  object-fit: cover;
-  border: 1px solid var(--border-glass);
-  background: #0f131d;
+  width: 58px !important;
+  height: 58px !important;
+  min-width: 58px !important;
+  max-width: 58px !important;
+  min-height: 58px !important;
+  max-height: 58px !important;
+  border-radius: 9px !important;
+  object-fit: cover !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: #0b0f19 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  flex-shrink: 0 !important;
 }
 
 .admin-image-preview-card .preview-meta {
@@ -1571,9 +1578,12 @@
 }
 
 .admin-image-preview-card .preview-status {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: var(--text-secondary);
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .admin-btn-clear-file {
@@ -1593,6 +1603,274 @@
   background: rgba(239, 68, 68, 0.25);
   color: #ffffff;
 }
+
+/* Category selection and custom input */
+.admin-category-control {
+  width: 100%;
+}
+
+.admin-category-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.admin-category-select option {
+  background-color: #121624;
+  color: var(--text-primary);
+  padding: 8px;
+}
+
+.admin-category-custom-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.admin-category-custom-input {
+  flex: 1;
+}
+
+.admin-btn-back-category {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition-smooth);
+}
+
+.admin-btn-back-category:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border-color: rgba(var(--accent-blue-rgb), 0.4);
+}
+
+/* Image Section 2-Column Layout */
+.admin-form-image-section.full-width {
+  grid-column: span 2;
+  width: 100%;
+}
+
+.admin-image-section-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+  margin-top: 8px;
+}
+
+.admin-image-input-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-image-side-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-file-upload-box {
+  height: 100%;
+}
+
+.admin-file-dropzone {
+  height: 100%;
+  min-height: 110px;
+  box-sizing: border-box;
+}
+
+.admin-url-upload-box {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.admin-url-upload-box input {
+  height: 100%;
+  min-height: 110px;
+  box-sizing: border-box;
+}
+
+/* Preserved Uploaded Cloudinary Banner */
+.admin-saved-upload-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(99, 102, 241, 0.05) 100%);
+  border: 1px solid rgba(14, 165, 233, 0.35);
+  border-radius: 12px;
+  height: 100%;
+  min-height: 110px;
+  box-sizing: border-box;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  animation: adminBannerFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes adminBannerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-saved-upload-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-saved-upload-preview-thumb,
+.saved-upload-preview-thumb {
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px !important;
+  max-width: 56px !important;
+  min-height: 56px !important;
+  max-height: 56px !important;
+  border-radius: 9px !important;
+  object-fit: cover !important;
+  border: 2px solid rgba(14, 165, 233, 0.5) !important;
+  background: #0b0f19 !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+
+.admin-saved-upload-details,
+.saved-upload-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.admin-saved-upload-badge,
+.saved-upload-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 0.3px;
+}
+
+.admin-saved-upload-note,
+.saved-upload-note {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.admin-btn-restore-upload {
+  background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35);
+  flex-shrink: 0;
+}
+
+.admin-btn-restore-upload:hover {
+  background: linear-gradient(135deg, #0369a1 0%, #4338ca 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.55);
+}
+
+.admin-btn-restore-upload:active {
+  transform: translateY(0);
+}
+
+.admin-image-empty-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px dashed var(--border-glass);
+  border-radius: 12px;
+  height: 100%;
+  min-height: 110px;
+  box-sizing: border-box;
+}
+
+.admin-image-empty-placeholder .placeholder-icon {
+  font-size: 1.6rem;
+  opacity: 0.6;
+}
+
+.admin-image-empty-placeholder .placeholder-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-image-empty-placeholder .placeholder-title {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.admin-image-empty-placeholder .placeholder-hint {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.admin-image-preview-card.side-preview {
+  margin-top: 0;
+  height: 100%;
+  min-height: 110px;
+  box-sizing: border-box;
+}
+
+.admin-image-preview-card.bottom-preview {
+  margin-top: 12px;
+}
+
+@media (max-width: 900px) {
+  .admin-image-section-body {
+    grid-template-columns: 1fr;
+  }
+  .admin-saved-upload-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .admin-btn-restore-upload {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
 
 
 

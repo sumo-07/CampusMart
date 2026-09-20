@@ -67,7 +67,14 @@ const getProductsByCategory = async (req, res) => {
 // @access  Private/Admin
 const createProduct = async (req, res) => {
     try {
-        const product = new Product(req.body);
+        const productData = { ...req.body };
+        // If a Cloudinary image was uploaded, ensure uploadedThumbnail & uploadedThumbnailPublicId are also populated
+        if (productData.thumbnailPublicId && !productData.uploadedThumbnailPublicId) {
+            productData.uploadedThumbnail = productData.thumbnail;
+            productData.uploadedThumbnailPublicId = productData.thumbnailPublicId;
+        }
+
+        const product = new Product(productData);
         const createdProduct = await product.save();
         res.status(201).json(createdProduct);
     } catch (error) {
@@ -107,24 +114,34 @@ const updateProduct = async (req, res) => {
         const product = await Product.findById(req.params.id);
 
         if (product) {
-            const oldThumbnailPublicId = product.thumbnailPublicId;
-            const newThumbnail = req.body.thumbnail;
-            const newThumbnailPublicId = req.body.thumbnailPublicId;
+            const oldUploadedPublicId = product.uploadedThumbnailPublicId || product.thumbnailPublicId;
+            const updateData = { ...req.body };
 
-            // Check if image changed
-            const imageChanged =
-                (newThumbnail && newThumbnail !== product.thumbnail) ||
-                (newThumbnailPublicId !== undefined && newThumbnailPublicId !== oldThumbnailPublicId);
+            // Determine if a new file was actually uploaded to Cloudinary
+            const isNewFileUpload =
+                updateData.uploadedThumbnailPublicId &&
+                oldUploadedPublicId &&
+                updateData.uploadedThumbnailPublicId !== oldUploadedPublicId;
 
-            Object.assign(product, req.body);
-            const updatedProduct = await product.save();
-
-            // Only delete the old image if it was previously hosted on Cloudinary and was replaced
-            if (imageChanged && oldThumbnailPublicId && oldThumbnailPublicId !== updatedProduct.thumbnailPublicId) {
-                deleteCloudinaryImage(oldThumbnailPublicId).catch((err) =>
+            // Delete previous Cloudinary image ONLY when a new image file was uploaded to replace it
+            if (isNewFileUpload) {
+                deleteCloudinaryImage(oldUploadedPublicId).catch((err) =>
                     console.warn("[Cloudinary] Async cleanup failed for previous image:", err.message)
                 );
             }
+
+            // Preserve previously uploaded Cloudinary asset if admin switched to an external URL
+            if (!updateData.uploadedThumbnailPublicId && product.uploadedThumbnailPublicId) {
+                updateData.uploadedThumbnail = product.uploadedThumbnail;
+                updateData.uploadedThumbnailPublicId = product.uploadedThumbnailPublicId;
+            } else if (!updateData.uploadedThumbnailPublicId && product.thumbnailPublicId && product.thumbnail?.includes("cloudinary.com")) {
+                // Backwards-compatibility for existing products
+                updateData.uploadedThumbnail = product.thumbnail;
+                updateData.uploadedThumbnailPublicId = product.thumbnailPublicId;
+            }
+
+            Object.assign(product, updateData);
+            const updatedProduct = await product.save();
 
             res.json(updatedProduct);
         } else {
@@ -144,12 +161,12 @@ const deleteProduct = async (req, res) => {
         const product = await Product.findById(req.params.id);
 
         if (product) {
-            const thumbnailPublicId = product.thumbnailPublicId;
+            const cloudinaryId = product.uploadedThumbnailPublicId || product.thumbnailPublicId;
             await Product.deleteOne({ _id: product._id });
 
             // If this product had an image hosted on Cloudinary, remove it
-            if (thumbnailPublicId) {
-                deleteCloudinaryImage(thumbnailPublicId).catch((err) =>
+            if (cloudinaryId) {
+                deleteCloudinaryImage(cloudinaryId).catch((err) =>
                     console.warn("[Cloudinary] Async deletion failed on product delete:", err.message)
                 );
             }
