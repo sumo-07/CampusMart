@@ -17,7 +17,6 @@ const router = express.Router();
 
 // Razorpay specific routes
 router.post("/webhook/razorpay", handleRazorpayWebhook);
-router.post("/razorpay/webhook", handleRazorpayWebhook);
 router.post("/razorpay/verify", protect, verifyRazorpayPayment);
 router.post("/razorpay/verify-payment", protect, verifyRazorpayPayment);
 router.post("/razorpay/retry/:id", protect, retryOrderPayment);
