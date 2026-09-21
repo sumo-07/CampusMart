@@ -1,5 +1,13 @@
 require("dotenv").config();
-const { verifySmtpConnection, getTransporter, generateOrderReceiptHtml, generateOrderReceiptText } = require("../utils/emailService");
+const {
+    verifySmtpConnection,
+    getTransporter,
+    generateOrderReceiptHtml,
+    generateOrderReceiptText,
+    generateStatusUpdateHtml,
+    generateStatusUpdateText,
+    getStatusConfig,
+} = require("../utils/emailService");
 
 async function runTest() {
     console.log("==========================================");
@@ -12,9 +20,10 @@ async function runTest() {
     console.log("------------------------------------------");
 
     const targetEmail = process.argv[2] || process.env.EMAIL_USER;
+    const testStatus = process.argv[3]; // Optional: e.g. "Shipped", "Delivered", "Processing", "Cancelled"
 
     if (!targetEmail) {
-        console.error("❌ No target email provided. Usage: node testEmail.js [recipient_email]");
+        console.error("❌ No target email provided. Usage: node testEmail.js [recipient_email] [optional_status]");
         process.exit(1);
     }
 
@@ -26,7 +35,6 @@ async function runTest() {
     }
     console.log("✅ SMTP Server Connected Successfully!");
 
-    console.log(`2. Sending Test Order Confirmation Receipt to: ${targetEmail}...`);
     const transporter = getTransporter();
 
     // Mock order for template test
@@ -36,6 +44,8 @@ async function runTest() {
         paymentMethod: "Razorpay",
         amount: 1250,
         totalPrice: 1250,
+        status: "PAID",
+        paymentStatus: "Paid",
         razorpayOrderId: "order_mock_" + Math.random().toString(36).substring(7),
         orderItems: [
             {
@@ -59,8 +69,21 @@ async function runTest() {
     };
 
     const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-    const html = generateOrderReceiptHtml(mockOrder, "Test Student", clientUrl);
-    const text = generateOrderReceiptText(mockOrder, "Test Student", clientUrl);
+    let subject = "";
+    let html = "";
+    let text = "";
+
+    if (testStatus) {
+        console.log(`2. Sending Test Order Status Update (${testStatus}) to: ${targetEmail}...`);
+        html = generateStatusUpdateHtml(mockOrder, "Test Student", clientUrl, testStatus);
+        text = generateStatusUpdateText(mockOrder, "Test Student", clientUrl, testStatus);
+        subject = `[Test ${testStatus}] Order #${mockOrder._id.slice(-8).toUpperCase()} - CampusMart`;
+    } else {
+        console.log(`2. Sending Test Order Confirmation Receipt to: ${targetEmail}...`);
+        html = generateOrderReceiptHtml(mockOrder, "Test Student", clientUrl);
+        text = generateOrderReceiptText(mockOrder, "Test Student", clientUrl);
+        subject = `Payment Received & Order Confirmed #${mockOrder._id.slice(-8).toUpperCase()} - CampusMart`;
+    }
 
     try {
         let fromAddress = `"CampusMart" <${process.env.EMAIL_USER}>`;
@@ -74,19 +97,21 @@ async function runTest() {
             from: fromAddress,
             replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER,
             to: targetEmail,
-            subject: `Payment Received & Order Confirmed #${mockOrder._id.slice(-8).toUpperCase()} - CampusMart`,
+            subject,
             text,
             html,
             headers: {
                 "X-Entity-Ref-ID": String(mockOrder._id),
+                ...(testStatus ? { "X-Order-Status": testStatus } : {}),
             },
         });
 
         console.log("✅ Test Email Sent Successfully!");
         console.log("   Message ID:", info.messageId);
         console.log("   Recipient :", targetEmail);
+        if (testStatus) console.log("   Status    :", testStatus);
         console.log("==========================================");
-        console.log("Check your inbox (and spam folder) to preview the beautiful receipt!");
+        console.log("Check your inbox to preview the email!");
     } catch (err) {
         console.error("❌ Failed to send email:", err.message);
         process.exit(1);

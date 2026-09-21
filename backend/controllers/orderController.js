@@ -4,7 +4,7 @@ const Order = require("../models/Order");
 const User = require("../models/User");
 const Product = require("../models/Product");
 const { getRazorpayInstance } = require("../config/razorpay");
-const { sendOrderConfirmationEmail } = require("../utils/emailService");
+const { sendOrderConfirmationEmail, sendOrderStatusEmail } = require("../utils/emailService");
 
 // Maximum allowed purchase quantity per product per order
 const MAX_ITEM_QUANTITY = 5;
@@ -356,6 +356,14 @@ const updateOrderStatus = async (req, res) => {
         order.orderStatus = status;
         const updatedOrder = await order.save();
         await updatedOrder.populate("user", "id name email");
+
+        // Dispatch status update email if status actually changed (excluding Pending)
+        if (previousStatus !== status && status !== "Pending") {
+            sendOrderStatusEmail(updatedOrder, status).catch((err) =>
+                console.error(`[OrderController] Error triggering status email (${status}):`, err.message)
+            );
+        }
+
         res.json(updatedOrder);
     } catch (error) {
         console.error("Update Order Status Error:", error);
@@ -438,6 +446,12 @@ const cancelMyOrder = async (req, res) => {
         }
         const updatedOrder = await order.save();
         await updatedOrder.populate("user", "id name email");
+
+        // Dispatch cancellation email to customer
+        sendOrderStatusEmail(updatedOrder, "Cancelled").catch((err) =>
+            console.error("[OrderController] Error triggering cancellation email:", err.message)
+        );
+
         res.json(updatedOrder);
     } catch (error) {
         console.error("Cancel Order Error:", error);
