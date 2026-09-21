@@ -4,6 +4,7 @@ const Order = require("../models/Order");
 const User = require("../models/User");
 const Product = require("../models/Product");
 const { getRazorpayInstance } = require("../config/razorpay");
+const { sendOrderConfirmationEmail } = require("../utils/emailService");
 
 // Maximum allowed purchase quantity per product per order
 const MAX_ITEM_QUANTITY = 5;
@@ -145,6 +146,11 @@ const addOrderItems = async (req, res) => {
                 currency: razorpayOrder.currency,
             });
         }
+
+        // For Cash on Delivery: Send order confirmation email in background
+        sendOrderConfirmationEmail(createdOrder).catch((err) =>
+            console.error("[OrderController] Error sending COD confirmation email:", err.message)
+        );
 
         res.status(201).json(createdOrder);
     } catch (error) {
@@ -593,6 +599,13 @@ const verifyRazorpayPayment = async (req, res) => {
         }
 
         const updatedOrder = await order.save();
+        await updatedOrder.populate("user", "id name email");
+
+        // Send Razorpay paid order confirmation email in background
+        sendOrderConfirmationEmail(updatedOrder).catch((err) =>
+            console.error("[OrderController] Error sending Razorpay confirmation email:", err.message)
+        );
+
         res.json({ message: "Payment verified successfully", order: updatedOrder });
     } catch (error) {
         console.error("Payment Verification Error:", error);
@@ -772,7 +785,15 @@ const handleRazorpayWebhook = async (req, res) => {
                     order.orderStatus = "Processing";
                 }
                 await order.save();
+                await order.populate("user", "id name email");
                 console.log(`[Razorpay Webhook] Order ${order._id} successfully confirmed Paid (${event})`);
+
+                // Send confirmation email in background if not already sent
+                if (!order.confirmationEmailSent) {
+                    sendOrderConfirmationEmail(order).catch((err) =>
+                        console.error("[Razorpay Webhook] Error sending confirmation email:", err.message)
+                    );
+                }
             }
         } else if (event === "payment.failed") {
             const paymentEntity = payload?.payment?.entity;
