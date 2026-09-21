@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
-const { sendPasswordResetEmail } = require("../utils/emailService");
+const { sendPasswordResetEmail, sendPasswordResetSuccessEmail } = require("../utils/emailService");
 const { OAuth2Client } = require("google-auth-library");
 
 const sendTokenCookie = (res, token) => {
@@ -480,6 +480,15 @@ const resetPassword = async (req, res) => {
         user.resetPasswordExpires = undefined;
 
         await user.save();
+
+        // Dispatch confirmation email asynchronously in background (non-blocking)
+        sendPasswordResetSuccessEmail({
+            recipientEmail: user.email,
+            customerName: user.name,
+            clientUrl: process.env.URL || process.env.CLIENT_URL,
+        }).catch((err) =>
+            console.error("[AuthController] Failed to send password reset confirmation email:", err)
+        );
 
         return res.status(200).json({
             success: true,

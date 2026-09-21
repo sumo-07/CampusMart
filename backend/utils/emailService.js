@@ -1010,17 +1010,218 @@ const sendPasswordResetEmail = async ({ recipientEmail, customerName, otp, reset
     }
 };
 
+/**
+ * Generates plain-text content for password reset success email
+ */
+const generatePasswordResetSuccessText = ({ customerName, clientUrl, recipientEmail, changedAt }) => {
+    const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+    const loginUrl = `${baseUrl.replace(/\/$/, "")}/login`;
+    const forgotUrl = `${baseUrl.replace(/\/$/, "")}/forgot-password`;
+    const formattedDate = formatOrderDate(changedAt || Date.now());
+
+    return `CAMPUSMART - PASSWORD CHANGED SUCCESSFULLY
+==========================================
+Hello ${customerName || "there"},
+
+This email confirms that the password for your CampusMart account (${recipientEmail}) was successfully updated on ${formattedDate}.
+
+You can now log in using your new password:
+${loginUrl}
+
+SECURITY NOTICE:
+------------------------------------------
+If you did not make this change, please reset your password immediately to secure your account:
+${forgotUrl}
+
+Or contact our campus support team if you suspect unauthorized activity.
+
+Best regards,
+The CampusMart Team
+(C) ${new Date().getFullYear()} CampusMart. All rights reserved.
+`;
+};
+
+/**
+ * Generates modern, responsive HTML email template for password reset success notification
+ */
+const generatePasswordResetSuccessHtml = ({ customerName, clientUrl, recipientEmail, changedAt }) => {
+    const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+    const loginUrl = `${baseUrl.replace(/\/$/, "")}/login`;
+    const forgotUrl = `${baseUrl.replace(/\/$/, "")}/forgot-password`;
+    const formattedDate = formatOrderDate(changedAt || Date.now());
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Changed Successfully - CampusMart</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #cbd5e1;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #0b0f19; padding: 40px 12px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 580px; background-color: #111827; border: 1px solid #1f2937; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+                    
+                    <!-- BRAND HEADER -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #059669 0%, #0284c7 100%); padding: 32px 30px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
+                                🎓 CampusMart
+                            </div>
+                            <div style="font-size: 13px; color: #d1fae5; margin-top: 5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">
+                                Account Security &bull; Password Updated
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- MAIN CONTENT -->
+                    <tr>
+                        <td style="padding: 36px 32px 24px 32px;">
+                            <div style="text-align: center; margin-bottom: 24px;">
+                                <div style="display: inline-block; width: 64px; height: 64px; line-height: 64px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; font-size: 32px; color: #10b981;">
+                                    &#10003;
+                                </div>
+                            </div>
+
+                            <h1 style="margin: 0 0 16px 0; font-size: 22px; font-weight: 700; color: #f8fafc; line-height: 1.3; text-align: center;">
+                                Your Password Has Been Reset
+                            </h1>
+                            <p style="margin: 0 0 18px 0; font-size: 15px; line-height: 1.6; color: #94a3b8; text-align: center;">
+                                Hello <strong style="color: #f1f5f9;">${customerName || "CampusMart User"}</strong>,
+                            </p>
+                            <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #94a3b8; text-align: center;">
+                                This email confirms that the password for your CampusMart account (<span style="color: #38bdf8;">${recipientEmail}</span>) was successfully updated on <strong style="color: #f1f5f9;">${formattedDate}</strong>.
+                            </p>
+
+                            <!-- DETAILS CARD -->
+                            <div style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin: 24px 0;">
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                    <tr>
+                                        <td style="padding: 6px 0; font-size: 13px; color: #94a3b8; font-weight: 600;">Account:</td>
+                                        <td style="padding: 6px 0; font-size: 13px; color: #f8fafc; text-align: right; font-weight: 600;">${recipientEmail}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 6px 0; font-size: 13px; color: #94a3b8; font-weight: 600;">Date &amp; Time:</td>
+                                        <td style="padding: 6px 0; font-size: 13px; color: #f8fafc; text-align: right;">${formattedDate}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 6px 0; font-size: 13px; color: #94a3b8; font-weight: 600;">Status:</td>
+                                        <td style="padding: 6px 0; font-size: 13px; color: #10b981; text-align: right; font-weight: 700;">Completed</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- ACTION BUTTON -->
+                            <div style="text-align: center; margin: 28px 0 20px 0;">
+                                <a href="${loginUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: linear-gradient(135deg, #00d2ff 0%, #a259ff 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; padding: 15px 36px; border-radius: 10px; box-shadow: 0 4px 18px rgba(0, 210, 255, 0.35);">
+                                    Log In to CampusMart &rarr;
+                                </a>
+                            </div>
+
+                            <p style="margin: 0 0 26px 0; font-size: 13px; color: #94a3b8; line-height: 1.6; text-align: center; word-break: break-all;">
+                                If the button above does not work, copy and paste this link into your browser:<br/>
+                                <a href="${loginUrl}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline; font-weight: 500;">${loginUrl}</a>
+                            </p>
+
+                            <!-- SECURITY WARNING -->
+                            <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; border-radius: 8px; padding: 16px 18px; margin: 26px 0;">
+                                <div style="font-size: 14px; font-weight: 700; color: #f87171; margin-bottom: 4px;">
+                                    🛡️ Didn't request this change?
+                                </div>
+                                <div style="font-size: 13px; line-height: 1.5; color: #fca5a5;">
+                                    If you did not perform this password reset, please <a href="${forgotUrl}" target="_blank" rel="noopener noreferrer" style="color: #ffffff; text-decoration: underline; font-weight: 700;">reset your password immediately</a> to secure your account, or contact campus support.
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- FOOTER -->
+                    <tr>
+                        <td style="background-color: #0f172a; padding: 22px 30px; text-align: center; border-top: 1px solid #1e293b;">
+                            <div style="font-size: 12px; color: #64748b; line-height: 1.6;">
+                                Need assistance? Reach out to our campus student support.<br/>
+                                &copy; ${new Date().getFullYear()} CampusMart. All rights reserved.
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+`;
+};
+
+/**
+ * Dispatches a password reset success confirmation email
+ */
+const sendPasswordResetSuccessEmail = async ({ recipientEmail, customerName, clientUrl }) => {
+    try {
+        const transporter = getTransporter();
+        if (!transporter) {
+            console.warn(`[EmailService] Nodemailer not configured in .env. Password reset success email for ${recipientEmail} skipped.`);
+            return false;
+        }
+
+        const resolvedClientUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+
+        let fromAddress = `"CampusMart" <${process.env.EMAIL_USER}>`;
+        if (process.env.EMAIL_FROM) {
+            const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
+            const displayName = nameMatch ? nameMatch[1].trim() : "CampusMart";
+            fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
+        }
+
+        const html = generatePasswordResetSuccessHtml({
+            customerName,
+            clientUrl: resolvedClientUrl,
+            recipientEmail,
+            changedAt: Date.now(),
+        });
+        const text = generatePasswordResetSuccessText({
+            customerName,
+            clientUrl: resolvedClientUrl,
+            recipientEmail,
+            changedAt: Date.now(),
+        });
+
+        const info = await transporter.sendMail({
+            from: fromAddress,
+            replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER,
+            to: recipientEmail,
+            subject: "CampusMart - Your Password Was Successfully Reset",
+            text,
+            html,
+            headers: {
+                "X-Entity-Ref-ID": `pwd-success-${Date.now()}`,
+            },
+        });
+
+        console.log(`[EmailService] Password reset success email sent to ${recipientEmail} (Message ID: ${info.messageId})`);
+        return true;
+    } catch (error) {
+        console.error(`[EmailService] Error sending password reset success email to ${recipientEmail}:`, error.message);
+        return false;
+    }
+};
+
 module.exports = {
     getTransporter,
     sendOrderConfirmationEmail,
     sendOrderStatusEmail,
     sendPasswordResetEmail,
+    sendPasswordResetSuccessEmail,
     generateOrderReceiptHtml,
     generateOrderReceiptText,
     generateStatusUpdateHtml,
     generateStatusUpdateText,
     generatePasswordResetHtml,
     generatePasswordResetText,
+    generatePasswordResetSuccessHtml,
+    generatePasswordResetSuccessText,
     verifySmtpConnection,
 };
 

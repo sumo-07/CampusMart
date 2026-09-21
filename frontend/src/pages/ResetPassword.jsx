@@ -262,7 +262,6 @@ export const ResetPassword = () => {
           /* State D: Step 1 - Verify OTP */
           <>
             <div style={{ textAlign: "center", marginBottom: "1.2rem" }}>
-              <span className="step-indicator">Step 1 of 2</span>
               <p className="auth-subtitle" style={{ marginBottom: 0 }}>
                 Enter the 6-digit verification code sent to your email to continue.
               </p>
@@ -349,7 +348,7 @@ export const ResetPassword = () => {
                 </div>
               ) : (
                 <div className="verified-link-badge">
-                  <AiOutlineCheckCircle /> OTP Verified &bull; Step 2 of 2
+                  <AiOutlineCheckCircle /> OTP Verified
                 </div>
               )}
               <p className="auth-subtitle" style={{ marginBottom: 0 }}>
