@@ -12,7 +12,8 @@ const productRoutes = require("./routes/productRoutes");
 const app = express();
 
 const allowedOrigins = [
-    process.env.CLIENT_URL
+    process.env.URL,
+    process.env.CLIENT_URL,
 ].filter(Boolean).map((url) => url.replace(/\/$/, ""));
 
 app.use(cors({

@@ -12,8 +12,23 @@ export const Signup = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
+
+  // Evaluate password strength
+  const getPasswordStrength = (pwd) => {
+    if (!pwd) return { score: 0, label: "", class: "" };
+    let score = 0;
+    if (pwd.length >= 6) score++;
+    if (pwd.length >= 10) score++;
+    if (/[A-Z]/.test(pwd) && /[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+
+    if (score <= 1) return { score: 1, label: "Weak", class: "weak" };
+    if (score <= 2) return { score: 2, label: "Medium", class: "medium" };
+    return { score: 3, label: "Strong", class: "strong" };
+  };
+
+  const strength = getPasswordStrength(password);
 
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -121,35 +136,38 @@ export const Signup = () => {
                 className="eye-toggle"
                 onClick={() => setShowPassword((prev) => !prev)}
                 aria-label="Toggle password visibility"
+                title={showPassword ? "Hide passwords" : "Show passwords"}
               >
                 {showPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
               </button>
             </div>
+
+            {/* Password strength meter */}
+            {password && (
+              <div className="strength-meter">
+                <div className="strength-bars">
+                  <div className={`strength-bar ${strength.score >= 1 ? strength.class : ""}`} />
+                  <div className={`strength-bar ${strength.score >= 2 ? strength.class : ""}`} />
+                  <div className={`strength-bar ${strength.score >= 3 ? strength.class : ""}`} />
+                </div>
+                <span className={`strength-text ${strength.class}`}>{strength.label}</span>
+              </div>
+            )}
           </div>
 
           <div className="form-group">
             <label className="form-label" htmlFor="confirm-password">
               Confirm Password
             </label>
-            <div className="password-wrapper">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                id="confirm-password"
-                className="form-input"
-                placeholder="Confirm password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                className="eye-toggle"
-                onClick={() => setShowConfirmPassword((prev) => !prev)}
-                aria-label="Toggle confirm password visibility"
-              >
-                {showConfirmPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
-              </button>
-            </div>
+            <input
+              type={showPassword ? "text" : "password"}
+              id="confirm-password"
+              className="form-input"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
           </div>
 
           <button type="submit" className="auth-btn signup-btn">

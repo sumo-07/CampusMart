@@ -16,7 +16,7 @@ async function runTest() {
     console.log("EMAIL_SERVICE:", process.env.EMAIL_SERVICE || "gmail");
     console.log("EMAIL_USER:   ", process.env.EMAIL_USER ? process.env.EMAIL_USER.replace(/(.{3})(.*)(@.*)/, "$1***$3") : "NOT SET");
     console.log("EMAIL_PASS:   ", process.env.EMAIL_PASS ? "****" + process.env.EMAIL_PASS.slice(-4) : "NOT SET");
-    console.log("CLIENT_URL:   ", process.env.CLIENT_URL || "http://localhost:5173");
+    console.log("URL:          ", process.env.URL || process.env.CLIENT_URL || "http://localhost:5173");
     console.log("------------------------------------------");
 
     const targetEmail = process.argv[2] || process.env.EMAIL_USER;
@@ -68,7 +68,7 @@ async function runTest() {
         },
     };
 
-    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    const clientUrl = (process.env.URL || process.env.CLIENT_URL || "http://localhost:5173").trim();
     let subject = "";
     let html = "";
     let text = "";

@@ -73,8 +73,8 @@ const generateOrderReceiptText = (order, customerName, clientUrl) => {
         .join("\n");
 
     const total = Number(order.totalPrice || order.amount || 0).toFixed(2);
-    const baseUrl = process.env.CLIENT_URL || clientUrl || "http://localhost:5173";
-    const trackOrderUrl = process.env.ORDERS_URL || `${baseUrl.replace(/\/$/, "")}/orders`;
+    const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+    const trackOrderUrl = `${baseUrl.replace(/\/$/, "")}/orders`;
 
     return `CAMPUSMART - ORDER RECEIPT
 ==========================================
@@ -146,8 +146,8 @@ const generateOrderReceiptHtml = (order, customerName, clientUrl) => {
     const totalAmount = Number(order.totalPrice || order.amount || 0).toFixed(2);
     const shipping = order.shippingAddress || {};
     
-    const baseUrl = process.env.CLIENT_URL || clientUrl || "http://localhost:5173";
-    const trackOrderUrl = process.env.ORDERS_URL || `${baseUrl.replace(/\/$/, "")}/orders`;
+    const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+    const trackOrderUrl = `${baseUrl.replace(/\/$/, "")}/orders`;
 
     return `
 <!DOCTYPE html>
@@ -291,6 +291,10 @@ const generateOrderReceiptHtml = (order, customerName, clientUrl) => {
                             <div style="margin-top: 10px; font-size: 12px; color: #94a3b8;">
                                 Track status, view order timeline, or print receipt anytime.
                             </div>
+                            <p style="margin: 16px 0 0 0; font-size: 12px; color: #64748b; line-height: 1.5; text-align: center; word-break: break-all;">
+                                If the button above does not work, copy and paste this link into your browser:<br/>
+                                <a href="${trackOrderUrl}" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline;">${trackOrderUrl}</a>
+                            </p>
                         </td>
                     </tr>
 
@@ -363,7 +367,7 @@ const sendOrderConfirmationEmail = async (orderInput) => {
             return false;
         }
 
-        const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+        const clientUrl = (process.env.URL || process.env.CLIENT_URL || "http://localhost:5173").trim();
         const shortId = String(order._id).slice(-8).toUpperCase();
         const isOnline = order.paymentMethod === "Razorpay";
         const subject = isOnline
@@ -516,8 +520,8 @@ const generateStatusUpdateHtml = (order, customerName, clientUrl, newStatus) => 
     const shipping = order.shippingAddress || {};
     const totalAmount = Number(order.totalPrice || order.amount || 0).toFixed(2);
 
-    const baseUrl = process.env.CLIENT_URL || clientUrl || "http://localhost:5173";
-    const trackOrderUrl = process.env.ORDERS_URL || `${baseUrl.replace(/\/$/, "")}/orders`;
+    const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+    const trackOrderUrl = `${baseUrl.replace(/\/$/, "")}/orders`;
 
     const itemsRows = (order.orderItems || [])
         .map((item) => {
@@ -639,6 +643,10 @@ const generateStatusUpdateHtml = (order, customerName, clientUrl, newStatus) => 
                             <div style="margin-top: 8px; font-size: 12px; color: #94a3b8;">
                                 View live order status and delivery timeline on CampusMart.
                             </div>
+                            <p style="margin: 14px 0 0 0; font-size: 12px; color: #64748b; line-height: 1.5; text-align: center; word-break: break-all;">
+                                If the button above does not work, copy and paste this link into your browser:<br/>
+                                <a href="${trackOrderUrl}" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline;">${trackOrderUrl}</a>
+                            </p>
                         </td>
                     </tr>
 
@@ -671,8 +679,8 @@ const generateStatusUpdateText = (order, customerName, clientUrl, newStatus) => 
     const shipping = order.shippingAddress || {};
     const total = Number(order.totalPrice || order.amount || 0).toFixed(2);
 
-    const baseUrl = process.env.CLIENT_URL || clientUrl || "http://localhost:5173";
-    const trackOrderUrl = process.env.ORDERS_URL || `${baseUrl.replace(/\/$/, "")}/orders`;
+    const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+    const trackOrderUrl = `${baseUrl.replace(/\/$/, "")}/orders`;
 
     const itemsText = (order.orderItems || [])
         .map((item, index) => `${index + 1}. ${item.title || "Campus Item"} x ${item.quantity} - Rs. ${(Number(item.price) * Number(item.quantity)).toFixed(2)}`)
@@ -750,7 +758,7 @@ const sendOrderStatusEmail = async (orderInput, newStatus) => {
             return false;
         }
 
-        const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+        const clientUrl = (process.env.URL || process.env.CLIENT_URL || "http://localhost:5173").trim();
         const config = getStatusConfig(newStatus, order, customerName);
 
         let fromAddress = `"CampusMart" <${process.env.EMAIL_USER}>`;
@@ -801,13 +809,218 @@ const verifySmtpConnection = async () => {
     }
 };
 
+/**
+ * Generates an accessible, clean plain-text password reset email fallback
+ */
+const generatePasswordResetText = ({ customerName, otp, resetToken, clientUrl, recipientEmail }) => {
+    const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+    const resetUrl = `${baseUrl.replace(/\/$/, "")}/reset-password?token=${resetToken}&email=${encodeURIComponent(recipientEmail)}`;
+
+    return `CAMPUSMART - PASSWORD RESET REQUEST
+==========================================
+Hello ${customerName || "there"},
+
+We received a request to reset the password for your CampusMart account (${recipientEmail}).
+
+YOUR 6-DIGIT VERIFICATION CODE:
+------------------------------------------
+${otp}
+
+This code is valid for 15 minutes.
+
+DIRECT RESET LINK:
+------------------------------------------
+Alternatively, reset your password directly using this secure link:
+${resetUrl}
+
+SECURITY WARNING:
+------------------------------------------
+If you didn't request this, you can safely ignore this email.
+Your password will remain unchanged and your account is secure.
+
+Best regards,
+The CampusMart Team
+`;
+};
+
+/**
+ * Generates a modern, responsive HTML email template for password reset
+ */
+const generatePasswordResetHtml = ({ customerName, otp, resetToken, clientUrl, recipientEmail }) => {
+    const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+    const resetUrl = `${baseUrl.replace(/\/$/, "")}/reset-password?token=${resetToken}&email=${encodeURIComponent(recipientEmail)}`;
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Reset Request - CampusMart</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #cbd5e1;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #0b0f19; padding: 40px 12px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 580px; background-color: #111827; border: 1px solid #1f2937; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+                    
+                    <!-- BRAND HEADER -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #0284c7 0%, #7c3aed 100%); padding: 32px 30px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
+                                🎓 CampusMart
+                            </div>
+                            <div style="font-size: 13px; color: #e0f2fe; margin-top: 5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">
+                                Account Security &bull; Password Reset
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- MAIN CONTENT -->
+                    <tr>
+                        <td style="padding: 36px 32px 24px 32px;">
+                            <h1 style="margin: 0 0 16px 0; font-size: 22px; font-weight: 700; color: #f8fafc; line-height: 1.3;">
+                                Reset Your Password
+                            </h1>
+                            <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #94a3b8;">
+                                Hello <strong style="color: #f1f5f9;">${customerName || "CampusMart User"}</strong>,
+                            </p>
+                            <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #94a3b8;">
+                                We received a request to reset the password for your CampusMart account (<span style="color: #38bdf8;">${recipientEmail}</span>). You can reset your password using the 6-digit verification code below, or by clicking the direct reset button.
+                            </p>
+
+                            <!-- OTP CODE CARD -->
+                            <div style="background: #1e293b; border: 2px dashed #38bdf8; border-radius: 14px; padding: 24px; text-align: center; margin: 26px 0;">
+                                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #38bdf8; margin-bottom: 8px;">
+                                    Your 6-Digit Verification Code
+                                </div>
+                                <div style="font-size: 38px; font-weight: 800; letter-spacing: 10px; color: #ffffff; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; padding: 6px 0;">
+                                    ${otp}
+                                </div>
+                                <div style="font-size: 13px; color: #94a3b8; margin-top: 8px;">
+                                    ⏱️ Code expires in <strong style="color: #f1f5f9;">15 minutes</strong>
+                                </div>
+                            </div>
+
+                            <!-- DIVIDER -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 28px 0 24px 0;">
+                                <tr>
+                                    <td style="border-top: 1px solid #1f2937;"></td>
+                                    <td style="padding: 0 16px; color: #64748b; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap;">
+                                        OR USE DIRECT LINK
+                                    </td>
+                                    <td style="border-top: 1px solid #1f2937;"></td>
+                                </tr>
+                            </table>
+
+                            <!-- DIRECT ACTION BUTTON -->
+                            <div style="text-align: center; margin: 24px 0 20px 0;">
+                                <a href="${resetUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: linear-gradient(135deg, #00d2ff 0%, #a259ff 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; padding: 15px 36px; border-radius: 10px; box-shadow: 0 4px 18px rgba(0, 210, 255, 0.35);">
+                                    Reset My Password &rarr;
+                                </a>
+                            </div>
+
+                            <p style="margin: 0 0 26px 0; font-size: 13px; color: #94a3b8; line-height: 1.6; text-align: center; word-break: break-all;">
+                                If the button above does not work, copy and paste this link into your browser:<br/>
+                                <a href="${resetUrl}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline; font-weight: 500;">${resetUrl}</a>
+                            </p>
+
+                            <!-- MANDATORY SECURITY WARNING -->
+                            <div style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; border-radius: 8px; padding: 16px 18px; margin: 26px 0;">
+                                <div style="font-size: 14px; font-weight: 700; color: #fbbf24; margin-bottom: 4px;">
+                                    🛡️ Security Notice
+                                </div>
+                                <div style="font-size: 13px; line-height: 1.5; color: #fde68a;">
+                                    <strong>If you didn't request this, you can safely ignore this email.</strong> Your password will remain unchanged and your account is secure. Someone may have entered your email address by mistake.
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- FOOTER -->
+                    <tr>
+                        <td style="background-color: #0f172a; padding: 22px 30px; text-align: center; border-top: 1px solid #1e293b;">
+                            <div style="font-size: 12px; color: #64748b; line-height: 1.6;">
+                                Need assistance? Reach out to our campus student support.<br/>
+                                &copy; ${new Date().getFullYear()} CampusMart. All rights reserved.
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+`;
+};
+
+/**
+ * Dispatches a password reset email containing a 6-digit OTP and direct reset link
+ */
+const sendPasswordResetEmail = async ({ recipientEmail, customerName, otp, resetToken, clientUrl }) => {
+    try {
+        const transporter = getTransporter();
+        if (!transporter) {
+            console.warn(`[EmailService] Nodemailer not configured in .env. Password reset email for ${recipientEmail} skipped.`);
+            return false;
+        }
+
+        const resolvedClientUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+
+        let fromAddress = `"CampusMart" <${process.env.EMAIL_USER}>`;
+        if (process.env.EMAIL_FROM) {
+            const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
+            const displayName = nameMatch ? nameMatch[1].trim() : "CampusMart";
+            fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
+        }
+
+        const html = generatePasswordResetHtml({
+            customerName,
+            otp,
+            resetToken,
+            clientUrl: resolvedClientUrl,
+            recipientEmail,
+        });
+        const text = generatePasswordResetText({
+            customerName,
+            otp,
+            resetToken,
+            clientUrl: resolvedClientUrl,
+            recipientEmail,
+        });
+
+        const info = await transporter.sendMail({
+            from: fromAddress,
+            replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER,
+            to: recipientEmail,
+            subject: "CampusMart Password Reset - Verification Code & Link",
+            text,
+            html,
+            headers: {
+                "X-Entity-Ref-ID": `pwd-reset-${Date.now()}`,
+            },
+        });
+
+        console.log(`[EmailService] Password reset email sent to ${recipientEmail} (Message ID: ${info.messageId})`);
+        return true;
+    } catch (error) {
+        console.error(`[EmailService] Error sending password reset email to ${recipientEmail}:`, error.message);
+        return false;
+    }
+};
+
 module.exports = {
     getTransporter,
     sendOrderConfirmationEmail,
     sendOrderStatusEmail,
+    sendPasswordResetEmail,
     generateOrderReceiptHtml,
     generateOrderReceiptText,
     generateStatusUpdateHtml,
     generateStatusUpdateText,
+    generatePasswordResetHtml,
+    generatePasswordResetText,
     verifySmtpConnection,
 };
+

@@ -1,5 +1,7 @@
+const crypto = require("crypto");
 const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
+const { sendPasswordResetEmail } = require("../utils/emailService");
 const { OAuth2Client } = require("google-auth-library");
 
 const sendTokenCookie = (res, token) => {
@@ -305,6 +307,181 @@ const googleAuth = async (req, res) => {
     }
 };
 
+// @desc    Request password reset (generates 6-digit OTP & reset token link)
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: "Please provide your email address" });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const user = await User.findOne({ email: normalizedEmail });
+
+        if (!user) {
+            // Generic security response to prevent user enumeration
+            return res.status(200).json({
+                success: true,
+                message: "If an account with that email exists, password reset instructions have been sent.",
+            });
+        }
+
+        // Generate secure random 6-digit OTP (100000 - 999999)
+        const rawOtp = crypto.randomInt(100000, 1000000).toString();
+
+        // Generate 32-byte hex reset token for one-click URL reset
+        const rawToken = crypto.randomBytes(32).toString("hex");
+
+        // Hash both before persisting to database
+        const hashedOtp = crypto.createHash("sha256").update(rawOtp).digest("hex");
+        const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+
+        // Set 15-minute expiration timestamp
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+        user.resetPasswordOtp = hashedOtp;
+        user.resetPasswordToken = hashedToken;
+        user.resetPasswordExpires = expiresAt;
+
+        await user.save({ validateBeforeSave: false });
+
+        // Dispatch email with both 6-digit OTP and direct reset link
+        await sendPasswordResetEmail({
+            recipientEmail: user.email,
+            customerName: user.name,
+            otp: rawOtp,
+            resetToken: rawToken,
+            clientUrl: process.env.URL || process.env.CLIENT_URL,
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset instructions have been sent to your email.",
+            email: user.email,
+        });
+    } catch (error) {
+        console.error("Forgot password error:", error);
+        return res.status(500).json({ message: "Failed to process forgot password request", error: error.message });
+    }
+};
+
+// @desc    Verify OTP code or reset token prior to password submission
+// @route   POST /api/auth/verify-reset-code
+// @access  Public
+const verifyResetCode = async (req, res) => {
+    try {
+        const { email, otp, token } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+        if (!otp && !token) {
+            return res.status(400).json({ message: "Please provide the 6-digit verification code or reset token" });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const user = await User.findOne({
+            email: normalizedEmail,
+            resetPasswordExpires: { $gt: Date.now() },
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "The reset code or link has expired or is invalid. Please request a new one." });
+        }
+
+        let isValid = false;
+        if (otp) {
+            const cleanOtp = String(otp).trim();
+            const hashedOtp = crypto.createHash("sha256").update(cleanOtp).digest("hex");
+            if (user.resetPasswordOtp && user.resetPasswordOtp === hashedOtp) {
+                isValid = true;
+            }
+        } else if (token) {
+            const hashedToken = crypto.createHash("sha256").update(token.trim()).digest("hex");
+            if (user.resetPasswordToken && user.resetPasswordToken === hashedToken) {
+                isValid = true;
+            }
+        }
+
+        if (!isValid) {
+            return res.status(400).json({ message: "Invalid verification code or reset link" });
+        }
+
+        return res.status(200).json({ success: true, message: "Verification code is valid" });
+    } catch (error) {
+        console.error("Verify reset code error:", error);
+        return res.status(500).json({ message: "Failed to verify reset code", error: error.message });
+    }
+};
+
+// @desc    Reset password using valid 6-digit OTP or reset token
+// @route   POST /api/auth/reset-password
+// @access  Public
+const resetPassword = async (req, res) => {
+    try {
+        const { email, otp, token, newPassword } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+        if (!newPassword || newPassword.length < 6) {
+            return res.status(400).json({ message: "Password must be at least 6 characters long" });
+        }
+        if (!otp && !token) {
+            return res.status(400).json({ message: "Verification code or reset token is required" });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const user = await User.findOne({
+            email: normalizedEmail,
+            resetPasswordExpires: { $gt: Date.now() },
+        });
+
+        if (!user) {
+            return res.status(400).json({
+                message: "The password reset link or verification code has expired or is invalid. Please request a new one.",
+            });
+        }
+
+        let isVerified = false;
+        if (otp) {
+            const cleanOtp = String(otp).trim();
+            const hashedOtp = crypto.createHash("sha256").update(cleanOtp).digest("hex");
+            if (user.resetPasswordOtp && user.resetPasswordOtp === hashedOtp) {
+                isVerified = true;
+            }
+        } else if (token) {
+            const hashedToken = crypto.createHash("sha256").update(token.trim()).digest("hex");
+            if (user.resetPasswordToken && user.resetPasswordToken === hashedToken) {
+                isVerified = true;
+            }
+        }
+
+        if (!isVerified) {
+            return res.status(400).json({ message: "Invalid verification code or reset token" });
+        }
+
+        // Set new password (bcrypt pre-save hook on User schema will hash this)
+        user.password = newPassword;
+
+        // Clear reset tokens
+        user.resetPasswordToken = undefined;
+        user.resetPasswordOtp = undefined;
+        user.resetPasswordExpires = undefined;
+
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Your password has been successfully reset! You can now log in.",
+        });
+    } catch (error) {
+        console.error("Reset password error:", error);
+        return res.status(500).json({ message: "Failed to reset password", error: error.message });
+    }
+};
+
 module.exports = {
     authUser,
     registerUser,
@@ -315,4 +492,8 @@ module.exports = {
     setDefaultAddress,
     logoutUser,
     googleAuth,
+    forgotPassword,
+    verifyResetCode,
+    resetPassword,
 };
+
