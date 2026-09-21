@@ -448,4 +448,50 @@
   font-size: 0.88rem;
   margin-bottom: 1.25rem;
   text-align: center;
+}
+
+/* Error State Screen & Spinner */
+.error-icon-wrapper {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.15);
+  border: 2px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.25);
+}
+
+.auth-loading-card {
+  text-align: center;
+  padding: 2.5rem 0;
+}
+
+.spinner-icon {
+  animation: spin 1s linear infinite;
+  color: var(--accent-blue);
+  margin-bottom: 1.2rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.step-indicator {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  background: rgba(var(--accent-blue-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-blue-rgb), 0.25);
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 0.75rem;
 }

@@ -385,11 +385,17 @@ const verifyResetCode = async (req, res) => {
         const escapedEmail = cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const user = await User.findOne({
             email: { $regex: new RegExp(`^${escapedEmail}$`, "i") },
-            resetPasswordExpires: { $gt: Date.now() },
         });
 
         if (!user) {
-            return res.status(400).json({ message: "The reset code or link has expired or is invalid. Please request a new one." });
+            return res.status(404).json({ message: "No account found with this email address." });
+        }
+
+        if (!user.resetPasswordExpires || user.resetPasswordExpires < Date.now()) {
+            return res.status(400).json({
+                message: "This reset link or verification code has expired (valid for 15 minutes). Please request a new one.",
+                expired: true,
+            });
         }
 
         let isValid = false;
