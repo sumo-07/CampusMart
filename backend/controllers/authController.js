@@ -317,14 +317,15 @@ const forgotPassword = async (req, res) => {
             return res.status(400).json({ message: "Please provide your email address" });
         }
 
-        const normalizedEmail = email.trim().toLowerCase();
-        const user = await User.findOne({ email: normalizedEmail });
+        const cleanEmail = email.trim();
+        const escapedEmail = cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const user = await User.findOne({
+            email: { $regex: new RegExp(`^${escapedEmail}$`, "i") },
+        });
 
         if (!user) {
-            // Generic security response to prevent user enumeration
-            return res.status(200).json({
-                success: true,
-                message: "If an account with that email exists, password reset instructions have been sent.",
+            return res.status(404).json({
+                message: "No account found with this email address. Please make sure you have registered first.",
             });
         }
 
@@ -380,9 +381,10 @@ const verifyResetCode = async (req, res) => {
             return res.status(400).json({ message: "Please provide the 6-digit verification code or reset token" });
         }
 
-        const normalizedEmail = email.trim().toLowerCase();
+        const cleanEmail = email.trim();
+        const escapedEmail = cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const user = await User.findOne({
-            email: normalizedEmail,
+            email: { $regex: new RegExp(`^${escapedEmail}$`, "i") },
             resetPasswordExpires: { $gt: Date.now() },
         });
 
@@ -432,9 +434,10 @@ const resetPassword = async (req, res) => {
             return res.status(400).json({ message: "Verification code or reset token is required" });
         }
 
-        const normalizedEmail = email.trim().toLowerCase();
+        const cleanEmail = email.trim();
+        const escapedEmail = cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const user = await User.findOne({
-            email: normalizedEmail,
+            email: { $regex: new RegExp(`^${escapedEmail}$`, "i") },
             resetPasswordExpires: { $gt: Date.now() },
         });
 
