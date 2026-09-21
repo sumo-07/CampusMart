@@ -8,7 +8,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 2500;
   backdrop-filter: blur(3px);
 }
 
@@ -32,6 +32,26 @@
   color: #0f172a;
   font-size: 1.5rem;
   font-weight: 700;
+}
+
+.modal-back-btn {
+  background: none;
+  border: none;
+  color: #4f46e5;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.15s ease;
+}
+
+.modal-back-btn:hover {
+  color: #4338ca;
+  text-decoration: underline;
 }
 
 .modal-close {
@@ -211,6 +231,28 @@
 .new-address-form input:focus {
   border-color: #4f46e5;
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.address-phone-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.address-phone-input-wrap .phone-prefix {
+  padding: 11px 14px;
+  background: #f1f5f9;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #475569;
+  user-select: none;
+}
+
+.address-phone-input-wrap input {
+  flex: 1;
 }
 
 .save-btn {

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { createOrder, verifyRazorpayPayment } from "../utils/orderUtils";
 import { loadRazorpayScript } from "../utils/loadRazorpay";
-import { addAddress } from "../utils/addressUtils";
+import { AddressModal } from "../components/UI/AddressModal";
 import { AuthContext } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import '../components/css/checkout.css';
@@ -11,20 +11,15 @@ import '../components/css/checkout.css';
 export const Checkout = () => {
   const { cartItems: contextCartItems, loading: cartLoading, resetCartState } = useCart();
 
-  // Address modes: 'new' or index number from user.addresses
-  const [addressMode, setAddressMode] = useState("new");
+  // Address selection and modal state
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [modalInitialNew, setModalInitialNew] = useState(false);
 
-  // Form State for new address
-  const [fullName, setFullName] = useState("");
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [pincode, setPincode] = useState("");
-  const [phone, setPhone] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Razorpay");
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { user, setUser, loading: authLoading } = useContext(AuthContext);
+  const { user, loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -42,11 +37,21 @@ export const Checkout = () => {
     }
   }, [user, authLoading, navigate, location.state]);
 
+  // Keep selected address in sync with user's address list
   useEffect(() => {
     if (user?.addresses && user.addresses.length > 0) {
-      setAddressMode("0"); // First address
+      if (!selectedAddressId || !user.addresses.some(a => a._id === selectedAddressId)) {
+        const defaultAddr = user.addresses.find(a => a.isDefault) || user.addresses[0];
+        setSelectedAddressId(defaultAddr._id);
+      }
+    } else {
+      setSelectedAddressId(null);
     }
-  }, [user]);
+  }, [user?.addresses, selectedAddressId]);
+
+  const selectedAddress = (user?.addresses && user.addresses.length > 0)
+    ? (user.addresses.find(a => a._id === selectedAddressId) || user.addresses.find(a => a.isDefault) || user.addresses[0])
+    : null;
 
   if (authLoading || cartLoading) return <p style={{ textAlign: 'center', padding: '4rem' }}>Loading checkout...</p>;
   if (!user) return null;
@@ -63,44 +68,21 @@ export const Checkout = () => {
       return;
     }
 
-    let finalShippingAddress = null;
-
-    if (addressMode === "new") {
-      if (!fullName || !address || !city || !pincode || !phone) {
-        alert("Please fill in all delivery details.");
-        return;
-      }
-
-      // Basic Validations
-      if (!/^\d{10}$/.test(phone)) {
-        alert("Please enter a valid 10-digit mobile number.");
-        return;
-      }
-      if (!/^\d{5,6}$/.test(pincode)) {
-        alert("Please enter a valid numeric pincode (5-6 digits).");
-        return;
-      }
-
-      setIsSubmitting(true);
-      try {
-        // 1. Add Address to Backend Profile
-        const newAddressPayload = { fullName, address, city, pincode, phone };
-        const updatedAddresses = await addAddress(newAddressPayload);
-
-        // 2. Update Global Context so Header updates instantly
-        setUser((prev) => ({ ...prev, addresses: updatedAddresses }));
-
-        finalShippingAddress = newAddressPayload;
-      } catch (error) {
-        alert(error.response?.data?.message || "Failed to save new address.");
-        setIsSubmitting(false);
-        return;
-      }
-    } else {
-      // Use existing selected address
-      finalShippingAddress = user.addresses[parseInt(addressMode)];
-      setIsSubmitting(true);
+    if (!selectedAddress) {
+      alert("Please add a delivery address to proceed with your order.");
+      setModalInitialNew(true);
+      setIsAddressModalOpen(true);
+      return;
     }
+
+    setIsSubmitting(true);
+    const finalShippingAddress = {
+      fullName: selectedAddress.fullName,
+      address: selectedAddress.address,
+      city: selectedAddress.city,
+      pincode: selectedAddress.pincode,
+      phone: selectedAddress.phone,
+    };
 
     // Place Order
     try {
@@ -238,108 +220,147 @@ export const Checkout = () => {
       </div>
 
       {/* Delivery Configuration */}
-      <div className="checkout-form" style={{ marginTop: '2rem' }}>
+      <div className="checkout-delivery-section">
         <h2>Delivery Details</h2>
 
-        {/* Address Selection Dropdown */}
-        {user?.addresses && user.addresses.length > 0 && (
-          <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600 }}>Select Delivery Address:</label>
-            <select
-              value={addressMode}
-              onChange={(e) => setAddressMode(e.target.value)}
-              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ddd", fontSize: "1rem" }}
+        {!selectedAddress ? (
+          /* Empty state: No address found */
+          <div className="checkout-no-address-box">
+            <div className="no-address-icon-wrap">
+              <span className="no-address-icon">📍</span>
+            </div>
+            <div className="no-address-info">
+              <h3>No Delivery Address Found</h3>
+              <p>You haven't added a delivery address yet. Please add an address to proceed with checkout.</p>
+            </div>
+            <button
+              type="button"
+              className="checkout-btn-add-address"
+              onClick={() => {
+                setModalInitialNew(true);
+                setIsAddressModalOpen(true);
+              }}
             >
-              {user.addresses.map((addr, idx) => (
-                <option key={idx} value={idx.toString()}>
-                  {addr.fullName} - {addr.address}, {addr.city}
-                </option>
-              ))}
-              <option value="new">+ Add New Address</option>
-            </select>
+              + Add Delivery Address
+            </button>
           </div>
-        )}
+        ) : (
+          /* Active Selected Address Card */
+          <div className="checkout-address-card">
+            <div className="checkout-address-header">
+              <div className="checkout-recipient-info">
+                <span className="recipient-name">{selectedAddress.fullName}</span>
+                {selectedAddress.isDefault && <span className="default-badge">DEFAULT</span>}
+              </div>
+              <div className="checkout-address-actions">
+                <button
+                  type="button"
+                  className="checkout-address-action-btn"
+                  onClick={() => {
+                    setModalInitialNew(false);
+                    setIsAddressModalOpen(true);
+                  }}
+                  title="Choose from saved addresses or edit"
+                >
+                  Change / Select Address
+                </button>
+                <button
+                  type="button"
+                  className="checkout-address-action-btn primary"
+                  onClick={() => {
+                    setModalInitialNew(true);
+                    setIsAddressModalOpen(true);
+                  }}
+                  title="Add another delivery address"
+                >
+                  + Add New
+                </button>
+              </div>
+            </div>
 
-        {/* New Address Form (Hidden if using existing) */}
-        {addressMode === "new" && (
-          <div style={{ background: "#f8fafc", padding: "1.5rem", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
-            <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "#4f46e5" }}>Enter New Address</h3>
-            <input type="text" placeholder="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-            <input type="text" placeholder="Street Address" value={address} onChange={(e) => setAddress(e.target.value)} />
-            <input type="text" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} />
-            <input type="text" placeholder="Pincode (e.g. 110001)" value={pincode} onChange={(e) => setPincode(e.target.value)} />
-            <input type="text" placeholder="10-digit Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <div className="checkout-address-body">
+              <p className="address-line">
+                <span>📍</span> {selectedAddress.address}
+              </p>
+              <p className="address-city-line">
+                {selectedAddress.city}, {selectedAddress.pincode}
+              </p>
+              <p className="address-phone-line">
+                <span>📞</span> Phone: <strong>+91 {selectedAddress.phone}</strong>
+              </p>
+            </div>
+
+            {user?.addresses && user.addresses.length > 1 && (
+              <div className="checkout-address-pills-row">
+                <span className="pills-title">Deliver to:</span>
+                <div className="pills-container">
+                  {user.addresses.map((addr) => (
+                    <button
+                      key={addr._id}
+                      type="button"
+                      className={`address-quick-pill ${selectedAddress._id === addr._id ? "active" : ""}`}
+                      onClick={() => setSelectedAddressId(addr._id)}
+                    >
+                      {addr.fullName} ({addr.city})
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
 
+      {/* Address Modal Interface (Exact same as navbar) */}
+      {user && (
+        <AddressModal
+          isOpen={isAddressModalOpen}
+          onClose={() => setIsAddressModalOpen(false)}
+          initialShowNew={modalInitialNew}
+          onAddressSelected={(id) => setSelectedAddressId(id)}
+        />
+      )}
+
       {/* Payment Method Configuration */}
-      <div className="checkout-payment-section" style={{ marginTop: '2rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-        <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#1e293b' }}>Select Payment Method</h2>
+      <div className="checkout-payment-section">
+        <h2>Select Payment Method</h2>
 
         {/* Razorpay Option */}
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '14px',
-            border: paymentMethod === "Razorpay" ? '2px solid #4f46e5' : '1px solid #cbd5e1',
-            borderRadius: '8px',
-            background: paymentMethod === "Razorpay" ? '#eef2ff' : '#fff',
-            cursor: 'pointer',
-            marginBottom: '12px',
-            transition: 'all 0.2s ease',
-          }}
-        >
+        <label className={`payment-method-card ${paymentMethod === "Razorpay" ? "selected" : ""}`}>
           <input
             type="radio"
             name="paymentMethod"
             value="Razorpay"
             checked={paymentMethod === "Razorpay"}
             onChange={() => setPaymentMethod("Razorpay")}
-            style={{ accentColor: '#4f46e5', width: '18px', height: '18px', cursor: 'pointer' }}
           />
-          <div style={{ flex: 1 }}>
-            <strong style={{ display: 'block', color: '#1e293b', fontSize: '0.95rem' }}>
+          <div className="payment-method-info">
+            <strong className="payment-method-title">
               💳 Online Payment via Razorpay
             </strong>
-            <small style={{ color: '#64748b' }}>
+            <span className="payment-method-desc">
               Instant & secure: UPI (GPay, PhonePe, Paytm), Debit/Credit Cards, NetBanking.
-            </small>
+            </span>
           </div>
-          <span style={{ fontSize: '0.75rem', background: '#dcfce7', color: '#15803d', padding: '3px 10px', borderRadius: '12px', fontWeight: 700 }}>
+          <span className="payment-method-badge instant">
             Instant Active
           </span>
         </label>
 
         {/* COD Option */}
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '14px',
-            border: paymentMethod === "COD" ? '2px solid #4f46e5' : '1px solid #cbd5e1',
-            borderRadius: '8px',
-            background: paymentMethod === "COD" ? '#eef2ff' : '#fff',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-        >
+        <label className={`payment-method-card ${paymentMethod === "COD" ? "selected" : ""}`}>
           <input
             type="radio"
             name="paymentMethod"
             value="COD"
             checked={paymentMethod === "COD"}
             onChange={() => setPaymentMethod("COD")}
-            style={{ accentColor: '#4f46e5', width: '18px', height: '18px', cursor: 'pointer' }}
           />
-          <div style={{ flex: 1 }}>
-            <strong style={{ display: 'block', color: '#1e293b', fontSize: '0.95rem' }}>💵 Cash on Delivery (COD)</strong>
-            <small style={{ color: '#64748b' }}>Pay in cash upon physical delivery of your campus items.</small>
+          <div className="payment-method-info">
+            <strong className="payment-method-title">💵 Cash on Delivery (COD)</strong>
+            <span className="payment-method-desc">Pay in cash upon physical delivery of your campus items.</span>
           </div>
-          <span style={{ fontSize: '0.75rem', background: '#e2e8f0', color: '#475569', padding: '3px 10px', borderRadius: '12px', fontWeight: 700 }}>
+          <span className="payment-method-badge cod">
             Available
           </span>
         </label>

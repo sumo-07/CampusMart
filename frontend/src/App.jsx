@@ -16,20 +16,25 @@ import { AdminRequire } from "./components/AdminRequire";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { About } from "./pages/About";
 import { Cart } from "./pages/Cart";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import './App.css';
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 // import { ScrollToTop } from "./components/common/ScrollToTop";
 
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "campusmart-placeholder-client-id";
+
 const router = createBrowserRouter([
     {
         path: "/",
         element: (
-            <AuthProvider>
-                <CartProvider>
-                    <AppLayout />
-                </CartProvider>
-            </AuthProvider>
+            <GoogleOAuthProvider clientId={googleClientId}>
+                <AuthProvider>
+                    <CartProvider>
+                        <AppLayout />
+                    </CartProvider>
+                </AuthProvider>
+            </GoogleOAuthProvider>
         ),
         errorElement: <ErrorPage />,
         children: [

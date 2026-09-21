@@ -51,11 +51,15 @@
 .orders-refresh-btn .refresh-icon {
   display: inline-block;
   font-size: 1rem;
+  transform-origin: center center;
   transition: transform 0.2s ease;
 }
 
 .orders-refresh-btn .refresh-icon.spinning {
-  animation: spinOrdersRefresh 0.8s linear infinite;
+  display: inline-block;
+  transform-origin: center center;
+  animation: spinOrdersRefresh 0.75s linear infinite;
+  will-change: transform;
 }
 
 @keyframes spinOrdersRefresh {

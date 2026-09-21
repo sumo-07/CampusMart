@@ -31,19 +31,23 @@ export const AdminDashboard = () => {
     const [refreshingOrders, setRefreshingOrders] = useState(false);
 
     const handleRefreshOrders = useCallback(async (silent = false) => {
+        const isSilent = silent === true;
         try {
-            if (!silent) setRefreshingOrders(true);
-            const res = await api.get("/api/orders");
+            if (!isSilent) setRefreshingOrders(true);
+            const [res] = await Promise.all([
+                api.get("/api/orders"),
+                !isSilent ? new Promise((resolve) => setTimeout(resolve, 650)) : Promise.resolve(),
+            ]);
             setOrders(res.data);
             lastOrdersFetchRef.current = Date.now();
             queryClient.invalidateQueries({ queryKey: ["myOrders"] });
         } catch (error) {
             console.error("Failed to refresh orders:", error);
-            if (!silent) {
+            if (!isSilent) {
                 alert(error.response?.data?.message || "Failed to fetch orders");
             }
         } finally {
-            if (!silent) setRefreshingOrders(false);
+            if (!isSilent) setRefreshingOrders(false);
         }
     }, [queryClient]);
 
@@ -1056,7 +1060,7 @@ export const AdminDashboard = () => {
 
                             <button
                                 type="button"
-                                onClick={handleRefreshOrders}
+                                onClick={() => handleRefreshOrders(false)}
                                 className="orders-refresh-btn"
                                 disabled={refreshingOrders || loading}
                                 title="Fetch latest incoming orders from database"

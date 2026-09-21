@@ -8,6 +8,7 @@ const {
     deleteUserAddress,
     setDefaultAddress,
     logoutUser,
+    googleAuth,
 } = require("../controllers/authController");
 const { protect } = require("../middleware/authMiddleware");
 
@@ -15,6 +16,7 @@ const router = express.Router();
 
 router.post("/signup", registerUser);
 router.post("/login", authUser);
+router.post("/google", googleAuth);
 router.post("/logout", logoutUser);
 router.get("/profile", protect, getProfile);
 router.post("/address", protect, addUserAddress);

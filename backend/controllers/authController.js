@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
+const { OAuth2Client } = require("google-auth-library");
 
 const sendTokenCookie = (res, token) => {
     res.cookie("token", token, {
@@ -224,6 +225,86 @@ const logoutUser = (req, res) => {
     res.status(200).json({ message: "Logged out successfully" });
 };
 
+// @desc    Authenticate user with Google OAuth credential token
+// @route   POST /api/auth/google
+// @access  Public
+const googleAuth = async (req, res) => {
+    try {
+        const { credential } = req.body;
+
+        if (!credential) {
+            return res.status(400).json({ message: "No Google credential provided" });
+        }
+
+        const clientId = process.env.GOOGLE_CLIENT_ID;
+        if (!clientId) {
+            console.error("[Google Auth] GOOGLE_CLIENT_ID is not configured in backend/.env");
+            return res.status(500).json({ message: "Google authentication is not configured on the server" });
+        }
+
+        const client = new OAuth2Client(clientId);
+        const ticket = await client.verifyIdToken({
+            idToken: credential,
+            audience: clientId,
+        });
+
+        const payload = ticket.getPayload();
+        if (!payload || !payload.email) {
+            return res.status(400).json({ message: "Failed to extract user profile from Google token" });
+        }
+
+        const { sub: googleId, email, name, picture } = payload;
+
+        // Check if user exists by googleId or email
+        let user = await User.findOne({
+            $or: [{ googleId }, { email: email.toLowerCase() }],
+        });
+
+        if (user) {
+            // Link googleId or avatar if they weren't linked yet
+            let modified = false;
+            if (!user.googleId) {
+                user.googleId = googleId;
+                modified = true;
+            }
+            if (!user.avatar && picture) {
+                user.avatar = picture;
+                modified = true;
+            }
+            if (modified) {
+                await user.save();
+            }
+        } else {
+            // Create a new user with Google details
+            user = await User.create({
+                name: name || "Google User",
+                email: email.toLowerCase(),
+                googleId,
+                avatar: picture || "",
+                isAdmin: false,
+            });
+        }
+
+        const token = generateToken(user._id);
+        sendTokenCookie(res, token);
+
+        res.status(200).json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            addresses: user.addresses,
+            avatar: user.avatar,
+        });
+    } catch (error) {
+        console.error("Google Auth Error:", error);
+        res.status(401).json({
+            message: "Google authentication failed",
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     authUser,
     registerUser,
@@ -233,4 +314,5 @@ module.exports = {
     deleteUserAddress,
     setDefaultAddress,
     logoutUser,
+    googleAuth,
 };

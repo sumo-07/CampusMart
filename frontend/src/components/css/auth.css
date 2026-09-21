@@ -144,6 +144,46 @@
   transform: translateY(-2px);
 }
 
+/* Auth Divider */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0 1.25rem;
+  position: relative;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.auth-divider span {
+  padding: 0 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* Google Auth Wrapper */
+.google-auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 0.25rem;
+  transition: var(--transition-smooth);
+}
+
+.google-auth-wrapper:hover {
+  transform: translateY(-1px);
+  filter: drop-shadow(0 4px 14px rgba(var(--accent-blue-rgb), 0.25));
+}
+
 /* Toggle Link Styling */
 .auth-switch {
   margin-top: 1.8rem;

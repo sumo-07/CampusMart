@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axiosConfig";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { GoogleLogin } from "@react-oauth/google";
 import '../components/css/auth.css';
 
 export const Login = () => {
@@ -32,6 +33,27 @@ export const Login = () => {
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError("");
+    try {
+      if (!credentialResponse?.credential) {
+        throw new Error("No credential received from Google");
+      }
+      const { data } = await api.post("/api/auth/google", {
+        credential: credentialResponse.credential,
+      });
+      login(data);
+      navigate(redirect, { state: location.state, replace: true });
+    } catch (err) {
+      console.error("Google sign in error:", err);
+      setError(err.response?.data?.message || "Google sign in failed. Please try again.");
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError("Google sign in was cancelled or failed.");
   };
 
   return (
@@ -85,6 +107,22 @@ export const Login = () => {
             Login
           </button>
         </form>
+
+        <div className="auth-divider">
+          <span>OR</span>
+        </div>
+
+        <div className="google-auth-wrapper">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            theme="filled_black"
+            shape="pill"
+            size="large"
+            text="signin_with"
+            width="100%"
+          />
+        </div>
 
         <p className="auth-switch">
           Don’t have an account?{" "}

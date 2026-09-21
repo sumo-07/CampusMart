@@ -1,12 +1,13 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { createPortal } from 'react-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { addAddress, setDefaultAddress, updateAddress, deleteAddress } from '../../utils/addressUtils';
 import '../css/addressModal.css';
 
-export const AddressModal = ({ isOpen, onClose }) => {
+export const AddressModal = ({ isOpen, onClose, initialShowNew = false, onAddressSelected = null }) => {
     const { user, setUser } = useContext(AuthContext);
     
-    const [showNewForm, setShowNewForm] = useState(false);
+    const [showNewForm, setShowNewForm] = useState(initialShowNew);
     const [editingAddressId, setEditingAddressId] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
@@ -16,6 +17,13 @@ export const AddressModal = ({ isOpen, onClose }) => {
     const [city, setCity] = useState("");
     const [pincode, setPincode] = useState("");
     const [phone, setPhone] = useState("");
+
+    useEffect(() => {
+        if (isOpen) {
+            setShowNewForm(initialShowNew);
+            setEditingAddressId(null);
+        }
+    }, [isOpen, initialShowNew]);
 
     if (!isOpen) return null;
 
@@ -29,11 +37,19 @@ export const AddressModal = ({ isOpen, onClose }) => {
         setEditingAddressId(null);
     };
 
+    const handlePhoneChange = (e) => {
+        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+        setPhone(digits);
+    };
+
     const handleSelectAddress = async (addressId) => {
         setIsSubmitting(true);
         try {
             const updatedAddresses = await setDefaultAddress(addressId);
             setUser((prev) => ({ ...prev, addresses: updatedAddresses }));
+            if (onAddressSelected) {
+                onAddressSelected(addressId);
+            }
             onClose(); // Auto close on select
         } catch (error) {
             alert(error.response?.data?.message || "Failed to set default address");
@@ -79,11 +95,14 @@ export const AddressModal = ({ isOpen, onClose }) => {
             return false;
         }
 
-        if (!/^\d{10}$/.test(phone.trim())) {
+        const cleanPhone = phone.trim().replace(/\D/g, '').slice(-10);
+        if (cleanPhone.length !== 10) {
             alert("Please enter a valid 10-digit mobile number.");
             return false;
         }
-        if (!/^\d{5,6}$/.test(pincode.trim())) {
+
+        const cleanPincode = pincode.trim().replace(/\D/g, '');
+        if (cleanPincode.length < 5 || cleanPincode.length > 6) {
             alert("Please enter a valid numeric pincode (5-6 digits).");
             return false;
         }
@@ -95,10 +114,22 @@ export const AddressModal = ({ isOpen, onClose }) => {
 
         setIsSubmitting(true);
         try {
-            const payload = { fullName, address, city, pincode, phone };
+            const cleanPhone = phone.trim().replace(/\D/g, '').slice(-10);
+            const payload = { 
+                fullName: fullName.trim(), 
+                address: address.trim(), 
+                city: city.trim(), 
+                pincode: pincode.trim(), 
+                phone: cleanPhone 
+            };
             const updatedAddresses = await addAddress(payload);
             setUser((prev) => ({ ...prev, addresses: updatedAddresses }));
             resetForm();
+            if (onAddressSelected && updatedAddresses.length > 0) {
+                const latest = updatedAddresses[updatedAddresses.length - 1];
+                onAddressSelected(latest._id);
+            }
+            onClose();
         } catch (error) {
             alert(error.response?.data?.message || "Failed to save address");
         } finally {
@@ -111,7 +142,14 @@ export const AddressModal = ({ isOpen, onClose }) => {
 
         setIsSubmitting(true);
         try {
-            const payload = { fullName, address, city, pincode, phone };
+            const cleanPhone = phone.trim().replace(/\D/g, '').slice(-10);
+            const payload = { 
+                fullName: fullName.trim(), 
+                address: address.trim(), 
+                city: city.trim(), 
+                pincode: pincode.trim(), 
+                phone: cleanPhone 
+            };
             const updatedAddresses = await updateAddress(editingAddressId, payload);
             setUser((prev) => ({ ...prev, addresses: updatedAddresses }));
             resetForm();
@@ -122,90 +160,154 @@ export const AddressModal = ({ isOpen, onClose }) => {
         }
     };
 
-    return (
+    return createPortal(
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close" onClick={onClose}>&times;</button>
                 
-                <div className="modal-header">
-                    <h2 className="modal-title">Choose your location</h2>
-                    <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '5px' }}>
-                        Delivery options and delivery speeds may vary for different locations
-                    </p>
-                </div>
-
-                <div className="address-list">
-                    {user?.addresses && user.addresses.map((addr) => (
-                        <div 
-                            key={addr._id} 
-                            className={`address-item ${addr.isDefault ? 'selected' : ''}`}
-                            onClick={() => !addr.isDefault && handleSelectAddress(addr._id)}
-                        >
-                            <div className="address-card-header">
-                                <div className="address-name-wrap">
-                                    <span className="address-name">{addr.fullName}</span>
-                                    {addr.isDefault && <span className="default-badge">DEFAULT</span>}
-                                </div>
-                                <div className="address-actions">
-                                    <button
-                                        type="button"
-                                        className="address-action-btn edit"
-                                        onClick={(e) => handleStartEdit(addr, e)}
-                                        title="Edit this address"
-                                    >
-                                        ✏️ Edit
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="address-action-btn delete"
-                                        onClick={(e) => handleDeleteAddress(addr._id, e)}
-                                        title="Delete this address"
-                                    >
-                                        🗑️ Delete
-                                    </button>
-                                </div>
-                            </div>
-                            <p className="address-details">{addr.address}</p>
-                            <p className="address-details">{addr.city}, {addr.pincode}</p>
-                            <p className="address-details">Phone: {addr.phone}</p>
+                {(!showNewForm && !editingAddressId) ? (
+                    <>
+                        <div className="modal-header">
+                            <h2 className="modal-title">Choose your location</h2>
+                            <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '5px' }}>
+                                Delivery options and delivery speeds may vary for different locations
+                            </p>
                         </div>
-                    ))}
-                </div>
 
-                {!showNewForm && !editingAddressId && (
-                    <button 
-                        className="add-new-btn" 
-                        onClick={() => {
-                            resetForm();
-                            setShowNewForm(true);
-                        }}
-                    >
-                        + Add a new address
-                    </button>
-                )}
+                        <div className="address-list">
+                            {user?.addresses && user.addresses.length > 0 ? (
+                                user.addresses.map((addr) => (
+                                    <div 
+                                        key={addr._id} 
+                                        className={`address-item ${addr.isDefault ? 'selected' : ''}`}
+                                        onClick={() => !addr.isDefault && handleSelectAddress(addr._id)}
+                                    >
+                                        <div className="address-card-header">
+                                            <div className="address-name-wrap">
+                                                <span className="address-name">{addr.fullName}</span>
+                                                {addr.isDefault && <span className="default-badge">DEFAULT</span>}
+                                            </div>
+                                            <div className="address-actions">
+                                                <button
+                                                    type="button"
+                                                    className="address-action-btn edit"
+                                                    onClick={(e) => handleStartEdit(addr, e)}
+                                                    title="Edit this address"
+                                                >
+                                                    ✏️ Edit
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="address-action-btn delete"
+                                                    onClick={(e) => handleDeleteAddress(addr._id, e)}
+                                                    title="Delete this address"
+                                                >
+                                                    🗑️ Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <p className="address-details">{addr.address}</p>
+                                        <p className="address-details">{addr.city}, {addr.pincode}</p>
+                                        <p className="address-details">Phone: {addr.phone}</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#64748b' }}>
+                                    <p style={{ margin: 0 }}>No saved addresses found.</p>
+                                </div>
+                            )}
+                        </div>
 
-                {(showNewForm || editingAddressId) && (
-                    <div className="new-address-form">
-                        <h3 style={{ fontSize: '1rem', color: '#1e293b' }}>
-                            {editingAddressId ? "Edit Address" : "New Address"}
-                        </h3>
-                        <input type="text" placeholder="Full Name" value={fullName} onChange={e => setFullName(e.target.value)} />
-                        <input type="text" placeholder="Street Address" value={address} onChange={e => setAddress(e.target.value)} />
-                        <input type="text" placeholder="City" value={city} onChange={e => setCity(e.target.value)} />
-                        <input type="text" placeholder="Pincode (e.g. 110001)" value={pincode} onChange={e => setPincode(e.target.value)} />
-                        <input type="text" placeholder="10-digit Phone Number" value={phone} onChange={e => setPhone(e.target.value)} />
-                        
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                            <button 
-                                className="save-btn" 
-                                style={{ flex: 1 }} 
-                                onClick={editingAddressId ? handleSaveEditAddress : handleSaveNewAddress}
+                        <button 
+                            className="add-new-btn" 
+                            onClick={() => {
+                                resetForm();
+                                setShowNewForm(true);
+                            }}
+                        >
+                            + Add a new address
+                        </button>
+                    </>
+                ) : (
+                    <div className="address-form-view">
+                        {user?.addresses && user.addresses.length > 0 && (
+                            <button
+                                type="button"
+                                className="modal-back-btn"
+                                onClick={() => resetForm()}
                             >
-                                {editingAddressId ? "Update Address" : "Save Address"}
+                                ← Back to saved addresses
                             </button>
-                            <button className="save-btn" style={{ background: '#f1f5f9', color: '#64748b' }} onClick={resetForm}>
-                                Cancel
-                            </button>
+                        )}
+                        <div className="modal-header" style={{ marginBottom: '1.25rem' }}>
+                            <h2 className="modal-title">
+                                {editingAddressId ? "Edit Address" : "Add New Address"}
+                            </h2>
+                            <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '4px' }}>
+                                Enter your complete delivery details
+                            </p>
+                        </div>
+
+                        <div className="new-address-form" style={{ borderTop: 'none', paddingTop: 0, marginTop: 0 }}>
+                            <input 
+                                type="text" 
+                                placeholder="Full Name" 
+                                value={fullName} 
+                                onChange={e => setFullName(e.target.value)} 
+                            />
+                            <input 
+                                type="text" 
+                                placeholder="Street Address" 
+                                value={address} 
+                                onChange={e => setAddress(e.target.value)} 
+                            />
+                            <input 
+                                type="text" 
+                                placeholder="City" 
+                                value={city} 
+                                onChange={e => setCity(e.target.value)} 
+                            />
+                            <input 
+                                type="text" 
+                                inputMode="numeric"
+                                placeholder="Pincode (e.g. 110001)" 
+                                value={pincode} 
+                                onChange={e => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))} 
+                                maxLength={6}
+                            />
+                            <div className="address-phone-input-wrap">
+                                <span className="phone-prefix">+91</span>
+                                <input 
+                                    type="tel" 
+                                    inputMode="numeric"
+                                    placeholder="10-digit Mobile Number" 
+                                    value={phone} 
+                                    onChange={handlePhoneChange} 
+                                    maxLength={10} 
+                                />
+                            </div>
+                            
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                <button 
+                                    className="save-btn" 
+                                    style={{ flex: 1 }} 
+                                    onClick={editingAddressId ? handleSaveEditAddress : handleSaveNewAddress}
+                                >
+                                    {editingAddressId ? "Update Address" : "Save Address"}
+                                </button>
+                                <button 
+                                    className="save-btn" 
+                                    style={{ background: '#f1f5f9', color: '#64748b' }} 
+                                    onClick={() => {
+                                        resetForm();
+                                        if (!user?.addresses || user.addresses.length === 0) {
+                                            onClose();
+                                        }
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -214,6 +316,7 @@ export const AddressModal = ({ isOpen, onClose }) => {
                     <div className="loading-overlay">Updating...</div>
                 )}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
