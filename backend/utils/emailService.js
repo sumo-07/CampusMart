@@ -73,9 +73,8 @@ const generateOrderReceiptText = (order, customerName, clientUrl) => {
         .join("\n");
 
     const total = Number(order.totalPrice || order.amount || 0).toFixed(2);
-
-    const isLocalhost = !clientUrl || clientUrl.includes("localhost") || clientUrl.includes("127.0.0.1");
-    const trackOrderUrl = isLocalhost ? "https://campusmart.app/orders" : `${clientUrl.replace(/\/$/, "")}/orders`;
+    const baseUrl = process.env.CLIENT_URL || clientUrl || "http://localhost:5173";
+    const trackOrderUrl = process.env.ORDERS_URL || `${baseUrl.replace(/\/$/, "")}/orders`;
 
     return `CAMPUSMART - ORDER RECEIPT
 ==========================================
@@ -147,9 +146,8 @@ const generateOrderReceiptHtml = (order, customerName, clientUrl) => {
     const totalAmount = Number(order.totalPrice || order.amount || 0).toFixed(2);
     const shipping = order.shippingAddress || {};
     
-    // In production, use clientUrl; in local development, avoid raw http://localhost in emails as spam filters flag non-HTTPS localhost links
-    const isLocalhost = !clientUrl || clientUrl.includes("localhost") || clientUrl.includes("127.0.0.1");
-    const trackOrderUrl = isLocalhost ? "https://campusmart.app/orders" : `${clientUrl.replace(/\/$/, "")}/orders`;
+    const baseUrl = process.env.CLIENT_URL || clientUrl || "http://localhost:5173";
+    const trackOrderUrl = process.env.ORDERS_URL || `${baseUrl.replace(/\/$/, "")}/orders`;
 
     return `
 <!DOCTYPE html>
