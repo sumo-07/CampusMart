@@ -77,7 +77,7 @@ const buildStockAlertEmbed = (product, previousStock, clientUrl) => {
         },
         {
             name: "🏢 Brand / Seller",
-            value: `**${product.brand || "CampusMart"}**`,
+            value: `**${product.brand || "EcomMart"}**`,
             inline: true,
         },
         {
@@ -148,7 +148,7 @@ const sendDiscordStockAlert = async (product, previousStock) => {
         const embed = buildStockAlertEmbed(product, previousStock);
 
         const payload = {
-            username: "CampusMart Inventory Alert",
+            username: "EcomMart Inventory Alert",
             embeds: [embed],
         };
 
@@ -380,7 +380,7 @@ const sendDiscordOrderAlert = async (orderInput) => {
             const errorText = await response.text();
             console.warn(`[DiscordService] Failed to send Discord order alert: HTTP ${response.status} - ${errorText}`);
             // Revert claim on network failure
-            await Order.findByIdAndUpdate(order._id, { adminAlertDiscordSent: false }).catch(() => {});
+            await Order.findByIdAndUpdate(order._id, { adminAlertDiscordSent: false }).catch(() => { });
             return false;
         }
 
@@ -392,11 +392,126 @@ const sendDiscordOrderAlert = async (orderInput) => {
     }
 };
 
+
+/**
+ * Resolves the Discord Webhook URL for contact inquiry events
+ */
+const getContactWebhookUrl = () => {
+    return (
+        process.env.DISCORD_CONTACT_WEBHOOK_URL ||
+        process.env.DISCORD_WEBHOOK_URL ||
+        ""
+    ).trim();
+};
+
+/**
+ * Builds a rich Discord Embed payload for student contact form inquiries
+ */
+const buildContactAlertEmbed = (contact) => {
+    const subject = contact.subject || "General Inquiry";
+    const mailtoLink = `mailto:${contact.email}?subject=${encodeURIComponent(`Re: ${subject} - EcomMart Support`)}`;
+
+    const title = `📬 New Inquiry from ${contact.name}`;
+    const description = `> 💬 **Message:**\n> ${contact.message.length > 900 ? contact.message.slice(0, 900) + "..." : contact.message}`;
+
+    const fields = [
+        {
+            name: "👤 Student Name",
+            value: `**${contact.name}**`,
+            inline: true,
+        },
+        {
+            name: "📧 Email Address",
+            value: `[${contact.email}](mailto:${contact.email})`,
+            inline: true,
+        },
+        {
+            name: "📞 Phone / Contact",
+            value: `**${contact.phone || "Not provided"}**`,
+            inline: true,
+        },
+        {
+            name: "🏷️ Topic / Subject",
+            value: `**${subject}**`,
+            inline: true,
+        },
+        {
+            name: "⚡ Status",
+            value: "`⏳ Pending`",
+            inline: true,
+        },
+        {
+            name: "🔗 Direct Action",
+            value: `[✉️ Click to Reply via Email](${mailtoLink})\n-# 💡 Inquiry ID: \`${contact._id}\``,
+            inline: false,
+        },
+    ];
+
+    const embed = {
+        author: {
+            name: "ECOMMART • CUSTOMER SUPPORT INQUIRY",
+        },
+        title,
+        description,
+        color: 5793266, // 0x5865F2 (Discord Blurple)
+        fields,
+        footer: {
+            text: "EcomMart Automated Support Desk",
+        },
+        timestamp: contact.createdAt ? new Date(contact.createdAt).toISOString() : new Date().toISOString(),
+    };
+
+    return embed;
+};
+
+/**
+ * Dispatches an inquiry alert to the designated Discord support channel.
+ */
+const sendDiscordContactAlert = async (contact) => {
+    try {
+        if (!contact) return false;
+
+        const webhookUrl = getContactWebhookUrl();
+        if (!webhookUrl) {
+            // Webhook not configured in .env; silently return without crashing
+            return false;
+        }
+
+        const embed = buildContactAlertEmbed(contact);
+
+        const payload = {
+            username: "EcomMart Support Desk",
+            embeds: [embed],
+        };
+
+        const response = await fetch(webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.warn(`[DiscordService] Failed to send Discord contact alert: HTTP ${response.status} - ${errorText}`);
+            return false;
+        }
+
+        console.log(`[DiscordService] Discord contact inquiry alert sent for "${contact.name}" (${contact.email})`);
+        return true;
+    } catch (error) {
+        console.error(`[DiscordService] Error sending contact alert:`, error.message);
+        return false;
+    }
+};
+
 module.exports = {
     getStockWebhookUrl,
     getOrderWebhookUrl,
+    getContactWebhookUrl,
     buildStockAlertEmbed,
     buildOrderAlertEmbed,
+    buildContactAlertEmbed,
     sendDiscordStockAlert,
     sendDiscordOrderAlert,
+    sendDiscordContactAlert,
 };
