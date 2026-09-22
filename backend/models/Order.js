@@ -125,6 +125,10 @@ const orderSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        adminAlertDiscordSent: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,

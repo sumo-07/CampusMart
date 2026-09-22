@@ -1689,11 +1689,19 @@ const sendAdminNewOrderAlert = async (orderInput) => {
             return false;
         }
 
-        // 2. Duplicate prevention check
-        if (order.adminAlertEmailSent) {
-            console.log(`[EmailService] Admin alert already sent for order #${order._id}. Skipping.`);
+        // 2. Atomic duplicate prevention check (guarantees race condition immunity)
+        const claimedOrder = await Order.findOneAndUpdate(
+            { _id: order._id, adminAlertEmailSent: { $ne: true } },
+            { $set: { adminAlertEmailSent: true } },
+            { new: true }
+        );
+
+        if (!claimedOrder) {
+            console.log(`[EmailService] Admin alert already claimed or sent for order #${order._id}. Skipping duplicate.`);
             return false;
         }
+
+        order = claimedOrder;
 
         // 3. Transporter check
         const transporter = getTransporter();
@@ -1764,14 +1772,12 @@ const sendAdminNewOrderAlert = async (orderInput) => {
             },
         });
 
-        // 6. Mark admin alert as sent to prevent duplicate notifications
-        order.adminAlertEmailSent = true;
-        await order.save();
-
         console.log(`[EmailService] Admin new order alert sent to ${adminEmail} for order #${order._id} (Message ID: ${info.messageId})`);
         return true;
     } catch (error) {
         console.error(`[EmailService] Error sending admin alert for order #${orderInput?._id || "unknown"}:`, error.message);
+        const Order = require("../models/Order");
+        await Order.findByIdAndUpdate(orderInput?._id, { adminAlertEmailSent: false }).catch(() => {});
         return false;
     }
 };

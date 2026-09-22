@@ -5,7 +5,7 @@ const User = require("../models/User");
 const Product = require("../models/Product");
 const { getRazorpayInstance } = require("../config/razorpay");
 const { sendOrderConfirmationEmail, sendOrderStatusEmail, sendAdminNewOrderAlert } = require("../utils/emailService");
-const { sendDiscordStockAlert } = require("../utils/discordService");
+const { sendDiscordStockAlert, sendDiscordOrderAlert } = require("../utils/discordService");
 
 // Maximum allowed purchase quantity per product per order
 const MAX_ITEM_QUANTITY = 5;
@@ -162,6 +162,11 @@ const addOrderItems = async (req, res) => {
         // Send admin new order alert for confirmed COD order in background (non-blocking)
         sendAdminNewOrderAlert(createdOrder).catch((err) =>
             console.error("[OrderController] Error sending admin COD order alert:", err.message)
+        );
+
+        // Send Discord order alert to dedicated channel in background (non-blocking)
+        sendDiscordOrderAlert(createdOrder).catch((err) =>
+            console.error("[OrderController] Error sending Discord COD order alert:", err.message)
         );
 
         res.status(201).json(createdOrder);
@@ -643,6 +648,11 @@ const verifyRazorpayPayment = async (req, res) => {
             console.error("[OrderController] Error sending admin Razorpay paid order alert:", err.message)
         );
 
+        // Send Discord order alert to dedicated channel in background (non-blocking)
+        sendDiscordOrderAlert(updatedOrder).catch((err) =>
+            console.error("[OrderController] Error sending Discord Razorpay paid order alert:", err.message)
+        );
+
         res.json({ message: "Payment verified successfully", order: updatedOrder });
     } catch (error) {
         console.error("Payment Verification Error:", error);
@@ -842,6 +852,13 @@ const handleRazorpayWebhook = async (req, res) => {
                 if (!order.adminAlertEmailSent) {
                     sendAdminNewOrderAlert(order).catch((err) =>
                         console.error("[Razorpay Webhook] Error sending admin paid order alert:", err.message)
+                    );
+                }
+
+                // Send Discord alert for successfully PAID order in background if not already sent
+                if (!order.adminAlertDiscordSent) {
+                    sendDiscordOrderAlert(order).catch((err) =>
+                        console.error("[Razorpay Webhook] Error sending Discord paid order alert:", err.message)
                     );
                 }
             }

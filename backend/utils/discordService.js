@@ -172,8 +172,231 @@ const sendDiscordStockAlert = async (product, previousStock) => {
     }
 };
 
+
+/**
+ * Resolves the Discord Webhook URL for order events
+ */
+const getOrderWebhookUrl = () => {
+    return (
+        process.env.DISCORD_ORDER_WEBHOOK_URL ||
+        process.env.DISCORD_WEBHOOK_URL ||
+        ""
+    ).trim();
+};
+
+/**
+ * Builds a rich Discord Embed payload for new successful order events
+ */
+const buildOrderAlertEmbed = (order, customerDetails, clientUrl) => {
+    const baseUrl = (clientUrl || process.env.URL || "http://localhost:5173").trim();
+    const adminOrderUrl = `${baseUrl.replace(/\/$/, "")}/admin/orders/${order._id}`;
+
+    const shortId = String(order._id).slice(-8).toUpperCase();
+    const total = Number(order.totalPrice || order.amount || 0);
+    const formattedTotal = `₹${total.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+    const customerName = customerDetails?.customerName || order.shippingAddress?.fullName || "Campus Customer";
+    const customerEmail = customerDetails?.customerEmail || "N/A";
+    const shipping = order.shippingAddress || {};
+
+    const isPaid = order.status === "PAID";
+    const paymentMethodDisplay = order.paymentMethod === "COD"
+        ? "Cash on Delivery (Pending Collection)"
+        : isPaid ? "Razorpay (Paid Online)" : (order.paymentMethod || "Online Payment");
+
+    const items = Array.isArray(order.orderItems) ? order.orderItems : [];
+    const itemsCount = items.reduce((acc, item) => acc + (item.quantity || item.qty || 1), 0);
+
+    const title = `🛍️ Order #${shortId} received from ${customerName} (${formattedTotal})`;
+
+    const description = `> 💰 **Payment:** \`${paymentMethodDisplay}\`\n> 📦 **Total Amount:** **${formattedTotal}** • **${itemsCount} ${itemsCount === 1 ? "item" : "items"}**`;
+
+    // Format ordered items (preview up to 5 items cleanly)
+    let itemsText = "";
+    if (items.length > 0) {
+        const previewItems = items.slice(0, 5);
+        itemsText = previewItems
+            .map((item) => {
+                const qty = item.quantity || item.qty || 1;
+                const price = Number(item.price || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 });
+                return `• **${qty}x** ${item.title || item.name || "Product"} — *₹${price}*`;
+            })
+            .join("\n");
+
+        if (items.length > 5) {
+            itemsText += `\n*+ ${items.length - 5} more items...*`;
+        }
+    } else {
+        itemsText = "*No items listed*";
+    }
+
+    // Resolve thumbnail from first product
+    let imageUrl = null;
+    if (items[0]) {
+        if (items[0].thumbnail && items[0].thumbnail.startsWith("http")) {
+            imageUrl = items[0].thumbnail;
+        } else if (items[0].image && items[0].image.startsWith("http")) {
+            imageUrl = items[0].image;
+        }
+    }
+
+    const fields = [
+        {
+            name: "👤 Customer",
+            value: `**${customerName}**\n${customerEmail}`,
+            inline: true,
+        },
+        {
+            name: "📞 Contact Phone",
+            value: `**${shipping.phone || "Not provided"}**`,
+            inline: true,
+        },
+        {
+            name: "💳 Payment Status",
+            value: isPaid ? "`✅ PAID (Online)`" : "`⏳ COD (Cash on Delivery)`",
+            inline: true,
+        },
+        {
+            name: "📍 Delivery Location",
+            value: `**${shipping.city || "Campus"}${shipping.pincode ? ` - ${shipping.pincode}` : ""}**\n*${shipping.address || "Campus Address"}*`,
+            inline: true,
+        },
+        {
+            name: "⚡ Order Status",
+            value: `\`${order.orderStatus || "Processing"}\``,
+            inline: true,
+        },
+        {
+            name: "🛒 Items Summary",
+            value: itemsText,
+            inline: false,
+        },
+        {
+            name: "🔗 Quick Actions",
+            value: `[📋 View Full Order in Admin Dashboard](${adminOrderUrl})\n-# 💡 Order ID: \`${order._id}\``,
+            inline: false,
+        },
+    ];
+
+    const embed = {
+        author: {
+            name: "ECOMMART • NEW ORDER RECEIVED",
+        },
+        title,
+        url: adminOrderUrl,
+        description,
+        color: 3066993, // 0x2ECC71 (Emerald Green)
+        fields,
+        footer: {
+            text: "EcomMart Automated Order Dispatcher",
+        },
+        timestamp: order.createdAt ? new Date(order.createdAt).toISOString() : new Date().toISOString(),
+    };
+
+    if (imageUrl) {
+        embed.thumbnail = { url: imageUrl };
+    }
+
+    return embed;
+};
+
+/**
+ * Dispatches an instant New Order alert to the designated Discord channel.
+ * Only sends for confirmed COD or successfully PAID Razorpay orders.
+ */
+const sendDiscordOrderAlert = async (orderInput) => {
+    try {
+        if (!orderInput) return false;
+
+        const Order = require("../models/Order");
+        const User = require("../models/User");
+
+        // Resolve latest order document if needed
+        let order = orderInput;
+        if (!order.orderItems || !order.shippingAddress || typeof order.save !== "function") {
+            const freshOrder = await Order.findById(order._id || order);
+            if (freshOrder) order = freshOrder;
+        }
+
+        // 1. Guard check: alert only for confirmed COD or PAID orders
+        const isPaid = order.status === "PAID";
+        const isCod = order.paymentMethod === "COD";
+        if (!isPaid && !isCod) {
+            console.log(`[DiscordService] Order #${order._id} is neither PAID nor COD. Skipping Discord order alert.`);
+            return false;
+        }
+
+        const webhookUrl = getOrderWebhookUrl();
+        if (!webhookUrl) {
+            // Webhook not configured in .env; silently return without crashing
+            return false;
+        }
+
+        // 2. Atomic duplicate prevention check (guarantees race condition immunity)
+        const claimedOrder = await Order.findOneAndUpdate(
+            { _id: order._id, adminAlertDiscordSent: { $ne: true } },
+            { $set: { adminAlertDiscordSent: true } },
+            { new: true }
+        );
+
+        if (!claimedOrder) {
+            console.log(`[DiscordService] Discord order alert already claimed or sent for order #${order._id}. Skipping duplicate.`);
+            return false;
+        }
+
+        order = claimedOrder;
+
+        // 3. Resolve customer details
+        let customerEmail = "N/A";
+        let customerName = order.shippingAddress?.fullName || "Campus Customer";
+
+        if (order.user) {
+            if (typeof order.user === "object" && order.user.email) {
+                customerEmail = order.user.email;
+                if (order.user.name) customerName = order.user.name;
+            } else {
+                const userDoc = await User.findById(order.user).select("name email");
+                if (userDoc) {
+                    customerEmail = userDoc.email;
+                    if (userDoc.name) customerName = userDoc.name;
+                }
+            }
+        }
+
+        const embed = buildOrderAlertEmbed(order, { customerName, customerEmail });
+
+        const payload = {
+            username: "CampusMart Order Alert",
+            embeds: [embed],
+        };
+
+        const response = await fetch(webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.warn(`[DiscordService] Failed to send Discord order alert: HTTP ${response.status} - ${errorText}`);
+            // Revert claim on network failure
+            await Order.findByIdAndUpdate(order._id, { adminAlertDiscordSent: false }).catch(() => {});
+            return false;
+        }
+
+        console.log(`[DiscordService] Discord New Order alert sent for Order #${order._id} (${order.status === "PAID" ? "PAID" : "COD"})`);
+        return true;
+    } catch (error) {
+        console.error(`[DiscordService] Error sending Discord order alert for order ${orderInput?._id || "unknown"}:`, error.message);
+        return false;
+    }
+};
+
 module.exports = {
     getStockWebhookUrl,
+    getOrderWebhookUrl,
     buildStockAlertEmbed,
+    buildOrderAlertEmbed,
     sendDiscordStockAlert,
+    sendDiscordOrderAlert,
 };
