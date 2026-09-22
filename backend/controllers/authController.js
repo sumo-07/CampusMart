@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
-const { sendPasswordResetEmail, sendPasswordResetSuccessEmail } = require("../utils/emailService");
+const { sendPasswordResetEmail, sendPasswordResetSuccessEmail, sendWelcomeEmail } = require("../utils/emailService");
 const { OAuth2Client } = require("google-auth-library");
 
 const sendTokenCookie = (res, token) => {
@@ -58,6 +58,16 @@ const registerUser = async (req, res) => {
     if (user) {
         const token = generateToken(user._id);
         sendTokenCookie(res, token);
+
+        // Dispatch welcome email asynchronously in background (non-blocking)
+        sendWelcomeEmail({
+            recipientEmail: user.email,
+            customerName: user.name,
+            clientUrl: process.env.URL || process.env.CLIENT_URL,
+        }).catch((err) =>
+            console.error("[AuthController] Failed to send welcome email on signup:", err)
+        );
+
         res.status(201).json({
             _id: user._id,
             name: user.name,
@@ -262,6 +272,7 @@ const googleAuth = async (req, res) => {
             $or: [{ googleId }, { email: email.toLowerCase() }],
         });
 
+        let isNewUser = false;
         if (user) {
             // Link googleId or avatar if they weren't linked yet
             let modified = false;
@@ -285,10 +296,22 @@ const googleAuth = async (req, res) => {
                 avatar: picture || "",
                 isAdmin: false,
             });
+            isNewUser = true;
         }
 
         const token = generateToken(user._id);
         sendTokenCookie(res, token);
+
+        if (isNewUser) {
+            // Dispatch welcome email asynchronously for first-time Google sign-in (non-blocking)
+            sendWelcomeEmail({
+                recipientEmail: user.email,
+                customerName: user.name,
+                clientUrl: process.env.URL || process.env.CLIENT_URL,
+            }).catch((err) =>
+                console.error("[AuthController] Failed to send welcome email on Google signup:", err)
+            );
+        }
 
         res.status(200).json({
             _id: user._id,

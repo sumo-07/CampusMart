@@ -1208,12 +1208,227 @@ const sendPasswordResetSuccessEmail = async ({ recipientEmail, customerName, cli
     }
 };
 
+/**
+ * Generates plain-text content for the welcome email
+ */
+const generateWelcomeEmailText = ({ customerName, clientUrl, recipientEmail }) => {
+    const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+    const catalogUrl = `${baseUrl.replace(/\/$/, "")}/product`;
+    const displayName = customerName || "Student";
+
+    return `CAMPUSMART - WELCOME TO THE CAMPUS COMMUNITY!
+==========================================
+Welcome to CampusMart, ${displayName}!
+
+We're thrilled to have you join our college student marketplace. CampusMart makes it easy, affordable, and safe to buy, sell, and explore great deals right on your campus.
+
+WHAT YOU CAN DO ON CAMPUSMART:
+------------------------------------------
+* BUY & SAVE: Discover affordable textbooks, electronics, dorm gear, and study essentials listed by fellow students.
+* SELL QUICKLY: Turn your pre-loved books, gadgets, and notes into cash within your campus community.
+* MEET & TRADE SAFELY: Connect with peers directly for hassle-free handoffs without expensive shipping fees.
+
+EXPLORE CAMPUS DEALS:
+------------------------------------------
+Browse the catalog right now at:
+${catalogUrl}
+
+Questions or feedback? Reply directly to this email or reach out to our campus desk.
+
+Happy trading,
+The CampusMart Team
+(C) ${new Date().getFullYear()} CampusMart. All rights reserved.
+`;
+};
+
+/**
+ * Generates modern, responsive HTML email template for welcome email
+ */
+const generateWelcomeEmailHtml = ({ customerName, clientUrl, recipientEmail }) => {
+    const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+    const catalogUrl = `${baseUrl.replace(/\/$/, "")}/product`;
+    const displayName = customerName || "Student";
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to CampusMart, ${displayName}!</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #cbd5e1;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #0b0f19; padding: 40px 12px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 580px; background-color: #111827; border: 1px solid #1f2937; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+                    
+                    <!-- BRAND HEADER -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #00d2ff 0%, #a259ff 100%); padding: 36px 30px; text-align: center;">
+                            <div style="font-size: 30px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
+                                🎓 CampusMart
+                            </div>
+                            <div style="font-size: 13px; color: #e0f2fe; margin-top: 6px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;">
+                                Your Campus Marketplace
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- MAIN CONTENT -->
+                    <tr>
+                        <td style="padding: 36px 32px 28px 32px;">
+                            <h1 style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #f8fafc; line-height: 1.3; text-align: center;">
+                                Welcome to CampusMart, <span style="color: #38bdf8;">${displayName}</span>! 🎉
+                            </h1>
+                            <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #94a3b8; text-align: center;">
+                                We're excited to have you on board! CampusMart is your dedicated college hub to buy, sell, and discover student deals right within your campus community.
+                            </p>
+
+                            <!-- FEATURE CARDS -->
+                            <div style="margin: 28px 0;">
+                                <!-- Card 1: Buy & Save -->
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; margin-bottom: 12px;">
+                                    <tr>
+                                        <td style="padding: 16px; width: 48px; vertical-align: top; text-align: center; font-size: 26px;">
+                                            🛒
+                                        </td>
+                                        <td style="padding: 16px 16px 16px 0; vertical-align: middle;">
+                                            <div style="font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 3px;">
+                                                Buy &amp; Save Big
+                                            </div>
+                                            <div style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
+                                                Find student-priced textbooks, electronics, dorm essentials, and college gear from peers.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <!-- Card 2: Sell Easily -->
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; margin-bottom: 12px;">
+                                    <tr>
+                                        <td style="padding: 16px; width: 48px; vertical-align: top; text-align: center; font-size: 26px;">
+                                            🏷️
+                                        </td>
+                                        <td style="padding: 16px 16px 16px 0; vertical-align: middle;">
+                                            <div style="font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 3px;">
+                                                Sell Quickly for Cash
+                                            </div>
+                                            <div style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
+                                                Declutter your room and turn pre-loved books, gadgets, and supplies into cash with zero hassle.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <!-- Card 3: Safe & Local -->
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: #1e293b; border: 1px solid #334155; border-radius: 12px;">
+                                    <tr>
+                                        <td style="padding: 16px; width: 48px; vertical-align: top; text-align: center; font-size: 26px;">
+                                            🤝
+                                        </td>
+                                        <td style="padding: 16px 16px 16px 0; vertical-align: middle;">
+                                            <div style="font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 3px;">
+                                                Safe Campus Trades
+                                            </div>
+                                            <div style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
+                                                Meet securely on campus for quick handoffs—no waiting weeks for delivery or paying shipping fees.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- ACTION BUTTON -->
+                            <div style="text-align: center; margin: 32px 0 20px 0;">
+                                <a href="${catalogUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: linear-gradient(135deg, #00d2ff 0%, #a259ff 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; padding: 16px 38px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 210, 255, 0.4);">
+                                    Explore Campus Deals &rarr;
+                                </a>
+                            </div>
+
+                            <p style="margin: 0 0 24px 0; font-size: 13px; color: #94a3b8; line-height: 1.6; text-align: center; word-break: break-all;">
+                                If the button above does not work, copy and paste this link into your browser:<br/>
+                                <a href="${catalogUrl}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline; font-weight: 500;">${catalogUrl}</a>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- FOOTER -->
+                    <tr>
+                        <td style="background-color: #0f172a; padding: 24px 30px; text-align: center; border-top: 1px solid #1e293b;">
+                            <div style="font-size: 12px; color: #64748b; line-height: 1.6;">
+                                Need help or have questions? Contact our campus desk anytime.<br/>
+                                &copy; ${new Date().getFullYear()} CampusMart. All rights reserved.
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+`;
+};
+
+/**
+ * Dispatches a welcome email to a newly registered student
+ */
+const sendWelcomeEmail = async ({ recipientEmail, customerName, clientUrl }) => {
+    try {
+        const transporter = getTransporter();
+        if (!transporter) {
+            console.warn(`[EmailService] Nodemailer not configured in .env. Welcome email for ${recipientEmail} skipped.`);
+            return false;
+        }
+
+        const resolvedClientUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+
+        let fromAddress = `"CampusMart" <${process.env.EMAIL_USER}>`;
+        if (process.env.EMAIL_FROM) {
+            const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
+            const displayName = nameMatch ? nameMatch[1].trim() : "CampusMart";
+            fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
+        }
+
+        const html = generateWelcomeEmailHtml({
+            customerName,
+            clientUrl: resolvedClientUrl,
+            recipientEmail,
+        });
+        const text = generateWelcomeEmailText({
+            customerName,
+            clientUrl: resolvedClientUrl,
+            recipientEmail,
+        });
+
+        const info = await transporter.sendMail({
+            from: fromAddress,
+            replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER,
+            to: recipientEmail,
+            subject: `Welcome to CampusMart, ${customerName || "Student"}! 🎓`,
+            text,
+            html,
+            headers: {
+                "X-Entity-Ref-ID": `welcome-${Date.now()}`,
+            },
+        });
+
+        console.log(`[EmailService] Welcome email sent to ${recipientEmail} (Message ID: ${info.messageId})`);
+        return true;
+    } catch (error) {
+        console.error(`[EmailService] Error sending welcome email to ${recipientEmail}:`, error.message);
+        return false;
+    }
+};
+
 module.exports = {
     getTransporter,
     sendOrderConfirmationEmail,
     sendOrderStatusEmail,
     sendPasswordResetEmail,
     sendPasswordResetSuccessEmail,
+    sendWelcomeEmail,
     generateOrderReceiptHtml,
     generateOrderReceiptText,
     generateStatusUpdateHtml,
@@ -1222,6 +1437,8 @@ module.exports = {
     generatePasswordResetText,
     generatePasswordResetSuccessHtml,
     generatePasswordResetSuccessText,
+    generateWelcomeEmailHtml,
+    generateWelcomeEmailText,
     verifySmtpConnection,
 };
 
