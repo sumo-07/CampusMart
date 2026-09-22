@@ -5,6 +5,7 @@ const User = require("../models/User");
 const Product = require("../models/Product");
 const { getRazorpayInstance } = require("../config/razorpay");
 const { sendOrderConfirmationEmail, sendOrderStatusEmail, sendAdminNewOrderAlert } = require("../utils/emailService");
+const { sendDiscordStockAlert } = require("../utils/discordService");
 
 // Maximum allowed purchase quantity per product per order
 const MAX_ITEM_QUANTITY = 5;
@@ -82,8 +83,14 @@ const addOrderItems = async (req, res) => {
         if (!isOnlinePayment) {
             // For COD: Decrement stock immediately
             for (const { product, quantity } of productsToUpdate) {
+                const previousStock = product.stock;
                 product.stock -= quantity;
                 await product.save();
+
+                // Trigger Discord alert if stock falls below critical threshold (< 3)
+                sendDiscordStockAlert(product, previousStock).catch((err) =>
+                    console.error("[OrderController] Error sending Discord stock alert (COD):", err.message)
+                );
             }
             isStockReserved = true;
         } else {
@@ -589,8 +596,14 @@ const verifyRazorpayPayment = async (req, res) => {
                 if (mongoose.isValidObjectId(item.productId)) {
                     const product = await Product.findById(item.productId);
                     if (product) {
+                        const previousStock = product.stock;
                         product.stock = Math.max(0, product.stock - item.quantity);
                         await product.save();
+
+                        // Trigger Discord alert if stock falls below critical threshold (< 3)
+                        sendDiscordStockAlert(product, previousStock).catch((err) =>
+                            console.error("[OrderController] Error sending Discord stock alert (Razorpay):", err.message)
+                        );
                     }
                 }
             }
@@ -787,8 +800,14 @@ const handleRazorpayWebhook = async (req, res) => {
                         if (mongoose.isValidObjectId(item.productId)) {
                             const product = await Product.findById(item.productId);
                             if (product) {
+                                const previousStock = product.stock;
                                 product.stock = Math.max(0, product.stock - item.quantity);
                                 await product.save();
+
+                                // Trigger Discord alert if stock falls below critical threshold (< 3)
+                                sendDiscordStockAlert(product, previousStock).catch((err) =>
+                                    console.error("[Razorpay Webhook] Error sending Discord stock alert:", err.message)
+                                );
                             }
                         }
                     }
