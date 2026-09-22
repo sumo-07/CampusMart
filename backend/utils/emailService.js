@@ -1422,6 +1422,360 @@ const sendWelcomeEmail = async ({ recipientEmail, customerName, clientUrl }) => 
     }
 };
 
+/**
+ * Generates plain-text fallback content for the admin new order alert email
+ */
+const generateAdminNewOrderAlertText = (order, customerDetails, clientUrl) => {
+    const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+    const adminOrderUrl = `${baseUrl.replace(/\/$/, "")}/admin/orders/${order._id}`;
+    const shortId = String(order._id).slice(-8).toUpperCase();
+    const formattedDate = formatOrderDate(order.createdAt || Date.now());
+    const shipping = order.shippingAddress || {};
+    const isOnline = order.paymentMethod === "Razorpay";
+    const paymentLabel = isOnline ? "Razorpay (Paid Online)" : "Cash on Delivery (To Collect on Delivery)";
+    const total = Number(order.totalPrice || order.amount || 0).toFixed(2);
+
+    const itemsText = (order.orderItems || [])
+        .map(
+            (item, index) =>
+                `${index + 1}. ${item.title || "Campus Item"} x ${item.quantity} @ Rs. ${Number(item.price).toFixed(2)} = Rs. ${(Number(item.price) * Number(item.quantity)).toFixed(2)}`
+        )
+        .join("\n");
+
+    return `CAMPUSMART - NEW ORDER ALERT FOR ADMIN
+==========================================
+New Order #${shortId} received from ${customerDetails.customerName} (Rs. ${total})
+
+Date & Time : ${formattedDate}
+Payment Mode: ${paymentLabel}
+Order Status: ${order.status || "CONFIRMED"}
+Order ID    : ${order._id}
+
+CUSTOMER & DELIVERY DETAILS:
+------------------------------------------
+Customer Name   : ${customerDetails.customerName}
+Registered Email: ${customerDetails.customerEmail}
+Phone Number    : ${shipping.phone || "N/A"}
+Delivery Address:
+${shipping.fullName || customerDetails.customerName}
+${shipping.address || "Campus Address"}
+${shipping.city || ""}${shipping.pincode ? " - " + shipping.pincode : ""}
+
+ORDER ITEMS:
+------------------------------------------
+${itemsText}
+
+Grand Total: Rs. ${total}
+
+VIEW & MANAGE ORDER IN ADMIN DASHBOARD:
+------------------------------------------
+${adminOrderUrl}
+
+(C) ${new Date().getFullYear()} CampusMart Administrator Portal.
+`;
+};
+
+/**
+ * Generates a modern, responsive HTML email template for admin new order alert
+ */
+const generateAdminNewOrderAlertHtml = (order, customerDetails, clientUrl) => {
+    const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
+    const adminOrderUrl = `${baseUrl.replace(/\/$/, "")}/admin/orders/${order._id}`;
+    const shortId = String(order._id).slice(-8).toUpperCase();
+    const formattedDate = formatOrderDate(order.createdAt || Date.now());
+    const shipping = order.shippingAddress || {};
+    const isOnline = order.paymentMethod === "Razorpay";
+    const paymentBadgeText = isOnline ? "PAID ONLINE (RAZORPAY)" : "CASH ON DELIVERY";
+    const paymentBadgeBg = isOnline ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)";
+    const paymentBadgeColor = isOnline ? "#34d399" : "#fbbf24";
+    const paymentBadgeBorder = isOnline ? "rgba(16, 185, 129, 0.3)" : "rgba(245, 158, 11, 0.3)";
+    const total = Number(order.totalPrice || order.amount || 0).toFixed(2);
+
+    const itemsRows = (order.orderItems || [])
+        .map(
+            (item) => `
+            <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #1f2937; color: #f8fafc; font-size: 14px; font-weight: 500;">
+                    ${item.title || "Campus Item"}
+                </td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #1f2937; color: #94a3b8; font-size: 14px; text-align: center;">
+                    ${item.quantity}
+                </td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #1f2937; color: #94a3b8; font-size: 14px; text-align: right;">
+                    Rs. ${Number(item.price).toFixed(2)}
+                </td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #1f2937; color: #38bdf8; font-size: 14px; font-weight: 600; text-align: right;">
+                    Rs. ${(Number(item.price) * Number(item.quantity)).toFixed(2)}
+                </td>
+            </tr>`
+        )
+        .join("");
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Order #${shortId} Received</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #cbd5e1;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #0b0f19; padding: 40px 12px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; background-color: #111827; border: 1px solid #1f2937; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+                    
+                    <!-- BRAND HEADER -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #0284c7 0%, #7c3aed 100%); padding: 32px 30px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
+                                🎓 CampusMart Admin Alert
+                            </div>
+                            <div style="font-size: 13px; color: #e0f2fe; margin-top: 5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">
+                                New Order Notification
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- MAIN CONTENT -->
+                    <tr>
+                        <td style="padding: 32px 30px 24px 30px;">
+                            
+                            <!-- ORDER HIGHLIGHT BOX -->
+                            <div style="background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 22px; margin-bottom: 24px;">
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                    <tr>
+                                        <td>
+                                            <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">
+                                                ORDER REF
+                                            </div>
+                                            <div style="font-size: 20px; font-weight: 800; color: #f8fafc; margin-top: 2px;">
+                                                #${shortId}
+                                            </div>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <span style="display: inline-block; background: ${paymentBadgeBg}; color: ${paymentBadgeColor}; border: 1px solid ${paymentBadgeBorder}; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 20px; letter-spacing: 0.5px;">
+                                                ${paymentBadgeText}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" style="padding-top: 14px; border-top: 1px solid #334155; margin-top: 14px;">
+                                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                                <tr>
+                                                    <td style="font-size: 13px; color: #94a3b8;">Order Date:</td>
+                                                    <td style="font-size: 13px; color: #f8fafc; text-align: right; font-weight: 500;">${formattedDate}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-size: 13px; color: #94a3b8; padding-top: 6px;">Total Amount:</td>
+                                                    <td style="font-size: 16px; color: #38bdf8; text-align: right; font-weight: 700; padding-top: 6px;">Rs. ${total}</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- CUSTOMER & DELIVERY INFO -->
+                            <div style="background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 22px; margin-bottom: 24px;">
+                                <div style="font-size: 13px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
+                                    👤 Customer &amp; Delivery Details
+                                </div>
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                    <tr>
+                                        <td style="font-size: 13px; color: #94a3b8; padding: 4px 0; width: 35%;">Customer Name:</td>
+                                        <td style="font-size: 13px; color: #f8fafc; padding: 4px 0; font-weight: 600;">${customerDetails.customerName}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-size: 13px; color: #94a3b8; padding: 4px 0;">Email Address:</td>
+                                        <td style="font-size: 13px; color: #f8fafc; padding: 4px 0;">${customerDetails.customerEmail}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-size: 13px; color: #94a3b8; padding: 4px 0;">Phone Number:</td>
+                                        <td style="font-size: 13px; color: #38bdf8; padding: 4px 0; font-weight: 600;">${shipping.phone || "Not provided"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-size: 13px; color: #94a3b8; padding: 4px 0; vertical-align: top;">Delivery Address:</td>
+                                        <td style="font-size: 13px; color: #f8fafc; padding: 4px 0; line-height: 1.4;">
+                                            ${shipping.address || "Campus Address"}<br/>
+                                            ${shipping.city || ""}${shipping.pincode ? " - " + shipping.pincode : ""}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- ORDER ITEMS TABLE -->
+                            <div style="background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 22px; margin-bottom: 24px;">
+                                <div style="font-size: 13px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
+                                    📦 Items Ordered
+                                </div>
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                    <thead>
+                                        <tr>
+                                            <th style="font-size: 12px; font-weight: 700; color: #64748b; text-align: left; padding-bottom: 8px; border-bottom: 1px solid #334155;">ITEM</th>
+                                            <th style="font-size: 12px; font-weight: 700; color: #64748b; text-align: center; padding-bottom: 8px; border-bottom: 1px solid #334155;">QTY</th>
+                                            <th style="font-size: 12px; font-weight: 700; color: #64748b; text-align: right; padding-bottom: 8px; border-bottom: 1px solid #334155;">PRICE</th>
+                                            <th style="font-size: 12px; font-weight: 700; color: #64748b; text-align: right; padding-bottom: 8px; border-bottom: 1px solid #334155;">TOTAL</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${itemsRows}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="3" style="padding-top: 14px; font-size: 14px; font-weight: 700; color: #f8fafc; text-align: right;">
+                                                Grand Total:
+                                            </td>
+                                            <td style="padding-top: 14px; font-size: 16px; font-weight: 800; color: #38bdf8; text-align: right;">
+                                                Rs. ${total}
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <!-- ACTION BUTTON -->
+                            <div style="text-align: center; margin: 28px 0 16px 0;">
+                                <a href="${adminOrderUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: linear-gradient(135deg, #00d2ff 0%, #a259ff 100%); color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700; padding: 15px 34px; border-radius: 10px; box-shadow: 0 4px 18px rgba(0, 210, 255, 0.35);">
+                                    View Order in Admin Dashboard &rarr;
+                                </a>
+                            </div>
+
+                            <p style="margin: 0 0 20px 0; font-size: 12px; color: #94a3b8; line-height: 1.5; text-align: center; word-break: break-all;">
+                                If the button above does not work, copy and paste this link into your browser:<br/>
+                                <a href="${adminOrderUrl}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline;">${adminOrderUrl}</a>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- FOOTER -->
+                    <tr>
+                        <td style="background-color: #0f172a; padding: 20px 30px; text-align: center; border-top: 1px solid #1e293b;">
+                            <div style="font-size: 12px; color: #64748b; line-height: 1.5;">
+                                CampusMart Store Management System<br/>
+                                &copy; ${new Date().getFullYear()} CampusMart. All rights reserved.
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+`;
+};
+
+/**
+ * Dispatches an instant New Order alert to the administrator.
+ * Only sends for confirmed COD or successfully PAID Razorpay orders.
+ */
+const sendAdminNewOrderAlert = async (orderInput) => {
+    try {
+        if (!orderInput) return false;
+
+        // Resolve latest order document if needed
+        let order = orderInput;
+        if (!order.orderItems || !order.shippingAddress || typeof order.save !== "function") {
+            const freshOrder = await Order.findById(order._id || order);
+            if (freshOrder) order = freshOrder;
+        }
+
+        // 1. Guard check: alert only for confirmed COD or PAID orders
+        const isPaid = order.status === "PAID";
+        const isCod = order.paymentMethod === "COD";
+        if (!isPaid && !isCod) {
+            console.log(`[EmailService] Order #${order._id} is neither PAID nor COD. Skipping admin alert.`);
+            return false;
+        }
+
+        // 2. Duplicate prevention check
+        if (order.adminAlertEmailSent) {
+            console.log(`[EmailService] Admin alert already sent for order #${order._id}. Skipping.`);
+            return false;
+        }
+
+        // 3. Transporter check
+        const transporter = getTransporter();
+        if (!transporter) {
+            console.warn("[EmailService] Nodemailer not configured in backend/.env. Admin alert skipped.");
+            return false;
+        }
+
+        // 4. Resolve Admin Email
+        let adminEmail = (process.env.ADMIN_EMAIL || "").trim();
+        if (!adminEmail) {
+            const adminUser = await User.findOne({ isAdmin: true }).select("email");
+            if (adminUser && adminUser.email) {
+                adminEmail = adminUser.email.trim();
+            }
+        }
+        if (!adminEmail && process.env.EMAIL_USER) {
+            adminEmail = process.env.EMAIL_USER.trim();
+        }
+
+        if (!adminEmail) {
+            console.warn(`[EmailService] No admin email could be resolved. Admin alert skipped for order #${order._id}.`);
+            return false;
+        }
+
+        // 5. Resolve Customer Details
+        let customerEmail = "N/A";
+        let customerName = order.shippingAddress?.fullName || "CampusMart Student";
+
+        if (order.user) {
+            if (typeof order.user === "object" && order.user.email) {
+                customerEmail = order.user.email;
+                if (order.user.name) customerName = order.user.name;
+            } else {
+                const userDoc = await User.findById(order.user).select("name email");
+                if (userDoc) {
+                    customerEmail = userDoc.email;
+                    if (userDoc.name) customerName = userDoc.name;
+                }
+            }
+        }
+
+        const clientUrl = (process.env.URL || process.env.CLIENT_URL || "http://localhost:5173").trim();
+        const shortId = String(order._id).slice(-8).toUpperCase();
+        const total = Number(order.totalPrice || order.amount || 0).toFixed(2);
+        const subject = `New Order #${shortId} received from ${customerName} (Rs. ${total})`;
+
+        let fromAddress = `"CampusMart System" <${process.env.EMAIL_USER}>`;
+        if (process.env.EMAIL_FROM) {
+            const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
+            const displayName = nameMatch ? nameMatch[1].trim() : "CampusMart";
+            fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
+        }
+
+        const html = generateAdminNewOrderAlertHtml(order, { customerName, customerEmail }, clientUrl);
+        const text = generateAdminNewOrderAlertText(order, { customerName, customerEmail }, clientUrl);
+
+        const info = await transporter.sendMail({
+            from: fromAddress,
+            replyTo: customerEmail !== "N/A" ? customerEmail : process.env.EMAIL_USER,
+            to: adminEmail,
+            subject,
+            text,
+            html,
+            headers: {
+                "X-Entity-Ref-ID": `admin-alert-${order._id}`,
+                "X-Order-Status": order.status || "CONFIRMED",
+            },
+        });
+
+        // 6. Mark admin alert as sent to prevent duplicate notifications
+        order.adminAlertEmailSent = true;
+        await order.save();
+
+        console.log(`[EmailService] Admin new order alert sent to ${adminEmail} for order #${order._id} (Message ID: ${info.messageId})`);
+        return true;
+    } catch (error) {
+        console.error(`[EmailService] Error sending admin alert for order #${orderInput?._id || "unknown"}:`, error.message);
+        return false;
+    }
+};
+
 module.exports = {
     getTransporter,
     sendOrderConfirmationEmail,
@@ -1429,6 +1783,7 @@ module.exports = {
     sendPasswordResetEmail,
     sendPasswordResetSuccessEmail,
     sendWelcomeEmail,
+    sendAdminNewOrderAlert,
     generateOrderReceiptHtml,
     generateOrderReceiptText,
     generateStatusUpdateHtml,
@@ -1439,6 +1794,8 @@ module.exports = {
     generatePasswordResetSuccessText,
     generateWelcomeEmailHtml,
     generateWelcomeEmailText,
+    generateAdminNewOrderAlertHtml,
+    generateAdminNewOrderAlertText,
     verifySmtpConnection,
 };
 

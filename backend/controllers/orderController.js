@@ -4,7 +4,7 @@ const Order = require("../models/Order");
 const User = require("../models/User");
 const Product = require("../models/Product");
 const { getRazorpayInstance } = require("../config/razorpay");
-const { sendOrderConfirmationEmail, sendOrderStatusEmail } = require("../utils/emailService");
+const { sendOrderConfirmationEmail, sendOrderStatusEmail, sendAdminNewOrderAlert } = require("../utils/emailService");
 
 // Maximum allowed purchase quantity per product per order
 const MAX_ITEM_QUANTITY = 5;
@@ -150,6 +150,11 @@ const addOrderItems = async (req, res) => {
         // For Cash on Delivery: Send order confirmation email in background
         sendOrderConfirmationEmail(createdOrder).catch((err) =>
             console.error("[OrderController] Error sending COD confirmation email:", err.message)
+        );
+
+        // Send admin new order alert for confirmed COD order in background (non-blocking)
+        sendAdminNewOrderAlert(createdOrder).catch((err) =>
+            console.error("[OrderController] Error sending admin COD order alert:", err.message)
         );
 
         res.status(201).json(createdOrder);
@@ -620,6 +625,11 @@ const verifyRazorpayPayment = async (req, res) => {
             console.error("[OrderController] Error sending Razorpay confirmation email:", err.message)
         );
 
+        // Send admin new order alert for successfully PAID order in background (non-blocking)
+        sendAdminNewOrderAlert(updatedOrder).catch((err) =>
+            console.error("[OrderController] Error sending admin Razorpay paid order alert:", err.message)
+        );
+
         res.json({ message: "Payment verified successfully", order: updatedOrder });
     } catch (error) {
         console.error("Payment Verification Error:", error);
@@ -806,6 +816,13 @@ const handleRazorpayWebhook = async (req, res) => {
                 if (!order.confirmationEmailSent) {
                     sendOrderConfirmationEmail(order).catch((err) =>
                         console.error("[Razorpay Webhook] Error sending confirmation email:", err.message)
+                    );
+                }
+
+                // Send admin alert for successfully PAID order in background if not already sent
+                if (!order.adminAlertEmailSent) {
+                    sendAdminNewOrderAlert(order).catch((err) =>
+                        console.error("[Razorpay Webhook] Error sending admin paid order alert:", err.message)
                     );
                 }
             }
