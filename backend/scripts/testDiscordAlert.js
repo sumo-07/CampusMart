@@ -1,4 +1,5 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const { buildStockAlertEmbed } = require("../utils/discordService");
 
 async function runTest() {
@@ -26,14 +27,14 @@ async function runTest() {
     }
 
     const mockLowStockProduct = {
-        _id: "65fab1234567890abcdef101",
-        title: "Introduction to Algorithms (CLRS 4th Edition)",
-        price: 899.00,
-        discountPercentage: 10,
+        _id: "6aa30edffa010770486ac3f2",
+        title: "Dolce Shine Eau de",
+        price: 69.99,
+        discountPercentage: 0.62,
         stock: 2,
-        brand: "MIT Press",
-        category: "Computer Science Textbooks",
-        thumbnail: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=60",
+        brand: "Dolce & Gabbana",
+        category: "fragrances",
+        thumbnail: "https://cdn.dummyjson.com/products/images/fragrances/Dolce%20Shine%20Eau%20de/thumbnail.png",
     };
 
     const mockOutOfStockProduct = {
@@ -42,12 +43,12 @@ async function runTest() {
         price: 1250.00,
         stock: 0,
         brand: "Casio",
-        category: "Electronics",
+        category: "electronics",
         thumbnail: "https://images.unsplash.com/photo-1587145820266-a5951ee6f620?w=500&auto=format&fit=crop&q=60",
     };
 
     console.log("1. Sending Sample Low Stock Alert (Remaining: 2 units)...");
-    const lowStockEmbed = buildStockAlertEmbed(mockLowStockProduct, 3);
+    const lowStockEmbed = buildStockAlertEmbed(mockLowStockProduct, 6);
 
     try {
         const res1 = await fetch(webhookUrl, {
@@ -55,7 +56,6 @@ async function runTest() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 username: "CampusMart Inventory Alert",
-                avatar_url: "https://res.cloudinary.com/dyt4a3p2j/image/upload/v1/campusmart/logo.png",
                 embeds: [lowStockEmbed],
             }),
         });
@@ -74,7 +74,6 @@ async function runTest() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 username: "CampusMart Inventory Alert",
-                avatar_url: "https://res.cloudinary.com/dyt4a3p2j/image/upload/v1/campusmart/logo.png",
                 embeds: [outOfStockEmbed],
             }),
         });

@@ -15,24 +15,35 @@ const getStockWebhookUrl = () => {
  */
 const buildStockAlertEmbed = (product, previousStock, clientUrl) => {
     const isOutOfStock = product.stock === 0;
-    const baseUrl = (clientUrl || process.env.URL || process.env.CLIENT_URL || "http://localhost:5173").trim();
+    const baseUrl = (process.env.URL || "http://localhost:5173").trim();
     const catalogUrl = `${baseUrl.replace(/\/$/, "")}/product/${product._id}`;
-    const adminUrl = `${baseUrl.replace(/\/$/, "")}/admin`;
+    const adminUrl = `${baseUrl.replace(/\/$/, "")}/admin?tab=products`;
 
-    // 🔴 Red for Out of Stock, 🟡 Amber for Low Stock (< 3)
-    const color = isOutOfStock ? 15680580 : 16098827; // 0xEF4444 (Red) or 0xF59E0B (Amber)
+    // 🔴 Vibrant Red for Out of Stock, 🟡 Amber for Low Stock (< 3)
+    const color = isOutOfStock ? 15548997 : 16098827; // 0xED4245 (Discord Red) or 0xF59E0B (Amber)
 
-    const title = isOutOfStock
-        ? `🚨 OUT OF STOCK: ${product.title}`
-        : `⚠️ LOW STOCK ALERT: ${product.title}`;
+    const title = `${isOutOfStock ? "🚨" : "⚠️"} ${product.title || "Product"}`;
 
     const description = isOutOfStock
-        ? `**Product is completely sold out!** Immediate restocking required.\n\n[🔍 View in Catalog](${catalogUrl}) • [⚙️ Restock in Admin Panel](${adminUrl})`
-        : `**Product is almost sold out!** Remaining units have dropped to a critical level.\n\n[🔍 View in Catalog](${catalogUrl}) • [⚙️ Restock in Admin Panel](${adminUrl})`;
+        ? `> 🚨 **Critical Alert:** Product is completely **sold out** (0 units remaining).\n> Immediate restocking required to resume customer orders.`
+        : `> ⚠️ **Stock Warning:** Remaining inventory has dropped to **${product.stock} ${product.stock === 1 ? "unit" : "units"} left**.\n> Consider restocking soon to prevent order interruptions.`;
 
-    const remainingStockValue = isOutOfStock
-        ? `**0 units (SOLD OUT)**`
-        : `**${product.stock} units left** (was ${previousStock !== undefined ? previousStock : product.stock + 1})`;
+    const formatCategory = (cat) => {
+        if (!cat) return "General";
+        return String(cat)
+            .split(/[-_\s]+/)
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(" ");
+    };
+
+    const formattedPrice = `₹${Number(product.price || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const priceDisplay = product.discountPercentage
+        ? `**${formattedPrice}**\n*(${product.discountPercentage}% off)*`
+        : `**${formattedPrice}**`;
+
+    const stockPill = isOutOfStock
+        ? `\`🔴 0 Units (SOLD OUT)\`${previousStock !== undefined ? `\n*(was ${previousStock})*` : ""}`
+        : `\`🟡 ${product.stock} ${product.stock === 1 ? "Unit" : "Units"} Left\`${previousStock !== undefined ? `\n*(was ${previousStock})*` : ""}`;
 
     // Resolve thumbnail image
     let imageUrl = null;
@@ -44,36 +55,54 @@ const buildStockAlertEmbed = (product, previousStock, clientUrl) => {
         imageUrl = product.images[0];
     }
 
+    const statusValue = isOutOfStock
+        ? "`🚨 Critical (Empty)`"
+        : "`⚠️ Low Stock (<\u00A03)`";
+
     const fields = [
         {
-            name: "📦 Remaining Stock",
-            value: remainingStockValue,
+            name: "📦 Stock Status",
+            value: stockPill,
             inline: true,
         },
         {
-            name: "💰 Price",
-            value: `₹${Number(product.price || 0).toFixed(2)}${product.discountPercentage ? ` (${product.discountPercentage}% off)` : ""}`,
+            name: "💰 Unit Price",
+            value: priceDisplay,
             inline: true,
         },
         {
             name: "🏷️ Category",
-            value: product.category || "General",
+            value: `**${formatCategory(product.category)}**`,
             inline: true,
         },
         {
             name: "🏢 Brand / Seller",
-            value: product.brand || "CampusMart Seller",
+            value: `**${product.brand || "CampusMart"}**`,
             inline: true,
         },
         {
-            name: "🆔 Product ID (SKU for Catalog Search)",
-            value: `\`${product._id}\``,
+            name: "⚡ Status",
+            value: statusValue,
             inline: true,
+        },
+        {
+            name: "🆔 Product SKU",
+            value: `\`${product._id}\``,
+            inline: false,
+        },
+        {
+            name: "🔗 Quick Actions",
+            value: `[📦 View in Store](${catalogUrl})  •  [🛠️ Restock in Admin](${adminUrl})\n-# 💡 *Tip: Click SKU above to copy for admin catalog search.*`,
+            inline: false,
         },
     ];
 
     const embed = {
+        author: {
+            name: isOutOfStock ? "ECOMMART • CRITICAL INVENTORY ALERT" : "ECOMMART • INVENTORY MONITOR",
+        },
         title,
+        url: catalogUrl,
         description,
         color,
         fields,
@@ -120,7 +149,6 @@ const sendDiscordStockAlert = async (product, previousStock) => {
 
         const payload = {
             username: "CampusMart Inventory Alert",
-            avatar_url: "https://res.cloudinary.com/dyt4a3p2j/image/upload/v1/campusmart/logo.png",
             embeds: [embed],
         };
 
