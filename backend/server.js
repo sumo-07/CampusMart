@@ -8,11 +8,13 @@ const authRoutes = require("./routes/authRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const productRoutes = require("./routes/productRoutes");
+const contactRoutes = require("./routes/contactRoutes");
 
 const app = express();
 
 const allowedOrigins = [
-    process.env.CLIENT_URL
+    process.env.URL,
+    process.env.CLIENT_URL,
 ].filter(Boolean).map((url) => url.replace(/\/$/, ""));
 
 app.use(cors({
@@ -40,6 +42,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/contact", contactRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

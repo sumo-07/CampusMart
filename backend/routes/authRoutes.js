@@ -9,6 +9,9 @@ const {
     setDefaultAddress,
     logoutUser,
     googleAuth,
+    forgotPassword,
+    verifyResetCode,
+    resetPassword,
 } = require("../controllers/authController");
 const { protect } = require("../middleware/authMiddleware");
 
@@ -18,6 +21,9 @@ router.post("/signup", registerUser);
 router.post("/login", authUser);
 router.post("/google", googleAuth);
 router.post("/logout", logoutUser);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-reset-code", verifyResetCode);
+router.post("/reset-password", resetPassword);
 router.get("/profile", protect, getProfile);
 router.post("/address", protect, addUserAddress);
 router.put("/address/:id", protect, updateUserAddress);

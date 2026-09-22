@@ -9,6 +9,8 @@ import { Contact } from "./pages/Contact";
 import { Checkout } from "./pages/Checkout";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
+import { ForgotPassword } from "./pages/ForgotPassword";
+import { ResetPassword } from "./pages/ResetPassword";
 import { Orders } from "./pages/Orders";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { AdminOrderDetails } from "./pages/AdminOrderDetails";
@@ -73,6 +75,14 @@ const router = createBrowserRouter([
             {
                 path: "/signup",
                 element: <Signup />,
+            },
+            {
+                path: "/forgot-password",
+                element: <ForgotPassword />,
+            },
+            {
+                path: "/reset-password",
+                element: <ResetPassword />,
             },
             {
                 path: "/orders",

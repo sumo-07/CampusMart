@@ -4,6 +4,8 @@ const Order = require("../models/Order");
 const User = require("../models/User");
 const Product = require("../models/Product");
 const { getRazorpayInstance } = require("../config/razorpay");
+const { sendOrderConfirmationEmail, sendOrderStatusEmail, sendAdminNewOrderAlert } = require("../utils/emailService");
+const { sendDiscordStockAlert, sendDiscordOrderAlert } = require("../utils/discordService");
 
 // Maximum allowed purchase quantity per product per order
 const MAX_ITEM_QUANTITY = 5;
@@ -81,8 +83,14 @@ const addOrderItems = async (req, res) => {
         if (!isOnlinePayment) {
             // For COD: Decrement stock immediately
             for (const { product, quantity } of productsToUpdate) {
+                const previousStock = product.stock;
                 product.stock -= quantity;
                 await product.save();
+
+                // Trigger Discord alert if stock falls below critical threshold (< 3)
+                sendDiscordStockAlert(product, previousStock).catch((err) =>
+                    console.error("[OrderController] Error sending Discord stock alert (COD):", err.message)
+                );
             }
             isStockReserved = true;
         } else {
@@ -145,6 +153,21 @@ const addOrderItems = async (req, res) => {
                 currency: razorpayOrder.currency,
             });
         }
+
+        // For Cash on Delivery: Send order confirmation email in background
+        sendOrderConfirmationEmail(createdOrder).catch((err) =>
+            console.error("[OrderController] Error sending COD confirmation email:", err.message)
+        );
+
+        // Send admin new order alert for confirmed COD order in background (non-blocking)
+        sendAdminNewOrderAlert(createdOrder).catch((err) =>
+            console.error("[OrderController] Error sending admin COD order alert:", err.message)
+        );
+
+        // Send Discord order alert to dedicated channel in background (non-blocking)
+        sendDiscordOrderAlert(createdOrder).catch((err) =>
+            console.error("[OrderController] Error sending Discord COD order alert:", err.message)
+        );
 
         res.status(201).json(createdOrder);
     } catch (error) {
@@ -350,6 +373,14 @@ const updateOrderStatus = async (req, res) => {
         order.orderStatus = status;
         const updatedOrder = await order.save();
         await updatedOrder.populate("user", "id name email");
+
+        // Dispatch status update email if status actually changed (excluding Pending)
+        if (previousStatus !== status && status !== "Pending") {
+            sendOrderStatusEmail(updatedOrder, status).catch((err) =>
+                console.error(`[OrderController] Error triggering status email (${status}):`, err.message)
+            );
+        }
+
         res.json(updatedOrder);
     } catch (error) {
         console.error("Update Order Status Error:", error);
@@ -432,6 +463,12 @@ const cancelMyOrder = async (req, res) => {
         }
         const updatedOrder = await order.save();
         await updatedOrder.populate("user", "id name email");
+
+        // Dispatch cancellation email to customer
+        sendOrderStatusEmail(updatedOrder, "Cancelled").catch((err) =>
+            console.error("[OrderController] Error triggering cancellation email:", err.message)
+        );
+
         res.json(updatedOrder);
     } catch (error) {
         console.error("Cancel Order Error:", error);
@@ -564,8 +601,14 @@ const verifyRazorpayPayment = async (req, res) => {
                 if (mongoose.isValidObjectId(item.productId)) {
                     const product = await Product.findById(item.productId);
                     if (product) {
+                        const previousStock = product.stock;
                         product.stock = Math.max(0, product.stock - item.quantity);
                         await product.save();
+
+                        // Trigger Discord alert if stock falls below critical threshold (< 3)
+                        sendDiscordStockAlert(product, previousStock).catch((err) =>
+                            console.error("[OrderController] Error sending Discord stock alert (Razorpay):", err.message)
+                        );
                     }
                 }
             }
@@ -593,6 +636,23 @@ const verifyRazorpayPayment = async (req, res) => {
         }
 
         const updatedOrder = await order.save();
+        await updatedOrder.populate("user", "id name email");
+
+        // Send Razorpay paid order confirmation email in background
+        sendOrderConfirmationEmail(updatedOrder).catch((err) =>
+            console.error("[OrderController] Error sending Razorpay confirmation email:", err.message)
+        );
+
+        // Send admin new order alert for successfully PAID order in background (non-blocking)
+        sendAdminNewOrderAlert(updatedOrder).catch((err) =>
+            console.error("[OrderController] Error sending admin Razorpay paid order alert:", err.message)
+        );
+
+        // Send Discord order alert to dedicated channel in background (non-blocking)
+        sendDiscordOrderAlert(updatedOrder).catch((err) =>
+            console.error("[OrderController] Error sending Discord Razorpay paid order alert:", err.message)
+        );
+
         res.json({ message: "Payment verified successfully", order: updatedOrder });
     } catch (error) {
         console.error("Payment Verification Error:", error);
@@ -750,8 +810,14 @@ const handleRazorpayWebhook = async (req, res) => {
                         if (mongoose.isValidObjectId(item.productId)) {
                             const product = await Product.findById(item.productId);
                             if (product) {
+                                const previousStock = product.stock;
                                 product.stock = Math.max(0, product.stock - item.quantity);
                                 await product.save();
+
+                                // Trigger Discord alert if stock falls below critical threshold (< 3)
+                                sendDiscordStockAlert(product, previousStock).catch((err) =>
+                                    console.error("[Razorpay Webhook] Error sending Discord stock alert:", err.message)
+                                );
                             }
                         }
                     }
@@ -772,7 +838,29 @@ const handleRazorpayWebhook = async (req, res) => {
                     order.orderStatus = "Processing";
                 }
                 await order.save();
+                await order.populate("user", "id name email");
                 console.log(`[Razorpay Webhook] Order ${order._id} successfully confirmed Paid (${event})`);
+
+                // Send confirmation email in background if not already sent
+                if (!order.confirmationEmailSent) {
+                    sendOrderConfirmationEmail(order).catch((err) =>
+                        console.error("[Razorpay Webhook] Error sending confirmation email:", err.message)
+                    );
+                }
+
+                // Send admin alert for successfully PAID order in background if not already sent
+                if (!order.adminAlertEmailSent) {
+                    sendAdminNewOrderAlert(order).catch((err) =>
+                        console.error("[Razorpay Webhook] Error sending admin paid order alert:", err.message)
+                    );
+                }
+
+                // Send Discord alert for successfully PAID order in background if not already sent
+                if (!order.adminAlertDiscordSent) {
+                    sendDiscordOrderAlert(order).catch((err) =>
+                        console.error("[Razorpay Webhook] Error sending Discord paid order alert:", err.message)
+                    );
+                }
             }
         } else if (event === "payment.failed") {
             const paymentEntity = payload?.payment?.entity;

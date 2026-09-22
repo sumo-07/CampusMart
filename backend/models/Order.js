@@ -117,6 +117,18 @@ const orderSchema = new mongoose.Schema(
             type: Date,
             default: null,
         },
+        confirmationEmailSent: {
+            type: Boolean,
+            default: false,
+        },
+        adminAlertEmailSent: {
+            type: Boolean,
+            default: false,
+        },
+        adminAlertDiscordSent: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,

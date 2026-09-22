@@ -60,7 +60,10 @@ export const Login = () => {
     <section className="auth-section login-section">
       <div className="auth-container">
         <h2 className="auth-title">Login</h2>
-        {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
+        {location.state?.message && (
+          <div className="auth-alert-success">{location.state.message}</div>
+        )}
+        {error && <div className="auth-alert-error">{error}</div>}
 
         <form className="auth-form login-form" onSubmit={handleLogin}>
           <div className="form-group">
@@ -79,9 +82,17 @@ export const Login = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="password">
-              Password
-            </label>
+            <div className="form-label-row">
+              <label className="form-label" htmlFor="password">
+                Password
+              </label>
+              <Link
+                to={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ""}`}
+                className="forgot-password-link"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <div className="password-wrapper">
               <input
                 type={showPassword ? "text" : "password"}
