@@ -1,6 +1,6 @@
+/* --- Featured Products Layout --- */
 .section-featured-products {
-  padding: 6rem 0;
-  background-color: var(--bg-primary);
+  padding: 5rem 0;
   position: relative;
 }
 
@@ -8,7 +8,9 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 4rem;
+  margin-bottom: 3rem;
+  gap: 2rem;
+  flex-wrap: wrap;
 }
 
 .featured-title-area {
@@ -17,52 +19,79 @@
 
 .featured-title {
   font-family: var(--font-header);
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 1rem;
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: var(--neo-border);
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 0.8rem;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0px #FFFFFF, 4px 4px 0px var(--neo-pink);
 }
 
 .featured-subtitle {
-  font-size: 1.05rem;
-  color: var(--text-secondary);
+  font-size: 1.02rem;
+  line-height: 1.5;
+  color: var(--neo-border);
+  font-weight: 700;
+  background: #FFFFFF;
+  border: var(--border-medium);
+  border-radius: var(--radius-pill);
+  padding: 6px 20px;
+  box-shadow: var(--shadow-hard-xs);
+  display: inline-block;
 }
 
+.featured-explore-btn {
+  font-size: 0.95rem;
+  padding: 0.75rem 1.6rem;
+}
+
+/* --- Products Grid --- */
 .featured-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 2rem;
-  position: relative;
-  z-index: 2;
+  gap: 1.75rem;
 }
 
 .featured-empty {
-  grid-column: span 4;
+  grid-column: 1 / -1;
   text-align: center;
-  padding: 4rem 0;
-  color: var(--text-muted);
-  font-size: 1.1rem;
+  padding: 4rem 2rem;
+  background: #FFFFFF;
+  border: var(--border-thick);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-hard);
+  font-family: var(--font-header);
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--neo-border);
 }
 
+/* --- Responsive --- */
 @media (max-width: 1200px) {
   .featured-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 850px) {
   .featured-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  .featured-title {
+    font-size: 2.2rem;
+  }
+}
+
+@media (max-width: 550px) {
+  .featured-grid {
+    grid-template-columns: 1fr;
   }
   .featured-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .featured-grid {
-    grid-template-columns: 1fr;
   }
 }

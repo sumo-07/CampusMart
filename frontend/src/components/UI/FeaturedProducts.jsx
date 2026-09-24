@@ -24,22 +24,25 @@ export const FeaturedProducts = () => {
         {/* Header */}
         <div className="featured-header">
           <div className="featured-title-area">
-            <h2 className="featured-title">Featured Deals</h2>
+            <div className="neo-badge pink" style={{ marginBottom: "0.8rem" }}>
+              🔥 TRENDING RIGHT NOW
+            </div>
+            <h2 className="featured-title">HOTTEST DROPS RIGHT NOW</h2>
             <p className="featured-subtitle">
-              Grab high-quality essentials and student-voted favorites at discounted rates.
+              Certified high-aura essentials and crowd-voted favorites. Cop before they sell out.
             </p>
           </div>
-          <Link to="/product" className="btn btn-outline" style={{ display: "inline-flex", gap: "8px", alignItems: "center" }}>
-            View All Products <FaArrowRight />
+          <Link to="/product" className="btn btn-outline featured-explore-btn">
+            VIEW ALL DROPS <FaArrowRight style={{ marginLeft: "8px" }} />
           </Link>
         </div>
 
         {/* Grid */}
         <div className="featured-grid">
           {isLoading ? (
-            <div className="featured-empty">Loading featured essentials...</div>
+            <div className="featured-empty">Cooking up featured essentials...</div>
           ) : isError ? (
-            <div className="featured-empty">Failed to fetch student deals. Please try again.</div>
+            <div className="featured-empty">Failed to fetch hot drops. L moment, please retry.</div>
           ) : featuredList.length > 0 ? (
             featuredList.map((product) => (
               <ProductCard 
@@ -48,7 +51,7 @@ export const FeaturedProducts = () => {
               />
             ))
           ) : (
-            <div className="featured-empty">No products available at the moment.</div>
+            <div className="featured-empty">No drops available at this second bestie.</div>
           )}
         </div>
 

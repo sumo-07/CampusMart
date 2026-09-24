@@ -24,7 +24,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 // import { ScrollToTop } from "./components/common/ScrollToTop";
 
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "campusmart-placeholder-client-id";
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "cartsy-placeholder-client-id";
 
 const router = createBrowserRouter([
     {

@@ -62,7 +62,7 @@ export const Products = () => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
       setCurrentPage(1);
-    }, 500);
+    }, 400);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
@@ -115,110 +115,152 @@ export const Products = () => {
   );
 
   /* ------------------ Loading & Error ------------------ */
-  if (isLoading) return <p>Loading products...</p>;
-  if (isError) return <p>{error.message}</p>;
+  if (isLoading) return (
+    <div className="section-products">
+      <div className="container" style={{ textAlign: "center", padding: "5rem 0" }}>
+        <div className="products-empty-state">
+          <h2>🍳 Cooking up catalog drops...</h2>
+        </div>
+      </div>
+    </div>
+  );
+  
+  if (isError) return (
+    <div className="section-products">
+      <div className="container" style={{ textAlign: "center", padding: "5rem 0" }}>
+        <div className="products-empty-state">
+          <h2>⚠️ Major L: {error.message}</h2>
+          <button onClick={clearFilters} className="btn btn-primary" style={{ marginTop: "1rem" }}>Retry</button>
+        </div>
+      </div>
+    </div>
+  );
 
   /* ------------------ Render ------------------ */
   return (
     <section className="section-products">
       <div className="container products-container">
 
-        {/* Search */}
-        <div className="products-search">
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        {/* Section Header */}
+        <div className="products-page-header">
+          <div className="neo-badge yellow">⚡ THE FULL CATALOG</div>
+          <h1 className="products-page-title">ALL THE DRIP</h1>
+          <p className="products-page-subtitle">
+            Search, filter, and cop trending drip, aesthetic fits, room essentials & everyday gear.
+          </p>
         </div>
 
-        {/* Filters */}
-        <div className="products-filters">
-          {/* Categories */}
-          <div className="filter-block">
-            <button
-              className="filter-toggle"
-              onClick={() => {
-                setShowCategories((prev) => !prev);
-                setShowPrice(false);
-              }}
-              style={activeCategory ? { background: '#1a1a1a', color: 'white' } : {}}
-            >
-              {activeCategory ? `Category: ${categories.find(c => c.slug === activeCategory)?.name || activeCategory}` : "Categories"} <span>{showCategories ? "−" : "+"}</span>
-            </button>
-
-            {showCategories && (
-              <div className="filter-content">
-                {isCategoryLoading ? (
-                  <p>Loading...</p>
-                ) : (
-                  categories.map((category) => (
-                    <button
-                      key={category.slug}
-                      onClick={() =>
-                        handleCategoryFilter(category.slug)
-                      }
-                      className={
-                        activeCategory === category.slug
-                          ? "filter-btn active"
-                          : "filter-btn"
-                      }
-                    >
-                      {category.name}
-                    </button>
-                  ))
-                )}
-              </div>
+        {/* Search & Filter Bar */}
+        <div className="products-controls-bar">
+          <div className="products-search">
+            <span className="search-symbol">🔍</span>
+            <input
+              type="text"
+              placeholder="Search for drip, gadgets, room fits, sneakers..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button 
+                type="button" 
+                onClick={() => setSearchTerm("")} 
+                className="clear-search-btn"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
             )}
           </div>
 
-          {/* Price */}
-          <div className="filter-block">
-            <button
-              className="filter-toggle"
-              onClick={() => {
-                setShowPrice((prev) => !prev);
-                setShowCategories(false);
-              }}
-              style={activeSort ? { background: '#1a1a1a', color: 'white' } : {}}
-            >
-              {activeSort ? (activeSort === "low-high" ? "Sort: Low → High" : "Sort: High → Low") : "Sort by Price"} <span>{showPrice ? "−" : "+"}</span>
-            </button>
+          {/* Filters */}
+          <div className="products-filters">
+            {/* Categories */}
+            <div className="filter-block">
+              <button
+                className={`filter-toggle ${activeCategory ? "active-filter" : ""}`}
+                onClick={() => {
+                  setShowCategories((prev) => !prev);
+                  setShowPrice(false);
+                }}
+              >
+                <span>{activeCategory ? `Drop: ${categories.find(c => c.slug === activeCategory)?.name || activeCategory}` : "Categories ⚡"}</span>
+                <span className="filter-arrow">{showCategories ? "▲" : "▼"}</span>
+              </button>
 
-            {showPrice && (
-              <div className="filter-content">
-                <button
-                  onClick={() => handlePriceSort("low-high")}
-                  className={
-                    activeSort === "low-high"
-                      ? "filter-btn active"
-                      : "filter-btn"
-                  }
-                >
-                  Low → High
-                </button>
+              {showCategories && (
+                <div className="filter-content">
+                  {isCategoryLoading ? (
+                    <p style={{ padding: '8px', fontWeight: 600 }}>Loading...</p>
+                  ) : (
+                    categories.map((category) => (
+                      <button
+                        key={category.slug}
+                        onClick={() =>
+                          handleCategoryFilter(category.slug)
+                        }
+                        className={
+                          activeCategory === category.slug
+                            ? "filter-btn active"
+                            : "filter-btn"
+                        }
+                      >
+                        {category.name}
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
 
-                <button
-                  onClick={() => handlePriceSort("high-low")}
-                  className={
-                    activeSort === "high-low"
-                      ? "filter-btn active"
-                      : "filter-btn"
-                  }
-                >
-                  High → Low
-                </button>
-              </div>
+            {/* Price */}
+            <div className="filter-block">
+              <button
+                className={`filter-toggle ${activeSort ? "active-filter" : ""}`}
+                onClick={() => {
+                  setShowPrice((prev) => !prev);
+                  setShowCategories(false);
+                }}
+              >
+                <span>{activeSort ? (activeSort === "low-high" ? "Price: Low → High" : "Price: High → Low") : "Price Check 💸"}</span>
+                <span className="filter-arrow">{showPrice ? "▲" : "▼"}</span>
+              </button>
+
+              {showPrice && (
+                <div className="filter-content">
+                  <button
+                    onClick={() => handlePriceSort("low-high")}
+                    className={
+                      activeSort === "low-high"
+                        ? "filter-btn active"
+                        : "filter-btn"
+                    }
+                  >
+                    Low → High
+                  </button>
+
+                  <button
+                    onClick={() => handlePriceSort("high-low")}
+                    className={
+                      activeSort === "high-low"
+                        ? "filter-btn active"
+                        : "filter-btn"
+                    }
+                  >
+                    High → Low
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {(activeCategory || activeSort || searchTerm) && (
+              <button onClick={clearFilters} className="filter-clear">
+                ✕ Reset All
+              </button>
             )}
           </div>
-
-          <button onClick={clearFilters} className="filter-clear">
-            Clear Filters
-          </button>
         </div>
 
-        {/* Products */}
+        {/* Products Grid */}
         <div className="products-grid">
           {paginatedProducts.length > 0 ? (
             paginatedProducts.map((product) => (
@@ -228,7 +270,13 @@ export const Products = () => {
               />
             ))
           ) : (
-            <p>No products found.</p>
+            <div className="products-empty-state">
+              <h3>No drip found matching that bestie 💀</h3>
+              <p>Try searching something else or reset your filters.</p>
+              <button onClick={clearFilters} className="btn btn-primary" style={{ marginTop: '1rem' }}>
+                Wipe Filters
+              </button>
+            </div>
           )}
         </div>
 
@@ -236,11 +284,11 @@ export const Products = () => {
         {totalPages > 1 && (
           <div className="pagination">
             <button
-              className="pagination-btn"
+              className="pagination-btn nav"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => p - 1)}
             >
-              Prev
+              ← Prev
             </button>
 
             {Array.from({ length: totalPages }, (_, i) => (
@@ -256,11 +304,11 @@ export const Products = () => {
             ))}
 
             <button
-              className="pagination-btn"
+              className="pagination-btn nav"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => p + 1)}
             >
-              Next
+              Next →
             </button>
           </div>
         )}

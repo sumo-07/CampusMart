@@ -1,12 +1,14 @@
+/* ==========================================================================
+   PRODUCT QUICK VIEW MODAL (Neobrutalist / Neo-Pop Theme)
+   ========================================================================== */
+
 .quickview-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(5, 7, 11, 0.8);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(10, 10, 10, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,22 +18,22 @@
 
 .quickview-modal {
   width: 100%;
-  max-width: 900px;
-  background: rgba(13, 17, 25, 0.9);
-  border: 1px solid var(--border-glass);
-  border-radius: 24px;
+  max-width: 920px;
+  background: var(--neo-white);
+  border: var(--border-thick);
+  border-radius: var(--radius-lg);
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
+  grid-template-columns: 1.15fr 1fr;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  animation: modalFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-shadow: var(--shadow-hard-lg);
+  animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes modalFadeIn {
   from {
     opacity: 0;
-    transform: scale(0.95) translateY(10px);
+    transform: scale(0.96) translateY(12px);
   }
   to {
     opacity: 1;
@@ -41,46 +43,58 @@
 
 .quickview-close {
   position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-glass);
-  color: var(--text-primary);
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  top: 1.2rem;
+  right: 1.2rem;
+  background: var(--neo-white);
+  border: var(--border-thick);
+  color: var(--neo-black);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  box-shadow: 2px 2px 0px var(--neo-black);
+  transition: transform var(--transition-bounce), background-color var(--transition-fast);
   z-index: 10;
-  font-size: 1rem;
+  font-size: 1.1rem;
 }
 
 .quickview-close:hover {
-  background: #ff4757;
-  color: #fff;
-  border-color: #ff4757;
-  transform: rotate(90deg);
+  background: var(--neo-pink);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px var(--neo-black);
+}
+
+.quickview-close:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--neo-black);
 }
 
 /* 3D Panel (Left inside visual hierarchy) */
 .quickview-visual {
-  background: rgba(5, 7, 11, 0.5);
-  border-right: 1px solid var(--border-glass);
+  background: var(--neo-cream);
+  border-right: var(--border-thick);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
+  padding: 2.5rem 2rem;
   position: relative;
 }
 
 .quickview-visual-info {
-  margin-top: 1rem;
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  margin-top: 1.2rem;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--neo-black);
+  background: var(--neo-white);
+  border: var(--border-thick);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  box-shadow: 2px 2px 0px var(--neo-black);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -88,61 +102,82 @@
 
 /* Details Panel (Right inside visual hierarchy) */
 .quickview-details {
-  padding: 3rem 2.5rem;
+  padding: 2.5rem 2.2rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background: var(--neo-white);
 }
 
 .quickview-category {
-  font-size: 0.8rem;
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--accent-blue);
-  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--neo-black);
+  background: var(--neo-yellow);
+  border: 1.5px solid var(--neo-black);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  font-weight: 900;
   margin-bottom: 0.8rem;
+  width: fit-content;
+  box-shadow: 2px 2px 0px var(--neo-black);
 }
 
 .quickview-title {
-  font-family: var(--font-header);
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1.2;
-  margin-bottom: 1rem;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--neo-black);
+  line-height: 1.15;
+  margin-bottom: 0.8rem;
+  letter-spacing: -0.5px;
 }
 
 .quickview-meta {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  flex-wrap: wrap;
 }
 
 .quickview-rating {
-  color: #ffb800;
-  font-weight: 600;
+  color: var(--neo-black);
+  background: #FFFDF0;
+  border: 1.5px solid var(--neo-black);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
 }
 
 .quickview-stock {
-  color: #2ed573;
-  font-weight: 600;
+  color: #059669;
+  background: #F0FFF7;
+  border: 1.5px solid var(--neo-black);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
 }
 
 .quickview-stock.low {
-  color: #f59e0b;
+  color: #D97706;
+  background: #FFFDF0;
 }
 
 .quickview-stock.out {
-  color: #ff4757;
+  color: #D32F2F;
+  background: #FFF0F0;
 }
 
 .quickview-description {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: var(--text-secondary);
-  margin-bottom: 2rem;
+  color: var(--neo-black);
+  margin-bottom: 1.8rem;
+  font-weight: 500;
 }
 
 .quickview-footer {
@@ -150,8 +185,9 @@
   align-items: center;
   justify-content: space-between;
   margin-top: auto;
-  border-top: 1px solid var(--border-glass);
-  padding-top: 1.5rem;
+  border-top: var(--border-thick);
+  padding-top: 1.4rem;
+  gap: 16px;
 }
 
 .quickview-price-container {
@@ -160,20 +196,25 @@
 }
 
 .quickview-price-label {
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
 }
 
 .quickview-price {
-  font-family: var(--font-header);
+  font-family: var(--font-display);
   font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--text-primary);
+  font-weight: 900;
+  color: var(--neo-black);
+  line-height: 1;
 }
 
 .quickview-actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.8rem;
+  align-items: center;
 }
 
 @media (max-width: 768px) {
@@ -184,10 +225,10 @@
   }
   .quickview-visual {
     border-right: none;
-    border-bottom: 1px solid var(--border-glass);
+    border-bottom: var(--border-thick);
     padding: 3rem 1.5rem 1.5rem 1.5rem;
   }
   .quickview-details {
-    padding: 2rem 1.5rem;
+    padding: 1.8rem 1.4rem;
   }
 }

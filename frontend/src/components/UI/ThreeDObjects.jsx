@@ -297,6 +297,7 @@ export const CategoryModel = ({ type }) => {
       case "mens-shoes":
       case "womens-bags":
         return <SneakerModel />;
+      case "room-decor":
       case "dorm-decor":
       case "furniture":
       case "home-decoration":

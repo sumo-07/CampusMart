@@ -59,7 +59,13 @@ export const Login = () => {
   return (
     <section className="auth-section login-section">
       <div className="auth-container">
-        <h2 className="auth-title">Login</h2>
+        <div style={{ textAlign: "center", marginBottom: "8px" }}>
+          <div className="neo-badge yellow">⚡ TIME TO LOCK IN</div>
+        </div>
+        <h2 className="auth-title">WELCOME BACK</h2>
+        <p className="auth-subtitle" style={{ textAlign: "center", marginTop: "-8px", marginBottom: "20px" }}>
+          Sign in to cop exclusive drops & track your orders.
+        </p>
         {location.state?.message && (
           <div className="auth-alert-success">{location.state.message}</div>
         )}
@@ -115,7 +121,7 @@ export const Login = () => {
           </div>
 
           <button type="submit" className="auth-btn login-btn">
-            Login
+            LOCK IN ⚡
           </button>
         </form>
 

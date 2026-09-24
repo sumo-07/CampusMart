@@ -33,9 +33,11 @@ export const ProductCard = ({ product }) => {
       {/* Product Image */}
       <NavLink to={`/product/${productId}`} className="product-image">
         <img src={thumbnail} alt={title} />
-        {isOutOfStock && (
-          <span className="card-stock-tag out">Out of Stock</span>
-        )}
+        {isOutOfStock ? (
+          <span className="card-stock-tag out">COOKED 💀</span>
+        ) : isLowStock ? (
+          <span className="card-stock-tag low">HURRY 🔥</span>
+        ) : null}
       </NavLink>
 
       {/* Product Info */}
@@ -56,16 +58,16 @@ export const ProductCard = ({ product }) => {
           {stock !== undefined && (
             <span className={`product-stock ${isOutOfStock ? "out" : isLowStock ? "low" : "in"}`}>
               {isOutOfStock
-                ? "Out of Stock"
+                ? "Sold Out"
                 : isLowStock
                 ? `Only ${stock} left`
-                : `Stock: ${stock}`}
+                : `In Stock`}
             </span>
           )}
         </div>
 
         <div className="product-footer">
-          <span className="product-price">₹ {Number(price).toFixed(2)}</span>
+          <span className="product-price">₹{Number(price).toFixed(2)}</span>
 
           <div className="product-card-actions">
             {!isOutOfStock && cartQty > 0 ? (
@@ -121,7 +123,7 @@ export const ProductCard = ({ product }) => {
                   }
                 }}
               >
-                + Add
+                + Cop
               </button>
             ) : null}
 
@@ -129,7 +131,7 @@ export const ProductCard = ({ product }) => {
               to={`/product/${productId}`}
               className="btn-details"
             >
-              Details
+              View
             </NavLink>
           </div>
         </div>

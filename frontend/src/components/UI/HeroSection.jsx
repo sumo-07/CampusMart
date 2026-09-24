@@ -1,41 +1,72 @@
+import React from "react";
 import { NavLink } from "react-router-dom";
-import { HeroCanvas } from "./ThreeDObjects";
 import '../css/heroSection.css';
 
 export const HeroSection = () => {
   return (
-    <section className="section-hero">
-      <div className="container hero-container">
-
-        {/* Hero Content */}
-        <div className="hero-content">
-          <h1 className="hero-heading">
-            Smart Shopping for Campus Life
-          </h1>
-
-          <p className="hero-description">
-            Discover affordable, high-quality products made especially for
-            students. From daily essentials to trending items — CampusMart
-            has you covered.
-          </p>
-
-          <div className="hero-actions">
-            <NavLink to="/product" className="btn btn-primary">
-              Shop Now
-            </NavLink>
-
-            <NavLink to="/about" className="btn btn-outline">
-              Learn More
-            </NavLink>
+    <>
+      <section className="hero">
+        <span className="stamp">certified everyday essential 💯</span>
+        
+        <h1>your whole setup<br />has no drip</h1>
+        
+        <p className="sub">
+          we fixed it. room aesthetics, gadgets, fits — everything, shipped straight to your doorstep before you even check your feed.
+        </p>
+        
+        <div className="btnrow">
+          <NavLink to="/product" className="hero-btn-primary">
+            shop now fr fr
+          </NavLink>
+          <NavLink to="/about" className="hero-btn-secondary">
+            nah just browsing
+          </NavLink>
+        </div>
+        
+        <div className="chat-row">
+          <div className="bubble">
+            "bro the lamp actually slaps"
+            <small>— Ujjawal, Verified Buyer</small>
+          </div>
+          <div className="bubble p2">
+            "delivery was faster than my attention span 💀"
+            <small>— Priyanshu, Trendsetter</small>
+          </div>
+          <div className="bubble p3">
+            "no notes. 10/10 would cop again"
+            <small>— Aditi, Creator</small>
           </div>
         </div>
+      </section>
 
-        {/* Hero 3D Canvas */}
-        <div className="hero-canvas-container">
-          <HeroCanvas />
+      {/* Marquee Ticker Bar */}
+      <div className="marquee-ticker">
+        <div className="marquee-content">
+          <span>🔥 FRESH HYPED DROPS</span>
+          <span>•</span>
+          <span>⚡ INSTANT UPI & COD</span>
+          <span>•</span>
+          <span>🛍️ SECURE THE BAG</span>
+          <span>•</span>
+          <span>🎯 NO CAP FR FR</span>
+          <span>•</span>
+          <span>📦 LIGHTNING DOORSTEP DELIVERY</span>
+          <span>•</span>
+          <span>👑 MAXIMUM AURA GAINS</span>
+          <span>•</span>
+          <span>🔥 FRESH HYPED DROPS</span>
+          <span>•</span>
+          <span>⚡ INSTANT UPI & COD</span>
+          <span>•</span>
+          <span>🛍️ SECURE THE BAG</span>
+          <span>•</span>
+          <span>🎯 NO CAP FR FR</span>
+          <span>•</span>
+          <span>📦 LIGHTNING DOORSTEP DELIVERY</span>
+          <span>•</span>
+          <span>👑 MAXIMUM AURA GAINS</span>
         </div>
-
       </div>
-    </section>
+    </>
   );
 };

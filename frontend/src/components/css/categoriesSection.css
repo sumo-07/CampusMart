@@ -1,158 +1,163 @@
+/* --- Categories Section Layout --- */
 .section-categories {
-  padding: 6rem 0;
-  background-color: var(--bg-secondary);
+  padding: 5rem 0;
   position: relative;
-  border-top: 1px solid var(--border-glass);
-  border-bottom: 1px solid var(--border-glass);
-}
-
-.section-categories::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 70%;
-  height: 70%;
-  background: radial-gradient(circle, rgba(var(--accent-blue-rgb), 0.05) 0%, transparent 60%);
-  pointer-events: none;
 }
 
 .categories-header {
   text-align: center;
-  margin-bottom: 4rem;
+  max-width: 650px;
+  margin: 0 auto 3.5rem auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .categories-title {
   font-family: var(--font-header);
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 1rem;
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: var(--neo-border);
+  letter-spacing: -1px;
+  margin-bottom: 0.8rem;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0px #FFFFFF, 4px 4px 0px var(--neo-yellow);
 }
 
 .categories-subtitle {
-  font-size: 1.05rem;
-  color: var(--text-secondary);
-  max-width: 500px;
-  margin: 0 auto;
+  font-size: 1.02rem;
+  line-height: 1.5;
+  color: var(--neo-border);
+  font-weight: 700;
+  background: #FFFFFF;
+  border: var(--border-medium);
+  border-radius: var(--radius-pill);
+  padding: 6px 20px;
+  box-shadow: var(--shadow-hard-xs);
+  display: inline-block;
 }
 
+/* --- Grid --- */
 .categories-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2.5rem;
-  position: relative;
-  z-index: 2;
+  gap: 2rem;
 }
 
+/* --- Card --- */
 .category-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-glass);
-  border-radius: 24px;
-  padding: 2.5rem 2rem;
-  text-align: center;
-  transition: var(--transition-smooth);
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
+  background: #FFFFFF;
+  border: var(--border-thick);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-hard-lg);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* Shifting light background on hover */
-.category-card::before {
-  content: "";
-  position: absolute;
-  top: -100px;
-  right: -100px;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(var(--accent-blue-rgb), 0.2) 0%, transparent 70%);
-  transition: var(--transition-smooth);
-  pointer-events: none;
-  opacity: 0;
-}
-
-.category-card:nth-child(2)::before {
-  background: radial-gradient(circle, rgba(var(--accent-purple-rgb), 0.2) 0%, transparent 70%);
-}
-
-.category-card:nth-child(3)::before {
-  background: radial-gradient(circle, rgba(var(--accent-blue-rgb), 0.2) 0%, transparent 70%);
+  cursor: pointer;
+  transition: var(--transition-tactile);
+  overflow: hidden;
+  position: relative;
 }
 
 .category-card:hover {
-  transform: translateY(-8px);
-  border-color: rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.04);
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-hard-xl);
+  background: #FFFDF7;
 }
 
-.category-card:hover::before {
-  opacity: 1;
-  transform: scale(1.5);
+.category-top-tag {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px 0 16px;
+  z-index: 2;
 }
 
-.category-card:hover:nth-child(1) {
-  box-shadow: 0 10px 30px rgba(var(--accent-blue-rgb), 0.12);
+.category-orbit-hint {
+  font-family: var(--font-header);
+  font-size: 0.68rem;
+  font-weight: 800;
+  background: #F3F4F6;
+  border: 1.5px solid var(--neo-border);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
 }
 
-.category-card:hover:nth-child(2) {
-  box-shadow: 0 10px 30px rgba(var(--accent-purple-rgb), 0.12);
+.category-model-box {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FAF7F2;
+  border-top: var(--border-medium);
+  border-bottom: var(--border-medium);
+  margin-top: 12px;
 }
 
-.category-card:hover:nth-child(3) {
-  box-shadow: 0 10px 30px rgba(var(--accent-blue-rgb), 0.12);
-}
-
+/* --- Info Section --- */
 .category-info {
-  margin-top: 1.5rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .category-name {
   font-family: var(--font-header);
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-  transition: var(--transition-smooth);
-}
-
-.category-card:hover .category-name {
-  background: var(--gradient-neon);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: var(--neo-border);
+  margin-bottom: 0.6rem;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
 }
 
 .category-desc {
-  font-size: 0.9rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
   color: var(--text-secondary);
-  line-height: 1.5;
   margin-bottom: 1.5rem;
+  flex-grow: 1;
 }
 
-.category-link {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--accent-blue);
-  display: inline-flex;
+.category-cta-btn {
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  transition: var(--transition-smooth);
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--neo-yellow);
+  color: var(--neo-border);
+  border: var(--border-medium);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-hard-sm);
+  font-family: var(--font-header);
+  font-weight: 800;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: var(--transition-tactile);
 }
 
-.category-card:hover .category-link {
-  color: var(--text-primary);
-  text-shadow: 0 0 10px rgba(var(--accent-blue-rgb), 0.4);
+.category-card:hover .category-cta-btn {
+  background: var(--neo-pink);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard);
 }
 
+/* --- Responsive --- */
 @media (max-width: 992px) {
   .categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .categories-grid {
     grid-template-columns: 1fr;
-    max-width: 500px;
-    margin: 0 auto;
+  }
+
+  .categories-title {
+    font-size: 2.2rem;
   }
 }

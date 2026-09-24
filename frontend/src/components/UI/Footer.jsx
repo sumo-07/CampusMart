@@ -28,9 +28,9 @@ export const Footer = () => {
 
         {/* Brand / About */}
         <div className="footer-brand">
-          <h3 className="footer-logo">CampusMart</h3>
+          <h3 className="footer-logo">Cartsy</h3>
           <p className="footer-text">
-            Redefining student retail with a premium, high-speed digital catalog. Get top-tier products at student-friendly prices.
+            The drippiest online marketplace. Zero cap, pure aura. Certified everyday essentials, fits, gadgets & room glow-ups delivered at warp speed.
           </p>
           <div className="footer-socials">
             <a href="#" className="social-icon" aria-label="Facebook"><FaFacebookF /></a>
@@ -42,12 +42,12 @@ export const Footer = () => {
 
         {/* Quick Links */}
         <div className="footer-links">
-          <h4 className="footer-title">Quick Links</h4>
+          <h4 className="footer-title">Explore</h4>
           <ul>
-            <li><NavLink to="/" className="footer-link">Home</NavLink></li>
-            <li><NavLink to="/product" className="footer-link">Products</NavLink></li>
-            <li><NavLink to="/about" className="footer-link">About Us</NavLink></li>
-            <li><NavLink to="/contact" className="footer-link">Contact</NavLink></li>
+            <li><NavLink to="/" className="footer-link">Home (HQ)</NavLink></li>
+            <li><NavLink to="/product" className="footer-link">Fresh Drops 🔥</NavLink></li>
+            <li><NavLink to="/about" className="footer-link">The Lore (About)</NavLink></li>
+            <li><NavLink to="/contact" className="footer-link">Hit Our Line</NavLink></li>
           </ul>
         </div>
 
@@ -55,17 +55,17 @@ export const Footer = () => {
         <div className="footer-links">
           <h4 className="footer-title">Account</h4>
           <ul>
-            <li><NavLink to="/cart" className="footer-link">View Cart</NavLink></li>
+            <li><NavLink to="/cart" className="footer-link">View Bag 🛍️</NavLink></li>
             {!user ? (
               <>
-                <li><NavLink to={location.pathname === "/login" || location.pathname === "/signup" ? "/login" : `/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} state={{ from: location }} className="footer-link">Login</NavLink></li>
-                <li><NavLink to={location.pathname === "/login" || location.pathname === "/signup" ? "/signup" : `/signup?redirect=${encodeURIComponent(location.pathname + location.search)}`} state={{ from: location }} className="footer-link">Register</NavLink></li>
+                <li><NavLink to={location.pathname === "/login" || location.pathname === "/signup" ? "/login" : `/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} state={{ from: location }} className="footer-link">Lock In (Login)</NavLink></li>
+                <li><NavLink to={location.pathname === "/login" || location.pathname === "/signup" ? "/signup" : `/signup?redirect=${encodeURIComponent(location.pathname + location.search)}`} state={{ from: location }} className="footer-link">Join Hype (Sign Up)</NavLink></li>
               </>
             ) : (
               <>
-                <li><NavLink to="/orders" className="footer-link">My Orders</NavLink></li>
+                <li><NavLink to="/orders" className="footer-link">Past Drops (Orders)</NavLink></li>
                 <li>
-                  <button onClick={handleLogout} className="footer-link" style={{background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', padding: 0}}>Logout</button>
+                  <button onClick={handleLogout} className="footer-link" style={{background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', padding: 0}}>Peace Out (Logout)</button>
                 </li>
               </>
             )}
@@ -74,14 +74,14 @@ export const Footer = () => {
 
         {/* Newsletter */}
         <div className="footer-newsletter">
-          <h4 className="footer-title">Newsletter</h4>
+          <h4 className="footer-title">VIP Drop Alert 🔥</h4>
           <p className="footer-text" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>
-            Subscribe to receive alert notifications for flash sales and student discounts.
+            Get secret discount codes, midnight drop alerts, and meme drops straight to your inbox. No spam, strictly heat.
           </p>
           <form className="newsletter-form" onSubmit={handleSubscribe}>
             <input 
               type="email" 
-              placeholder="Enter your campus email" 
+              placeholder="you@email.com" 
               className="newsletter-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -98,7 +98,7 @@ export const Footer = () => {
       {/* Bottom Bar */}
       <div className="container">
         <div className="footer-bottom">
-          <p>© {new Date().getFullYear()} CampusMart. Built for Premium Campus Life.</p>
+          <p>© {new Date().getFullYear()} Cartsy. Built with ☕ & zero chill for hype legends.</p>
           <p style={{ display: 'flex', gap: '1.5rem' }}>
             <a href="#" className="footer-link" style={{ fontSize: '0.85rem' }}>Privacy Policy</a>
             <a href="#" className="footer-link" style={{ fontSize: '0.85rem' }}>Terms of Service</a>

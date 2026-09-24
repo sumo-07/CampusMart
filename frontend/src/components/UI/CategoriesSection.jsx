@@ -9,21 +9,27 @@ export const CategoriesSection = () => {
 
   const categories = [
     {
-      name: "Fashion",
+      name: "Drip & Fits",
+      badge: "AURA +10,000",
+      badgeColor: "pink",
       type: "fashion",
-      desc: "Step up your campus look with sneakers, hoodies, bags, and modern accessories.",
+      desc: "Step up your fit check with kicks, hoodies, bags, and high-key iconic fits that turn heads.",
       slug: "mens-shoes",
     },
     {
-      name: "Dorm Decor",
-      type: "dorm-decor",
-      desc: "Transform your living space with ambient lamps, comfy setups, and desk organizers.",
+      name: "Room & Desk Glow Up",
+      badge: "PINTEREST VIBE",
+      badgeColor: "yellow",
+      type: "room-decor",
+      desc: "Turn your room or desk setup into an aesthetic moodboard with ambient lamps, decor & accessories.",
       slug: "home-decoration",
     },
     {
-      name: "Tech Essentials",
+      name: "Lock-In Tech",
+      badge: "MAX PRODUCTIVITY",
+      badgeColor: "green",
       type: "tech-essentials",
-      desc: "Fuel your study sessions with smartphones, laptop stands, chargers, and gadgets.",
+      desc: "Power through late-night creative grinds and gaming sessions with chargers, stands, and gadgets.",
       slug: "smartphones",
     },
   ];
@@ -34,9 +40,12 @@ export const CategoriesSection = () => {
         
         {/* Header */}
         <div className="categories-header">
-          <h2 className="categories-title">Browse by Category</h2>
+          <div className="neo-badge green" style={{ marginBottom: "1rem" }}>
+            ⚡ CURATED STASH
+          </div>
+          <h2 className="categories-title">PICK YOUR AESTHETIC</h2>
           <p className="categories-subtitle">
-            Explore curated collections tailored specifically for student lifestyles and study spaces.
+            Curated collections so you never look cooked fr fr. High quality, peak aesthetics, zero cap.
           </p>
         </div>
 
@@ -48,16 +57,26 @@ export const CategoriesSection = () => {
               className="category-card"
               onClick={() => navigate(`/product?category=${cat.slug}`)}
             >
+              <div className="category-top-tag">
+                <span className={`neo-badge ${cat.badgeColor}`}>
+                  {cat.badge}
+                </span>
+                <span className="category-orbit-hint">3D PREVIEW</span>
+              </div>
+
               {/* 3D Model Viewport */}
-              <CategoryModel type={cat.type} />
+              <div className="category-model-box">
+                <CategoryModel type={cat.type} />
+              </div>
 
               {/* Info */}
               <div className="category-info">
                 <h3 className="category-name">{cat.name}</h3>
                 <p className="category-desc">{cat.desc}</p>
-                <span className="category-link">
-                  Explore Collection <FaArrowRight />
-                </span>
+                <button type="button" className="category-cta-btn">
+                  <span>COP THIS VIBE</span>
+                  <FaArrowRight />
+                </button>
               </div>
             </div>
           ))}

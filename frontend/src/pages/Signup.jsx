@@ -83,8 +83,14 @@ export const Signup = () => {
   return (
     <section className="auth-section signup-section">
       <div className="auth-container">
-        <h2 className="auth-title">Create Account</h2>
-        {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
+        <div style={{ textAlign: "center", marginBottom: "8px" }}>
+          <div className="neo-badge pink">🔥 NEW DROP ACCESS</div>
+        </div>
+        <h2 className="auth-title">JOIN CARTSY</h2>
+        <p className="auth-subtitle" style={{ textAlign: "center", marginTop: "-8px", marginBottom: "20px" }}>
+          Get member-only discounts, fast doorstep drops, and zero hidden fees.
+        </p>
+        {error && <div className="auth-alert-error">{error}</div>}
 
         <form className="auth-form signup-form" onSubmit={handleSignup}>
           <div className="form-group">
@@ -171,7 +177,7 @@ export const Signup = () => {
           </div>
 
           <button type="submit" className="auth-btn signup-btn">
-            Sign Up
+            CLAIM YOUR SPOT 🚀
           </button>
         </form>
 

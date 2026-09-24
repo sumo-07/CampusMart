@@ -1,31 +1,85 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap');
 
 :root {
-  --bg-primary: #0B0F19;
-  --bg-secondary: #0D0D11;
-  --bg-footer: #05070B;
-  --bg-glass: rgba(13, 17, 23, 0.7);
-  --border-glass: rgba(255, 255, 255, 0.08);
+  /* Core Neo Canvas & Neutral Palette */
+  --bg-primary: #FFFDF9;
+  --bg-secondary: #FFFFFF;
+  --bg-surface: #FFFFFF;
+  --bg-dark: #0A0A0A;
+  --bg-footer: #0A0A0A;
+  --card-bg: #FFFFFF;
   
-  --text-primary: #FFFFFF;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
+  /* Text Tokens */
+  --text-primary: #0A0A0A;
+  --text-secondary: #383838;
+  --text-muted: #666666;
+  --text-inverted: #FFFFFF;
   
-  --accent-blue: #00d2ff;
-  --accent-purple: #a259ff;
-  --accent-blue-rgb: 0, 210, 255;
-  --accent-purple-rgb: 162, 89, 255;
+  /* Gen-Z Neo-Pop Vibrant Accents */
+  --neo-yellow: #FFE600;
+  --neo-pink: #FF6EA7;
+  --neo-green: #00F59B;
+  --neo-blue: #54B5FF;
+  --neo-purple: #B87BFF;
+  --neo-orange: #FF7A00;
+  --neo-red: #FF3366;
+  --neo-border: #0A0A0A;
+  --neo-dark: #0A0A0A;
+  --neo-white: #FFFFFF;
+  --neo-cream: #FFFFFF;
+  --neo-black: #0A0A0A;
+  --neo-mint: #00F59B;
+  --border-thick-val: 2.5px;
+  --font-display: 'Space Grotesk', 'Outfit', sans-serif;
+
+  /* Legacy variable mappings to maintain full backward compatibility without glassmorphism/blurs */
+  --accent-blue: var(--neo-blue);
+  --accent-purple: var(--neo-purple);
+  --accent-blue-rgb: 84, 181, 255;
+  --accent-purple-rgb: 184, 123, 255;
+  --gradient-neon: var(--neo-yellow);
+  --gradient-glow: none;
+  --shadow-neon: var(--shadow-hard);
+  --shadow-purple: var(--shadow-hard);
+  --bg-glass: #FFFFFF;
+  --border-glass: var(--neo-border);
   
-  --gradient-neon: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
-  --gradient-glow: radial-gradient(circle at 50% 50%, rgba(var(--accent-blue-rgb), 0.15) 0%, rgba(var(--accent-purple-rgb), 0.15) 50%, transparent 100%);
+  /* Tactile Neobrutalist Borders */
+  --border-thick: 2.5px solid var(--neo-border);
+  --border-medium: 2px solid var(--neo-border);
+  --border-thin: 1.5px solid var(--neo-border);
   
-  --shadow-neon: 0 0 20px rgba(var(--accent-blue-rgb), 0.35);
-  --shadow-purple: 0 0 20px rgba(var(--accent-purple-rgb), 0.35);
+  /* Hard Offset Drop Shadows - ZERO BLUR */
+  --shadow-hard-xs: 1.5px 1.5px 0px var(--neo-border);
+  --shadow-hard-sm: 2px 2px 0px var(--neo-border);
+  --shadow-hard: 4px 4px 0px var(--neo-border);
+  --shadow-hard-lg: 6px 6px 0px var(--neo-border);
+  --shadow-hard-xl: 8px 8px 0px var(--neo-border);
+  --shadow-hard-yellow: 4px 4px 0px var(--neo-yellow);
+  --shadow-hard-pink: 4px 4px 0px var(--neo-pink);
+  --shadow-hard-hover: 6px 6px 0px var(--neo-border);
+  --shadow-hard-active: 1px 1px 0px var(--neo-border);
   
-  --font-header: 'Outfit', sans-serif;
+  /* Corner Radii */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 9999px;
+  
+  /* Typography */
+  --font-header: 'Space Grotesk', 'Outfit', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'Space Grotesk', monospace;
+  --font-meme: 'Luckiest Guy', cursive;
+  --font-comic: 'Comic Neue', cursive, sans-serif;
   
-  --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Tactile Spring Transitions */
+  --transition-tactile: transform 0.12s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.12s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease;
+  --transition-smooth: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-bounce: transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s cubic-bezier(0.2, 0, 0, 1);
+  --transition-fast: 0.15s ease;
 }
 
 * {
@@ -34,38 +88,58 @@
   box-sizing: border-box;
 }
 
-html, body {
-  height: 100%;
-  background-color: var(--bg-primary);
-  color: var(--text-secondary);
+html {
+  min-height: 100%;
+  background-color: #FFFDF9;
+  background-image: radial-gradient(#111111 1.2px, transparent 1.2px);
+  background-size: 20px 20px;
+  background-position: -9px -9px;
+  background-attachment: fixed;
+  color: var(--text-primary);
   font-family: var(--font-body);
   scroll-behavior: smooth;
 }
 
 body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  background-color: transparent;
+  background-image: radial-gradient(#111111 1.2px, transparent 1.2px);
+  background-size: 20px 20px;
+  background-position: -9px -9px;
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: var(--font-body);
 }
 
-/* Custom Scrollbar */
+/* Custom Tactile Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
+  height: 10px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--bg-primary);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--gradient-neon);
+  border-left: var(--border-medium);
 }
 
-/* Text Selection */
+::-webkit-scrollbar-thumb {
+  background: var(--neo-yellow);
+  border: var(--border-medium);
+  border-radius: var(--radius-xs);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neo-pink);
+}
+
+/* High Contrast Selection */
 ::selection {
-  background: rgba(var(--accent-blue-rgb), 0.3);
-  color: #fff;
+  background: var(--neo-yellow);
+  color: var(--neo-border);
 }
 
 /* Container Utility */
@@ -80,45 +154,101 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-primary);
+  background: transparent !important;
+  background-color: transparent !important;
   position: relative;
-}
-
-/* Add custom ambient globs behind main body */
-#root::before {
-  content: "";
-  position: absolute;
-  top: 10%;
-  left: -10%;
-  width: 50vw;
-  height: 50vw;
-  background: radial-gradient(circle, rgba(var(--accent-blue-rgb), 0.08) 0%, transparent 70%);
-  z-index: 0;
-  pointer-events: none;
-}
-
-#root::after {
-  content: "";
-  position: absolute;
-  bottom: 20%;
-  right: -10%;
-  width: 60vw;
-  height: 60vw;
-  background: radial-gradient(circle, rgba(var(--accent-purple-rgb), 0.08) 0%, transparent 70%);
-  z-index: 0;
-  pointer-events: none;
 }
 
 main {
   flex: 1;
   position: relative;
   z-index: 1;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
-/* Glassmorphism Styles */
-.glass-panel {
-  background: var(--bg-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-glass);
+/* Ensure all main page sections remain transparent so dotted canvas is visible everywhere */
+.section-categories,
+.section-featured-products,
+.section-products,
+.section-testimonials,
+.section-about,
+.section-contact,
+.section-admin,
+.orders-section,
+.pd-section,
+.cart-empty-section,
+.auth-section {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Neo-Brutalist Sticker / Badge Utilities */
+.neo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-family: var(--font-header);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: var(--radius-pill);
+  border: var(--border-medium);
+  box-shadow: var(--shadow-hard-xs);
+  background: var(--neo-yellow);
+  color: var(--neo-border);
+  user-select: none;
+}
+
+.neo-badge.pink {
+  background: var(--neo-pink);
+  color: #000;
+}
+
+.neo-badge.green {
+  background: var(--neo-green);
+  color: #000;
+}
+
+.neo-badge.blue {
+  background: var(--neo-blue);
+  color: #000;
+}
+
+.neo-badge.purple {
+  background: var(--neo-purple);
+  color: #000;
+}
+
+/* Marquee Banner Utility for Hype Vibe */
+.marquee-ticker {
+  background: var(--neo-yellow);
+  color: var(--neo-border);
+  border-top: var(--border-thick);
+  border-bottom: var(--border-thick);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 10px 0;
+  display: flex;
+  font-family: var(--font-header);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+}
+
+.marquee-content {
+  display: inline-flex;
+  gap: 2rem;
+  animation: marquee-scroll 25s linear infinite;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
