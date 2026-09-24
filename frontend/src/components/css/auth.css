@@ -186,17 +186,14 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin-top: 0.25rem;
-  border: var(--border-thick);
-  border-radius: var(--radius-pill);
-  box-shadow: 3px 3px 0px var(--neo-black);
-  overflow: hidden;
-  transition: transform var(--transition-bounce), box-shadow var(--transition-bounce);
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
 }
 
-.google-auth-wrapper:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0px var(--neo-black);
+.google-auth-wrapper > div {
+  margin: 0 auto !important;
+  display: flex !important;
+  justify-content: center !important;
 }
 
 /* Toggle Link Styling */
