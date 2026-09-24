@@ -1,13 +1,13 @@
 /* --- Contact Section (Neobrutalist / Neo-Pop Theme) --- */
 .section-contact {
-  padding: 60px 0 100px;
+  padding: 48px 0 60px;
   background-color: transparent;
   position: relative;
   color: var(--neo-black);
 }
 
 .contact-container {
-  max-width: 1160px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 0 24px;
   position: relative;
@@ -17,19 +17,21 @@
 /* --- Header --- */
 .contact-header {
   text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 34px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .contact-header .neo-badge {
-  margin-bottom: 14px;
+  margin-bottom: 12px;
+  font-size: 0.88rem;
+  padding: 6px 16px;
 }
 
 .contact-title {
   font-family: var(--font-display);
-  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
   font-weight: 900;
   color: var(--neo-black);
   text-transform: uppercase;
@@ -44,12 +46,12 @@
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--neo-black);
-  max-width: 600px;
+  max-width: 640px;
   line-height: 1.5;
   background: #FFFFFF;
   border: var(--border-medium);
   border-radius: var(--radius-pill);
-  padding: 8px 24px;
+  padding: 10px 26px;
   box-shadow: var(--shadow-hard-xs);
   display: inline-block;
 }
@@ -57,8 +59,8 @@
 /* --- Layout --- */
 .contact-content {
   display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 36px;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 32px;
   align-items: stretch;
 }
 
@@ -68,7 +70,7 @@
   border: var(--border-thick);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-hard-lg);
-  padding: 18px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
 }
@@ -77,9 +79,9 @@
   background: var(--neo-yellow);
   color: var(--neo-black);
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 900;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border: var(--border-thick);
   box-shadow: 2px 2px 0px var(--neo-black);
   border-radius: var(--radius-sm);
@@ -89,7 +91,7 @@
 
 .contact-map {
   flex: 1;
-  min-height: 420px;
+  min-height: 390px;
   border-radius: var(--radius-md);
   overflow: hidden;
   border: var(--border-thick);
@@ -103,16 +105,25 @@
 
 /* --- Form Card --- */
 .contact-form {
-  padding: 36px 32px;
+  padding: 32px 36px;
   background: var(--neo-white);
   border-radius: var(--radius-lg);
   border: var(--border-thick);
   box-shadow: var(--shadow-hard-lg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.contact-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
 }
 
 /* --- Form Fields --- */
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 17px;
 }
 
 .form-group label {
@@ -121,7 +132,7 @@
   font-weight: 800;
   font-size: 0.85rem;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 7px;
   color: var(--neo-black);
   letter-spacing: 0.5px;
 }
@@ -130,16 +141,21 @@
 .form-group textarea,
 .form-group select {
   width: 100%;
-  padding: 14px 16px;
+  padding: 13px 16px;
   border: var(--border-thick);
   background: var(--neo-cream);
   color: var(--neo-black);
   border-radius: var(--radius-md);
   font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-size: 0.96rem;
   font-weight: 600;
   outline: none;
   transition: transform var(--transition-bounce), box-shadow var(--transition-bounce), background-color var(--transition-fast);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 95px;
 }
 
 .form-group input::placeholder,
@@ -164,31 +180,32 @@
 /* --- Button --- */
 .form-btn-primary {
   width: 100%;
-  padding: 16px 20px;
+  padding: 16px 24px;
   background: var(--neo-black);
   color: var(--neo-white);
   border: var(--border-thick);
   border-radius: var(--radius-md);
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 1rem;
+  font-size: 1.08rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   cursor: pointer;
   box-shadow: var(--shadow-hard);
   transition: transform var(--transition-bounce), box-shadow var(--transition-bounce);
+  margin-top: 8px;
 }
 
 .form-btn-primary:hover:not(:disabled) {
   background: var(--neo-yellow);
   color: var(--neo-black);
   transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px var(--neo-black);
+  box-shadow: 4px 4px 0px var(--neo-black);
 }
 
 .form-btn-primary:active:not(:disabled) {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px var(--neo-black);
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--neo-black);
 }
 
 .form-btn-primary:disabled {
@@ -202,54 +219,61 @@
 .contact-alert-error {
   background: #FFF0F0;
   border: var(--border-thick);
-  box-shadow: 3px 3px 0px var(--neo-black);
+  box-shadow: 2px 2px 0px var(--neo-black);
   color: #D32F2F;
-  padding: 12px 16px;
+  padding: 8px 12px;
   border-radius: var(--radius-md);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* Success Card */
 .contact-success-card {
   text-align: center;
-  padding: 40px 24px;
+  padding: 24px 18px;
 }
 
 .contact-success-icon {
-  font-size: 3.5rem;
-  margin-bottom: 16px;
+  font-size: 2.8rem;
+  margin-bottom: 12px;
 }
 
 .contact-success-title {
   font-family: var(--font-display);
   color: var(--neo-black);
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   font-weight: 900;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   text-transform: uppercase;
 }
 
 .contact-success-text {
   color: var(--neo-black);
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 500;
-  line-height: 1.6;
-  margin-bottom: 28px;
+  line-height: 1.5;
+  margin-bottom: 18px;
 }
 
 /* --- Responsive --- */
 @media (max-width: 960px) {
   .contact-content {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 20px;
   }
 
   .contact-map {
-    min-height: 320px;
+    min-height: 240px;
+  }
+}
+
+@media (max-width: 600px) {
+  .contact-form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
   }
 }
