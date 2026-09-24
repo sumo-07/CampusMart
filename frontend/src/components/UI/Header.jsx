@@ -26,23 +26,16 @@ export const Header = () => {
                 <div className="navbar-brand" style={{display: 'flex', alignItems: 'center'}}>
                     <NavLink to="/" className="brand-link">
                         <img src={logo} alt="Cartsy-logo" />
-                        <span className="brand-name">Cartsy</span>
+                        <span className="brand-name">CARTSY</span>
                     </NavLink>
                     {user && !isUserAdmin && (
                         <div 
-                            style={{ 
-                                marginLeft: '1rem', 
-                                fontSize: '0.75rem', 
-                                display: 'flex', 
-                                flexDirection: 'column', 
-                                cursor: 'pointer',
-                            }}
                             onClick={() => setIsModalOpen(true)}
                             title="Update Delivery Location"
                             className="location-tag-hover"
                         >
-                            <span style={{ fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.68rem', letterSpacing: '0.5px' }}>Drop Spot 📍</span>
-                            <span style={{ fontWeight: 800, color: 'var(--neo-border)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                            <span className="location-pin">📍</span>
+                            <span className="location-city">
                                 {(user.addresses && user.addresses.length > 0) ? (user.addresses.find(a => a.isDefault)?.city || user.addresses[0].city) : "Set Location"}
                             </span>
                         </div>
@@ -63,7 +56,7 @@ export const Header = () => {
                                 <li className="nav-item">
                                     <NavLink to="/contact" className="nav-link" >Contact</NavLink> </li>
                                 <li className="nav-item">
-                                    <NavLink to="/cart" className="nav-link" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                    <NavLink to="/cart" className="nav-link nav-bag-link">
                                         Bag 🛍️
                                         {totalCartCount > 0 && (
                                             <span className="nav-cart-badge">
@@ -78,7 +71,7 @@ export const Header = () => {
                             <>
                                 {isUserAdmin && (
                                     <li className="nav-item">
-                                        <NavLink to="/admin" className="nav-link" style={{background: 'var(--neo-pink)', border: 'var(--border-medium)', boxShadow: 'var(--shadow-hard-xs)', color: 'var(--neo-border)', fontWeight: 800}}>Admin HQ</NavLink>
+                                        <NavLink to="/admin" className="nav-admin-chip">Admin HQ</NavLink>
                                     </li>
                                 )}
                                 {!isUserAdmin && (
@@ -87,7 +80,7 @@ export const Header = () => {
                                     </li>
                                 )}
                                 <li className="nav-item">
-                                    <span className="nav-link" style={{background: 'var(--neo-yellow)', border: 'var(--border-medium)', boxShadow: 'var(--shadow-hard-xs)', color: 'var(--neo-border)', fontWeight: 800}}>Chief {user.name}</span>
+                                    <span className="nav-user-chip" title={`Chief ${user.name}`}>Chief {user.name?.split(' ')[0] || user.name}</span>
                                 </li>
                                 <li className="nav-item">
                                     <button onClick={handleLogout} className="nav-btn-logout">Logout</button>
@@ -103,7 +96,7 @@ export const Header = () => {
                                     className="nav-auth-btn"
                                     style={{ textDecoration: 'none' }}
                                 >
-                                    Lock In ⚡
+                                    LOCK IN 🔥
                                 </NavLink> 
                             </li>
                         )}
