@@ -320,10 +320,43 @@
   color: #BE123C;
 }
 
-.nav-btn-logout:active {
-  transform: translate(1.5px, 1.5px) scale(0.98) !important;
-  box-shadow: 1px 1px 0px #111111 !important;
-  filter: brightness(0.92) !important;
+/* Disable active click feedback for navbar elements (except LOCK IN button) */
+.section-navbar .brand-link:active {
+  transform: scale(1.03) !important;
+  filter: none !important;
+}
+
+.section-navbar .location-tag-hover:active {
+  transform: translate(-1.5px, -1.5px) !important;
+  box-shadow: 3.5px 3.5px 0px #111111 !important;
+  filter: none !important;
+}
+
+.section-navbar .nav-link:active {
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 2px 2px 0px #111111 !important;
+  filter: none !important;
+}
+
+.section-navbar .nav-link.active:active {
+  transform: none !important;
+  box-shadow: 2.5px 2.5px 0px #111111 !important;
+  filter: none !important;
+}
+
+.section-navbar .nav-admin-chip:active,
+.section-navbar .nav-user-chip:active {
+  transform: none !important;
+  box-shadow: 2px 2px 0px #111111 !important;
+  filter: none !important;
+}
+
+.section-navbar .nav-btn-logout:active {
+  transform: translate(-1.5px, -1.5px) !important;
+  box-shadow: 3.5px 3.5px 0px #111111 !important;
+  background: #FFE4E8 !important;
+  color: #BE123C !important;
+  filter: none !important;
 }
 
 .nav-auth-btn,
@@ -361,6 +394,8 @@ a.nav-auth-btn:focus {
   color: #111111 !important;
 }
 
+.section-navbar .nav-auth-btn:active,
+.section-navbar a.nav-auth-btn:active,
 .nav-auth-btn:active,
 a.nav-auth-btn:active {
   transform: translate(2px, 2px) scale(0.98) !important;
