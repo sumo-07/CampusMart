@@ -95,6 +95,8 @@
   max-height: 180px;
   overflow-y: auto;
   padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--neo-yellow) #F5F1EB;
 }
 
 .checkout-items-list::-webkit-scrollbar {
@@ -102,12 +104,18 @@
 }
 
 .checkout-items-list::-webkit-scrollbar-track {
-  background: #FAF7F2;
+  background: #F5F1EB;
+  border-radius: var(--radius-pill);
 }
 
 .checkout-items-list::-webkit-scrollbar-thumb {
-  background: var(--neo-border);
+  background: var(--neo-yellow) !important;
+  border: 1px solid var(--neo-border);
   border-radius: var(--radius-pill);
+}
+
+.checkout-items-list::-webkit-scrollbar-thumb:hover {
+  background: #FFD600 !important;
 }
 
 .checkout-item {

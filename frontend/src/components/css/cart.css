@@ -87,7 +87,7 @@
 }
 
 .cart-items-list::-webkit-scrollbar-thumb:hover {
-  background: var(--neo-pink);
+  background: #FFD600 !important;
 }
 
 .cart-item {

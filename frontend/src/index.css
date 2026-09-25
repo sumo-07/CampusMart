@@ -115,25 +115,63 @@ body {
   font-family: var(--font-body);
 }
 
-/* Custom Tactile Scrollbar */
-::-webkit-scrollbar {
+/* Universal Tactile Yellow Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--neo-yellow) #F5F1EB;
+}
+
+html,
+body {
+  scrollbar-color: var(--neo-yellow) var(--bg-primary);
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #F5F1EB;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--neo-yellow) !important;
+  border: 1.5px solid var(--neo-border);
+  border-radius: var(--radius-pill);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #FFD600 !important;
+}
+
+*::-webkit-scrollbar-corner {
+  background: #F5F1EB;
+}
+
+/* Main window scrollbar slightly wider */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
-::-webkit-scrollbar-track {
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
   background: var(--bg-primary);
   border-left: var(--border-medium);
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--neo-yellow);
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  background: var(--neo-yellow) !important;
   border: var(--border-medium);
   border-radius: var(--radius-xs);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--neo-pink);
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover {
+  background: #FFD600 !important;
 }
 
 /* High Contrast Selection */

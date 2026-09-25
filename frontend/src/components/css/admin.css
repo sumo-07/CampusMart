@@ -800,7 +800,7 @@
 }
 
 .admin-order-items-list::-webkit-scrollbar-thumb:hover {
-  background: var(--neo-pink);
+  background: #FFD600 !important;
 }
 
 .admin-order-item-row {

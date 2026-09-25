@@ -28,6 +28,27 @@
   box-shadow: var(--shadow-hard-lg);
   position: relative;
   animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  scrollbar-width: thin;
+  scrollbar-color: var(--neo-yellow) #F5F1EB;
+}
+
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: #F5F1EB;
+  border-radius: var(--radius-pill);
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: var(--neo-yellow) !important;
+  border: 1.5px solid var(--neo-border);
+  border-radius: var(--radius-pill);
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: #FFD600 !important;
 }
 
 .modal-header {

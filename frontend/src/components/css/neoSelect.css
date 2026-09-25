@@ -138,15 +138,24 @@
 }
 
 /* Custom Scrollbar for Dropdown Menu */
+.neo-select-dropdown {
+  scrollbar-width: thin;
+  scrollbar-color: var(--neo-yellow) #F5F1EB;
+}
 .neo-select-dropdown::-webkit-scrollbar {
   width: 5px;
 }
 .neo-select-dropdown::-webkit-scrollbar-track {
-  background: #FAF7F2;
+  background: #F5F1EB;
+  border-radius: var(--radius-pill);
 }
 .neo-select-dropdown::-webkit-scrollbar-thumb {
-  background: var(--neo-border);
+  background: var(--neo-yellow) !important;
+  border: 1px solid var(--neo-border);
   border-radius: var(--radius-pill);
+}
+.neo-select-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #FFD600 !important;
 }
 
 /* Option Items */

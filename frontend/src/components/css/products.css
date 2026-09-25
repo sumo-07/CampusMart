@@ -167,6 +167,27 @@
   max-height: 280px;
   overflow-y: auto;
   z-index: 50;
+  scrollbar-width: thin;
+  scrollbar-color: var(--neo-yellow) #F5F1EB;
+}
+
+.filter-dropdown::-webkit-scrollbar {
+  width: 5px;
+}
+
+.filter-dropdown::-webkit-scrollbar-track {
+  background: #F5F1EB;
+  border-radius: var(--radius-pill);
+}
+
+.filter-dropdown::-webkit-scrollbar-thumb {
+  background: var(--neo-yellow) !important;
+  border: 1px solid var(--neo-border);
+  border-radius: var(--radius-pill);
+}
+
+.filter-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #FFD600 !important;
 }
 
 .filter-btn {

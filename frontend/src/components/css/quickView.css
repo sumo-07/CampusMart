@@ -222,6 +222,23 @@
     grid-template-columns: 1fr;
     max-height: 90vh;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--neo-yellow) #F5F1EB;
+  }
+  .quickview-modal::-webkit-scrollbar {
+    width: 6px;
+  }
+  .quickview-modal::-webkit-scrollbar-track {
+    background: #F5F1EB;
+    border-radius: var(--radius-pill);
+  }
+  .quickview-modal::-webkit-scrollbar-thumb {
+    background: var(--neo-yellow) !important;
+    border: 1.5px solid var(--neo-border);
+    border-radius: var(--radius-pill);
+  }
+  .quickview-modal::-webkit-scrollbar-thumb:hover {
+    background: #FFD600 !important;
   }
   .quickview-visual {
     border-right: none;
