@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { getOrderById, updateOrderStatus } from "../utils/orderUtils";
 import { PrintableOrderSlip } from "../components/PrintableOrderSlip";
+import { NeoSelect } from "../components/UI/NeoSelect";
 import "../components/css/admin.css";
 import "../components/css/orders.css";
 
@@ -255,20 +256,21 @@ export const AdminOrderDetails = () => {
                         </div>
 
                         <div className="status-updater-dropdown-wrapper">
-                            <label htmlFor="status-select">Change Status:</label>
-                            <select
+                            <span className="status-label">Change Status:</span>
+                            <NeoSelect
                                 id="status-select"
-                                className="admin-status-select large"
+                                size="md"
                                 value={currentStatus}
-                                onChange={(e) => handleStatusChange(e.target.value)}
+                                onChange={handleStatusChange}
                                 disabled={updatingStatus}
-                            >
-                                <option value="Pending">Pending</option>
-                                <option value="Processing">Processing</option>
-                                <option value="Shipped">Shipped</option>
-                                <option value="Delivered">Delivered</option>
-                                <option value="Cancelled">Cancelled</option>
-                            </select>
+                                options={[
+                                    { value: "Pending", label: "Pending" },
+                                    { value: "Processing", label: "Processing" },
+                                    { value: "Shipped", label: "Shipped" },
+                                    { value: "Delivered", label: "Delivered" },
+                                    { value: "Cancelled", label: "Cancelled" }
+                                ]}
+                            />
                             {updatingStatus && <span className="status-spinner">Updating...</span>}
                         </div>
                     </div>

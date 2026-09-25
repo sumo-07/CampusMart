@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import api from "../api/axiosConfig";
 import { updateOrderStatus } from "../utils/orderUtils";
+import { NeoSelect } from "../components/UI/NeoSelect";
 import "../components/css/admin.css";
 import "../components/css/orders.css";
 
@@ -662,21 +663,21 @@ export const AdminDashboard = () => {
                                     )}
                                 </div>
                                 <div className="admin-sort-wrapper">
-                                    <label htmlFor="product-sort-select" className="admin-control-label">Sort:</label>
-                                    <select
+                                    <span className="admin-control-label">Sort:</span>
+                                    <NeoSelect
                                         id="product-sort-select"
                                         value={productSort}
-                                        onChange={(e) => setProductSort(e.target.value)}
-                                        className="admin-sort-select"
-                                    >
-                                        <option value="default">Default / Catalog</option>
-                                        <option value="stock-asc">⚠️ Stock: Low to High</option>
-                                        <option value="stock-desc">Stock: High to Low</option>
-                                        <option value="price-asc">Price: Low to High</option>
-                                        <option value="price-desc">Price: High to Low</option>
-                                        <option value="title-asc">Title: A to Z</option>
-                                        <option value="title-desc">Title: Z to A</option>
-                                    </select>
+                                        onChange={setProductSort}
+                                        options={[
+                                            { value: "default", label: "Default / Catalog" },
+                                            { value: "stock-asc", label: "⚠️ Stock: Low to High" },
+                                            { value: "stock-desc", label: "Stock: High to Low" },
+                                            { value: "price-asc", label: "Price: Low to High" },
+                                            { value: "price-desc", label: "Price: High to Low" },
+                                            { value: "title-asc", label: "Title: A to Z" },
+                                            { value: "title-desc", label: "Title: Z to A" }
+                                        ]}
+                                    />
                                 </div>
                                 {(productSort !== "default" || searchQuery) && (
                                     <button
@@ -717,11 +718,9 @@ export const AdminDashboard = () => {
                                     <input required type="number" placeholder="Initial Stock" value={newProduct.stock || ''} onChange={e => setNewProduct({ ...newProduct, stock: Number(e.target.value) })} className="admin-form-input" />
                                     {!isCustomCategory ? (
                                         <div className="admin-category-control">
-                                            <select
-                                                required
+                                            <NeoSelect
                                                 value={allAvailableCategories.includes(newProduct.category) ? newProduct.category : (newProduct.category ? "__custom__" : "")}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
+                                                onChange={(val) => {
                                                     if (val === "__custom__") {
                                                         setIsCustomCategory(true);
                                                         setNewProduct({ ...newProduct, category: "" });
@@ -729,16 +728,16 @@ export const AdminDashboard = () => {
                                                         setNewProduct({ ...newProduct, category: val });
                                                     }
                                                 }}
-                                                className="admin-form-input admin-category-select"
-                                            >
-                                                <option value="" disabled>-- Select Category --</option>
-                                                {allAvailableCategories.map((cat) => (
-                                                    <option key={cat} value={cat}>
-                                                        {cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, " ")}
-                                                    </option>
-                                                ))}
-                                                <option value="__custom__">➕ + Add New Category</option>
-                                            </select>
+                                                placeholder="-- Select Category --"
+                                                options={[
+                                                    ...allAvailableCategories.map((cat) => ({
+                                                        value: cat,
+                                                        label: cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, " ")
+                                                    })),
+                                                    { value: "__custom__", label: "➕ + Add New Category" }
+                                                ]}
+                                                fullWidth={true}
+                                            />
                                         </div>
                                     ) : (
                                         <div className="admin-category-custom-box">
@@ -1094,37 +1093,37 @@ export const AdminDashboard = () => {
                                 </div>
 
                                 <div className="admin-filter-group">
-                                    <label htmlFor="order-status-select" className="admin-control-label">Status:</label>
-                                    <select
+                                    <span className="admin-control-label">Status:</span>
+                                    <NeoSelect
                                         id="order-status-select"
                                         value={orderStatusFilter}
-                                        onChange={(e) => setOrderStatusFilter(e.target.value)}
-                                        className="admin-sort-select"
-                                    >
-                                        <option value="all">📦 Confirmed Orders ({confirmedOrders.length})</option>
-                                        <option value="Pending">⏳ Pending Fulfillment ({pendingOrders})</option>
-                                        <option value="Processing">⚙️ Processing ({orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Processing').length})</option>
-                                        <option value="Shipped">🚚 Shipped ({orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Shipped').length})</option>
-                                        <option value="Delivered">✅ Delivered ({deliveredOrders})</option>
-                                        <option value="Cancelled">❌ Cancelled ({orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Cancelled').length})</option>
-                                        <option value="Abandoned">🛒 Abandoned Drafts ({abandonedOrders.length})</option>
-                                        <option value="all-with-drafts">📋 All Records (inc. Drafts) ({orders.length})</option>
-                                    </select>
+                                        onChange={setOrderStatusFilter}
+                                        options={[
+                                            { value: "all", label: `📦 Confirmed Orders (${confirmedOrders.length})` },
+                                            { value: "Pending", label: `⏳ Pending Fulfillment (${pendingOrders})` },
+                                            { value: "Processing", label: `⚙️ Processing (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Processing').length})` },
+                                            { value: "Shipped", label: `🚚 Shipped (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Shipped').length})` },
+                                            { value: "Delivered", label: `✅ Delivered (${deliveredOrders})` },
+                                            { value: "Cancelled", label: `❌ Cancelled (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Cancelled').length})` },
+                                            { value: "Abandoned", label: `🛒 Abandoned Drafts (${abandonedOrders.length})` },
+                                            { value: "all-with-drafts", label: `📋 All Records (inc. Drafts) (${orders.length})` }
+                                        ]}
+                                    />
                                 </div>
 
                                 <div className="admin-filter-group">
-                                    <label htmlFor="order-sort-select" className="admin-control-label">Sort:</label>
-                                    <select
+                                    <span className="admin-control-label">Sort:</span>
+                                    <NeoSelect
                                         id="order-sort-select"
                                         value={orderSort}
-                                        onChange={(e) => setOrderSort(e.target.value)}
-                                        className="admin-sort-select"
-                                    >
-                                        <option value="date-desc">📅 Date: Newest First</option>
-                                        <option value="date-asc">📅 Date: Oldest First</option>
-                                        <option value="amount-desc">💰 Total: High to Low</option>
-                                        <option value="amount-asc">💰 Total: Low to High</option>
-                                    </select>
+                                        onChange={setOrderSort}
+                                        options={[
+                                            { value: "date-desc", label: "📅 Date: Newest First" },
+                                            { value: "date-asc", label: "📅 Date: Oldest First" },
+                                            { value: "amount-desc", label: "💰 Total: High to Low" },
+                                            { value: "amount-asc", label: "💰 Total: Low to High" }
+                                        ]}
+                                    />
                                 </div>
 
                                 {(orderStatusFilter !== "all" || orderSearchQuery || orderSort !== "date-desc") && (
@@ -1261,17 +1260,19 @@ export const AdminDashboard = () => {
                                                         >
                                                             👁️ Details
                                                         </Link>
-                                                        <select
-                                                            className="admin-status-select"
+                                                        <NeoSelect
+                                                            size="sm"
+                                                            alignRight={true}
                                                             value={order.orderStatus || "Pending"}
-                                                            onChange={(e) => handleOrderStatusChange(order._id, e.target.value)}
-                                                        >
-                                                            <option value="Pending">Pending</option>
-                                                            <option value="Processing">Processing</option>
-                                                            <option value="Shipped">Shipped</option>
-                                                            <option value="Delivered">Delivered</option>
-                                                            <option value="Cancelled">Cancelled</option>
-                                                        </select>
+                                                            onChange={(val) => handleOrderStatusChange(order._id, val)}
+                                                            options={[
+                                                                { value: "Pending", label: "Pending" },
+                                                                { value: "Processing", label: "Processing" },
+                                                                { value: "Shipped", label: "Shipped" },
+                                                                { value: "Delivered", label: "Delivered" },
+                                                                { value: "Cancelled", label: "Cancelled" }
+                                                            ]}
+                                                        />
                                                     </div>
                                                 </td>
                                             </tr>

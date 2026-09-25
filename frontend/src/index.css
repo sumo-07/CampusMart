@@ -306,11 +306,56 @@ a.btn:active,
 .address-quick-pill:active,
 .metric-card.clickable:active,
 .sortable-th:active,
+.neo-select-trigger:active,
+.neo-select-option:active,
 [role="button"]:active:not([aria-disabled="true"]) {
   transform: translate(2px, 2px) scale(0.982) !important;
   box-shadow: 1px 1px 0px var(--neo-border) !important;
   filter: brightness(0.92) contrast(1.04) !important;
   transition: transform 0.05s ease, box-shadow 0.05s ease, filter 0.05s ease !important;
+}
+
+/* Base Neobrutalist styles for native select elements */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #FAF7F2;
+  border: var(--border-medium);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--neo-border);
+  box-shadow: var(--shadow-hard-xs);
+  cursor: pointer;
+  outline: none;
+  padding: 0.6rem 2.2rem 0.6rem 1rem;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230A0A0A' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 13px;
+  transition: var(--transition-tactile);
+}
+
+select:hover {
+  background-color: #FFFFFF;
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+select:focus {
+  background-color: #FFFFFF;
+  border-color: var(--neo-border);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+select option {
+  background-color: #FFFFFF;
+  color: #0A0A0A;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-weight: 700;
 }
 
 /* Tactile micro-buttons (quantity counters and delete triggers) */
