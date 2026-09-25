@@ -295,7 +295,8 @@
 }
 
 .pd-qty-btn:hover:not(:disabled) {
-  background: var(--neo-yellow);
+  background: var(--neo-pink);
+  color: var(--neo-border);
   transform: translate(-1px, -1px);
 }
 
