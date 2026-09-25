@@ -466,7 +466,7 @@ export const AdminOrderDetails = () => {
                                             <span className="item-qty-pill">x{item.quantity}</span>
                                         </td>
                                         <td style={{ textAlign: "right" }}>
-                                            <strong style={{ color: "var(--text-primary)" }}>
+                                            <strong className="item-line-total">
                                                 ₹{(Number(item.price) * Number(item.quantity)).toFixed(2)}
                                             </strong>
                                         </td>
