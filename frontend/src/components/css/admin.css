@@ -747,6 +747,84 @@
   filter: brightness(0.92) !important;
 }
 
+/* ==================== ADMIN ORDERS TABLE ACTION COLUMN STACK ==================== */
+.admin-order-actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 125px;
+  box-sizing: border-box;
+}
+
+.admin-order-actions-stack .admin-btn-view-order {
+  width: 100% !important;
+  height: 32px !important;
+  padding: 0 10px !important;
+  box-sizing: border-box !important;
+  font-family: var(--font-header);
+  font-size: 0.82rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1.5px solid var(--neo-border);
+  border-radius: var(--radius-sm);
+  background: var(--neo-yellow);
+  color: var(--neo-border);
+  box-shadow: var(--shadow-hard-xs);
+  text-decoration: none;
+  transition: var(--transition-tactile);
+}
+
+.admin-order-actions-stack .admin-btn-view-order:hover {
+  background: #ffea1a;
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.admin-order-actions-stack .admin-btn-view-order:active {
+  transform: translate(1.5px, 1.5px) scale(0.97) !important;
+  box-shadow: 0.5px 0.5px 0px var(--neo-border) !important;
+  filter: brightness(0.92) !important;
+}
+
+.admin-order-actions-stack .neo-select-container {
+  width: 100% !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+.admin-order-actions-stack .neo-select-trigger {
+  width: 100% !important;
+  height: 32px !important;
+  padding: 0 10px !important;
+  box-sizing: border-box !important;
+  font-family: var(--font-header);
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border: 1.5px solid var(--neo-border) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: var(--shadow-hard-xs) !important;
+  background: #FFFFFF;
+}
+
+.admin-order-actions-stack .neo-select-trigger:hover:not(:disabled) {
+  background: #FFFDF8;
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.admin-order-actions-stack .neo-select-value {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
+
 .products-table td .stock-edit-trigger {
   cursor: pointer;
   padding: 2px 6px;
@@ -779,7 +857,7 @@
   min-width: 175px;
   max-width: 250px;
   scrollbar-width: thin;
-  scrollbar-color: var(--neo-yellow) #F5F1EB;
+  scrollbar-color: var(--neo-border) #FAF7F2;
   overscroll-behavior: contain;
 }
 
@@ -787,20 +865,24 @@
   width: 5px;
 }
 
+.admin-order-items-list::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 .admin-order-items-list::-webkit-scrollbar-track {
-  background: #F5F1EB;
-  border: 1px solid var(--neo-border);
+  background: #FAF7F2;
   border-radius: var(--radius-pill);
 }
 
 .admin-order-items-list::-webkit-scrollbar-thumb {
-  background: var(--neo-yellow);
-  border: 1px solid var(--neo-border);
+  background: var(--neo-border) !important;
   border-radius: var(--radius-pill);
 }
 
 .admin-order-items-list::-webkit-scrollbar-thumb:hover {
-  background: #FFD600 !important;
+  background: #383838 !important;
 }
 
 .admin-order-item-row {

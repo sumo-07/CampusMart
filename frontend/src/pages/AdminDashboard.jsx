@@ -1265,7 +1265,7 @@ export const AdminDashboard = () => {
                                                     </ul>
                                                 </td>
                                                 <td>
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                    <div className="admin-order-actions-stack">
                                                         <Link
                                                             to={`/admin/orders/${order._id}`}
                                                             className="admin-btn-view-order"
@@ -1274,6 +1274,7 @@ export const AdminDashboard = () => {
                                                         </Link>
                                                         <NeoSelect
                                                             size="sm"
+                                                            fullWidth={true}
                                                             alignRight={true}
                                                             value={order.orderStatus || "Pending"}
                                                             onChange={(val) => handleOrderStatusChange(order._id, val)}

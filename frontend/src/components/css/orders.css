@@ -254,7 +254,7 @@
   overflow-y: auto;
   padding-right: 6px;
   scrollbar-width: thin;
-  scrollbar-color: var(--neo-yellow) #F5F1EB;
+  scrollbar-color: var(--neo-border) #FAF7F2;
   overscroll-behavior: contain;
 }
 
@@ -262,20 +262,24 @@
   width: 6px;
 }
 
+.order-items-list::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 .order-items-list::-webkit-scrollbar-track {
-  background: #F5F1EB;
-  border: 1.5px solid var(--neo-border);
+  background: #FAF7F2;
   border-radius: var(--radius-pill);
 }
 
 .order-items-list::-webkit-scrollbar-thumb {
-  background: var(--neo-yellow);
-  border: 1.5px solid var(--neo-border);
+  background: var(--neo-border) !important;
   border-radius: var(--radius-pill);
 }
 
 .order-items-list::-webkit-scrollbar-thumb:hover {
-  background: #FFD600 !important;
+  background: #383838 !important;
 }
 
 .order-item-row {

@@ -96,26 +96,31 @@
   overflow-y: auto;
   padding-right: 4px;
   scrollbar-width: thin;
-  scrollbar-color: var(--neo-yellow) #F5F1EB;
+  scrollbar-color: var(--neo-border) #FAF7F2;
 }
 
 .checkout-items-list::-webkit-scrollbar {
   width: 5px;
 }
 
+.checkout-items-list::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 .checkout-items-list::-webkit-scrollbar-track {
-  background: #F5F1EB;
+  background: #FAF7F2;
   border-radius: var(--radius-pill);
 }
 
 .checkout-items-list::-webkit-scrollbar-thumb {
-  background: var(--neo-yellow) !important;
-  border: 1px solid var(--neo-border);
+  background: var(--neo-border) !important;
   border-radius: var(--radius-pill);
 }
 
 .checkout-items-list::-webkit-scrollbar-thumb:hover {
-  background: #FFD600 !important;
+  background: #383838 !important;
 }
 
 .checkout-item {
