@@ -926,6 +926,110 @@
   color: #FFFFFF;
 }
 
+/* Stock Cell Inline Edit & Display */
+.stock-display-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #FAF7F2;
+  border: 1.5px solid var(--neo-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-header);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--neo-border);
+  cursor: pointer;
+  box-shadow: var(--shadow-hard-xs);
+  transition: var(--transition-tactile);
+}
+
+.stock-display-pill:hover {
+  background: #FFF9D2;
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.stock-display-pill:active {
+  transform: translate(1px, 1px) scale(0.98);
+  box-shadow: 0.5px 0.5px 0px var(--neo-border);
+}
+
+.stock-display-pill .stock-qty {
+  font-weight: 900;
+  color: var(--neo-border);
+}
+
+.stock-display-pill .stock-edit-hint {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.stock-display-pill:hover .stock-edit-hint {
+  color: var(--neo-border);
+}
+
+.stock-edit-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stock-inline-input {
+  width: 72px;
+  padding: 4px 8px;
+  background: #FFFFFF;
+  border: 1.5px solid var(--neo-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-header);
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--neo-border);
+  outline: none;
+  box-shadow: var(--shadow-hard-xs);
+  transition: var(--transition-tactile);
+  box-sizing: border-box;
+}
+
+.stock-inline-input:focus {
+  background: #FFFDF8;
+  border-color: var(--neo-border);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.stock-save-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1.5px solid var(--neo-border);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-header);
+  font-size: 0.8rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: var(--shadow-hard-xs);
+  transition: var(--transition-tactile);
+  background: var(--neo-green);
+  color: var(--neo-border);
+}
+
+.stock-save-btn:hover {
+  background: #00e08f;
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.stock-save-btn:active {
+  transform: translate(1px, 1px) scale(0.97);
+  box-shadow: 0.5px 0.5px 0px var(--neo-border);
+}
+
 .admin-table-actions {
   display: flex;
   gap: 8px;

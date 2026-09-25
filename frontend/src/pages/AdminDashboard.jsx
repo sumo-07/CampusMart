@@ -195,9 +195,11 @@ export const AdminDashboard = () => {
     ).filter(Boolean).sort((a, b) => a.localeCompare(b));
 
     const handleStockUpdate = async (id, newStock) => {
+        const val = parseInt(newStock, 10);
+        const parsedStock = isNaN(val) ? 0 : Math.max(0, val);
         try {
-            await api.put(`/api/products/${id}`, { stock: Number(newStock) });
-            setProducts(products.map(p => p._id === id ? { ...p, stock: Number(newStock) } : p));
+            await api.put(`/api/products/${id}`, { stock: parsedStock });
+            setProducts(products.map(p => p._id === id ? { ...p, stock: parsedStock } : p));
             setEditingProduct(null);
             queryClient.invalidateQueries({ queryKey: ["products"] });
             queryClient.invalidateQueries({ queryKey: ["product"] });
@@ -254,6 +256,16 @@ export const AdminDashboard = () => {
             }
         }
 
+        if (Number(newProduct.price) < 0) {
+            alert("Price cannot be negative.");
+            return;
+        }
+
+        if (Number(newProduct.stock) < 0) {
+            alert("Stock cannot be negative.");
+            return;
+        }
+
         if (!finalThumbnail || !finalThumbnail.trim()) {
             alert("Please provide a product image either by uploading a file or entering an image URL.");
             return;
@@ -266,6 +278,8 @@ export const AdminDashboard = () => {
 
         const productPayload = {
             ...newProduct,
+            price: Math.max(0, Number(newProduct.price) || 0),
+            stock: Math.max(0, parseInt(newProduct.stock, 10) || 0),
             category: newProduct.category.trim(),
             thumbnail: finalThumbnail.trim(),
             thumbnailPublicId: finalThumbnailPublicId,
@@ -714,8 +728,48 @@ export const AdminDashboard = () => {
                                 <h3>{editFormProduct ? "Edit Product" : "Add New Product"}</h3>
                                 <form onSubmit={handleSaveProduct} className="admin-form">
                                     <input required type="text" placeholder="Title" value={newProduct.title} onChange={e => setNewProduct({ ...newProduct, title: e.target.value })} className="admin-form-input" />
-                                    <input required type="number" placeholder="Price (₹)" value={newProduct.price || ''} onChange={e => setNewProduct({ ...newProduct, price: Number(e.target.value) })} className="admin-form-input" />
-                                    <input required type="number" placeholder="Initial Stock" value={newProduct.stock || ''} onChange={e => setNewProduct({ ...newProduct, stock: Number(e.target.value) })} className="admin-form-input" />
+                                    <input
+                                        required
+                                        type="number"
+                                        min="0"
+                                        step="any"
+                                        placeholder="Price (₹)"
+                                        value={newProduct.price || ''}
+                                        onKeyDown={(e) => {
+                                            if (e.key === '-' || e.key === 'e') e.preventDefault();
+                                        }}
+                                        onChange={e => {
+                                            const val = e.target.value;
+                                            if (val === '') {
+                                                setNewProduct({ ...newProduct, price: '' });
+                                            } else {
+                                                const num = parseFloat(val);
+                                                setNewProduct({ ...newProduct, price: isNaN(num) ? '' : Math.max(0, num) });
+                                            }
+                                        }}
+                                        className="admin-form-input"
+                                    />
+                                    <input
+                                        required
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        placeholder="Initial Stock"
+                                        value={newProduct.stock === 0 ? '0' : (newProduct.stock || '')}
+                                        onKeyDown={(e) => {
+                                            if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
+                                        }}
+                                        onChange={e => {
+                                            const val = e.target.value;
+                                            if (val === '') {
+                                                setNewProduct({ ...newProduct, stock: '' });
+                                            } else {
+                                                const num = parseInt(val, 10);
+                                                setNewProduct({ ...newProduct, stock: isNaN(num) ? '' : Math.max(0, num) });
+                                            }
+                                        }}
+                                        className="admin-form-input"
+                                    />
                                     {!isCustomCategory ? (
                                         <div className="admin-category-control">
                                             <NeoSelect
@@ -978,16 +1032,46 @@ export const AdminDashboard = () => {
                                                 <td>₹{product.price}</td>
                                                 <td>
                                                     {editingProduct === product._id ? (
-                                                        <input
-                                                            type="number"
-                                                            defaultValue={product.stock}
-                                                            onBlur={(e) => handleStockUpdate(product._id, e.target.value)}
-                                                            autoFocus
-                                                        />
+                                                        <div className="stock-edit-box">
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                step="1"
+                                                                className="stock-inline-input"
+                                                                defaultValue={product.stock}
+                                                                autoFocus
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
+                                                                    if (e.key === "Enter") {
+                                                                        handleStockUpdate(product._id, e.target.value);
+                                                                    } else if (e.key === "Escape") {
+                                                                        setEditingProduct(null);
+                                                                    }
+                                                                }}
+                                                                onBlur={(e) => handleStockUpdate(product._id, e.target.value)}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                className="stock-save-btn"
+                                                                onMouseDown={(e) => {
+                                                                    e.preventDefault();
+                                                                    const inputEl = e.currentTarget.parentElement.querySelector("input");
+                                                                    if (inputEl) handleStockUpdate(product._id, inputEl.value);
+                                                                }}
+                                                                title="Save stock"
+                                                            >
+                                                                ✓
+                                                            </button>
+                                                        </div>
                                                     ) : (
-                                                        <span className="stock-edit-trigger" onClick={() => setEditingProduct(product._id)}>
-                                                            {product.stock} <small>(click to edit)</small>
-                                                        </span>
+                                                        <div
+                                                            className="stock-display-pill"
+                                                            onClick={() => setEditingProduct(product._id)}
+                                                            title="Click to edit stock"
+                                                        >
+                                                            <span className="stock-qty">{product.stock}</span>
+                                                            <span className="stock-edit-hint">(click to edit)</span>
+                                                        </div>
                                                     )}
                                                 </td>
                                                 <td>
