@@ -304,6 +304,8 @@ a.btn:active,
 .quickview-close:active,
 .tab-btn:active,
 .address-quick-pill:active,
+.metric-card.clickable:active,
+.sortable-th:active,
 [role="button"]:active:not([aria-disabled="true"]) {
   transform: translate(2px, 2px) scale(0.982) !important;
   box-shadow: 1px 1px 0px var(--neo-border) !important;
