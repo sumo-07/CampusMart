@@ -150,17 +150,17 @@ body {
   background: transparent;
 }
 
-/* Primary Main Window Scrollbar - Classic Yellow with Pink Hover */
+/* Primary Main Window Scrollbar - Sleek Black Neobrutalist */
 html,
 body {
-  scrollbar-width: auto;
-  scrollbar-color: var(--neo-yellow) var(--bg-primary);
+  scrollbar-width: thin;
+  scrollbar-color: var(--neo-border) var(--bg-primary);
 }
 
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
 }
 
 html::-webkit-scrollbar-button,
@@ -179,14 +179,14 @@ body::-webkit-scrollbar-track {
 
 html::-webkit-scrollbar-thumb,
 body::-webkit-scrollbar-thumb {
-  background: var(--neo-yellow) !important;
-  border: var(--border-medium);
-  border-radius: var(--radius-xs);
+  background: var(--neo-border) !important;
+  border: 1.5px solid var(--bg-primary);
+  border-radius: var(--radius-pill);
 }
 
 html::-webkit-scrollbar-thumb:hover,
 body::-webkit-scrollbar-thumb:hover {
-  background: var(--neo-pink) !important;
+  background: #383838 !important;
 }
 
 /* High Contrast Selection */
