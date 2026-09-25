@@ -55,6 +55,11 @@
   box-shadow: var(--shadow-hard-sm);
 }
 
+.orders-refresh-btn:active:not(:disabled) {
+  transform: translate(1.5px, 1.5px) scale(0.98);
+  box-shadow: 0.5px 0.5px 0px var(--neo-border);
+}
+
 .orders-refresh-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -438,6 +443,12 @@
   box-shadow: var(--shadow-hard-sm);
 }
 
+.btn-pay-now-sidebar:active {
+  transform: translate(1.5px, 1.5px) scale(0.98);
+  box-shadow: 0.5px 0.5px 0px var(--neo-border);
+  filter: brightness(0.92);
+}
+
 .btn-remove-order-sidebar, .btn-cancel-order-sidebar {
   padding: 0.65rem;
   background: #FFF0F3;
@@ -457,6 +468,12 @@
   transform: translate(-1px, -1px);
 }
 
+.btn-remove-order-sidebar:active, .btn-cancel-order-sidebar:active {
+  transform: translate(1.5px, 1.5px) scale(0.98);
+  box-shadow: 0.5px 0.5px 0px var(--neo-border);
+  background: #FFD2DA;
+}
+
 .btn-print-order-slip-sidebar {
   padding: 0.65rem;
   background: #FFFFFF;
@@ -474,6 +491,11 @@
 .btn-print-order-slip-sidebar:hover {
   background: #FAF7F2;
   transform: translate(-1px, -1px);
+}
+
+.btn-print-order-slip-sidebar:active {
+  transform: translate(1.5px, 1.5px) scale(0.98);
+  box-shadow: 0.5px 0.5px 0px var(--neo-border);
 }
 
 /* Responsive */

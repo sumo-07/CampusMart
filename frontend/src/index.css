@@ -252,3 +252,71 @@ main {
     transform: translateX(-50%);
   }
 }
+
+/* ==================== GLOBAL TACTILE CLICK FEEDBACK ==================== */
+/* Universal interactive transitions for all clickable elements */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn,
+a.btn,
+[class*="-btn"],
+[class*="btn-"],
+.nav-link,
+.brand-link,
+.nav-user-chip,
+.nav-admin-chip,
+.location-tag-hover,
+.social-icon,
+.filter-clear,
+.modal-close,
+.quickview-close,
+.tab-btn,
+.address-quick-pill,
+[role="button"] {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1),
+              box-shadow 0.12s cubic-bezier(0.2, 0, 0, 1),
+              filter 0.08s ease,
+              background-color 0.15s ease;
+}
+
+/* Universal tactile press-down click feedback on ALL buttons across the entire project */
+button:active:not(:disabled),
+input[type="button"]:active:not(:disabled),
+input[type="submit"]:active:not(:disabled),
+input[type="reset"]:active:not(:disabled),
+.btn:active:not(.disabled),
+a.btn:active,
+[class*="-btn"]:active:not(:disabled):not(.disabled),
+[class*="btn-"]:active:not(:disabled):not(.disabled),
+.nav-link:active,
+.brand-link:active,
+.nav-user-chip:active,
+.nav-admin-chip:active,
+.location-tag-hover:active,
+.social-icon:active,
+.filter-clear:active,
+.modal-close:active,
+.quickview-close:active,
+.tab-btn:active,
+.address-quick-pill:active,
+[role="button"]:active:not([aria-disabled="true"]) {
+  transform: translate(2px, 2px) scale(0.982) !important;
+  box-shadow: 1px 1px 0px var(--neo-border) !important;
+  filter: brightness(0.92) contrast(1.04) !important;
+  transition: transform 0.05s ease, box-shadow 0.05s ease, filter 0.05s ease !important;
+}
+
+/* Tactile micro-buttons (quantity counters and delete triggers) */
+.card-qty-btn:active:not(:disabled),
+.cart-qty button:active:not(:disabled),
+.cart-remove-btn:active,
+.pd-qty-btn:active:not(:disabled) {
+  transform: translate(1px, 1px) scale(0.96) !important;
+  box-shadow: 0.5px 0.5px 0px var(--neo-border) !important;
+  filter: brightness(0.92) !important;
+}

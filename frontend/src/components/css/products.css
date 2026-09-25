@@ -188,6 +188,11 @@
   border-color: var(--neo-border);
 }
 
+.filter-btn:active {
+  transform: translate(1px, 1px) scale(0.97);
+  box-shadow: 0.5px 0.5px 0px var(--neo-border);
+}
+
 .filter-btn.active {
   background: var(--neo-yellow);
   border-color: var(--neo-border);
@@ -211,6 +216,12 @@
   background: #FFE4E8;
   transform: translate(-1px, -1px);
   box-shadow: var(--shadow-hard-sm);
+}
+
+.filter-clear:active {
+  transform: translate(1px, 1px) scale(0.97);
+  box-shadow: 0.5px 0.5px 0px var(--neo-border);
+  background: #FFD2DA;
 }
 
 /* Products Grid */
@@ -275,6 +286,12 @@
   background: #FFF9D2;
   transform: translate(-1px, -1px);
   box-shadow: var(--shadow-hard-sm);
+}
+
+.pagination-btn:active:not(:disabled) {
+  transform: translate(1.5px, 1.5px) scale(0.96);
+  box-shadow: 0.5px 0.5px 0px var(--neo-border);
+  background: var(--neo-yellow);
 }
 
 .pagination-btn.active {

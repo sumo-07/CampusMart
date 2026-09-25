@@ -237,6 +237,12 @@
   box-shadow: var(--shadow-hard-sm);
 }
 
+.btn-add-cart-card:active {
+  transform: translate(1.5px, 1.5px) scale(0.97) !important;
+  box-shadow: 0.5px 0.5px 0px var(--neo-border) !important;
+  filter: brightness(0.92) !important;
+}
+
 /* Card Quantity Selector Control */
 .card-qty-control {
   display: inline-flex;
@@ -268,6 +274,12 @@
 .card-qty-btn:hover:not(:disabled) {
   background: var(--neo-yellow);
   transform: translate(-1px, -1px);
+}
+
+.card-qty-btn:active:not(:disabled) {
+  transform: translate(1px, 1px) scale(0.95) !important;
+  box-shadow: 0.5px 0.5px 0px var(--neo-border) !important;
+  background: var(--neo-yellow) !important;
 }
 
 .card-qty-btn:disabled {

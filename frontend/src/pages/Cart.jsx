@@ -134,7 +134,7 @@ export const Cart = () => {
                                     aria-label="Remove item"
                                     title="Dump item"
                                 >
-                                    <MdDeleteOutline size={22} />
+                                    <MdDeleteOutline size={16} />
                                 </button>
                             </div>
 

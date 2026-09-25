@@ -320,6 +320,12 @@
   color: #BE123C;
 }
 
+.nav-btn-logout:active {
+  transform: translate(1.5px, 1.5px) scale(0.98) !important;
+  box-shadow: 1px 1px 0px #111111 !important;
+  filter: brightness(0.92) !important;
+}
+
 .nav-auth-btn,
 a.nav-auth-btn {
   background: #00F5A0 !important;
@@ -350,13 +356,18 @@ a.nav-auth-btn:hover {
 }
 
 .nav-auth-btn:focus,
-.nav-auth-btn:active,
-.nav-auth-btn.active,
-a.nav-auth-btn:focus,
-a.nav-auth-btn:active,
-a.nav-auth-btn.active {
+a.nav-auth-btn:focus {
   text-decoration: none !important;
   color: #111111 !important;
+}
+
+.nav-auth-btn:active,
+a.nav-auth-btn:active {
+  transform: translate(2px, 2px) scale(0.98) !important;
+  box-shadow: 1.5px 1.5px 0px #111111 !important;
+  text-decoration: none !important;
+  color: #111111 !important;
+  filter: brightness(0.92) !important;
 }
 
 /* ==================== FOOTER ==================== */

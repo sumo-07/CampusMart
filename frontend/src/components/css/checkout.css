@@ -417,6 +417,11 @@
   box-shadow: var(--shadow-hard-lg);
 }
 
+.btn-back-cart:active {
+  transform: translate(2px, 2px) scale(0.985);
+  box-shadow: 1px 1px 0px var(--neo-border);
+}
+
 .btn-submit-order {
   padding: 1rem 2.2rem;
   background: var(--neo-yellow);
@@ -436,6 +441,12 @@
   background: #ffea1a;
   transform: translate(-2px, -2px);
   box-shadow: var(--shadow-hard-xl);
+}
+
+.btn-submit-order:active:not(:disabled) {
+  transform: translate(2px, 2px) scale(0.985);
+  box-shadow: 1px 1px 0px var(--neo-border);
+  filter: brightness(0.92);
 }
 
 .btn-submit-order:disabled {
