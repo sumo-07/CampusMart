@@ -747,7 +747,7 @@
   filter: brightness(0.92) !important;
 }
 
-.products-table td span {
+.products-table td .stock-edit-trigger {
   cursor: pointer;
   padding: 2px 6px;
   border-radius: var(--radius-xs);
@@ -755,13 +755,100 @@
   display: inline-block;
 }
 
-.products-table td span:hover {
+.products-table td .stock-edit-trigger:hover {
   background: #FFF8D6;
 }
 
-.products-table td span:active {
+.products-table td .stock-edit-trigger:active {
   transform: scale(0.96);
   background: #FFE885;
+}
+
+/* ==================== ADMIN ORDERS TABLE ITEMS ORDERED LIST ==================== */
+.admin-order-items-list {
+  list-style-type: none;
+  padding: 2px 6px 2px 0;
+  margin: 0;
+  font-size: 0.88rem;
+  max-height: 110px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 175px;
+  max-width: 250px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--neo-yellow) #F5F1EB;
+  overscroll-behavior: contain;
+}
+
+.admin-order-items-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.admin-order-items-list::-webkit-scrollbar-track {
+  background: #F5F1EB;
+  border: 1px solid var(--neo-border);
+  border-radius: var(--radius-pill);
+}
+
+.admin-order-items-list::-webkit-scrollbar-thumb {
+  background: var(--neo-yellow);
+  border: 1px solid var(--neo-border);
+  border-radius: var(--radius-pill);
+}
+
+.admin-order-items-list::-webkit-scrollbar-thumb:hover {
+  background: var(--neo-pink);
+}
+
+.admin-order-item-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.25;
+  transition: background-color 0.1s ease;
+  border-radius: var(--radius-xs);
+  padding: 2px 4px;
+}
+
+.admin-order-item-row:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.admin-order-item-row img {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1.5px solid var(--neo-border);
+  background: #FFFFFF;
+  flex-shrink: 0;
+  box-shadow: 1px 1px 0px var(--neo-border);
+}
+
+.admin-order-item-text {
+  color: var(--neo-border);
+  font-weight: 700;
+  word-break: break-word;
+  cursor: default !important;
+  padding: 0 !important;
+  background: none !important;
+  transform: none !important;
+  display: inline !important;
+}
+
+.admin-order-item-qty {
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  cursor: default !important;
+  padding: 0 !important;
+  background: none !important;
+  transform: none !important;
+  display: inline !important;
 }
 
 .pagination {

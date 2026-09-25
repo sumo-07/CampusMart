@@ -985,7 +985,7 @@ export const AdminDashboard = () => {
                                                             autoFocus
                                                         />
                                                     ) : (
-                                                        <span onClick={() => setEditingProduct(product._id)}>
+                                                        <span className="stock-edit-trigger" onClick={() => setEditingProduct(product._id)}>
                                                             {product.stock} <small>(click to edit)</small>
                                                         </span>
                                                     )}
@@ -1241,12 +1241,24 @@ export const AdminDashboard = () => {
                                                     )}
                                                 </td>
                                                 <td>
-                                                    <ul className="admin-order-items-list" style={{ listStyleType: "none", paddingLeft: "0", margin: 0, fontSize: "0.9rem" }}>
+                                                    <ul className="admin-order-items-list">
                                                         {order.orderItems.map((item, idx) => (
-                                                            <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                                                                <img src={item.thumbnail} alt={item.title} width="30" height="30" style={{ objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-glass)' }} />
-                                                                <span>
-                                                                    {item.title} <span style={{ color: 'var(--text-secondary)' }}>(x{item.quantity})</span>
+                                                            <li
+                                                                key={idx}
+                                                                className="admin-order-item-row"
+                                                                title={`${item.title} (Qty: ${item.quantity})`}
+                                                            >
+                                                                <img
+                                                                    src={item.thumbnail}
+                                                                    alt={item.title}
+                                                                    width="32"
+                                                                    height="32"
+                                                                />
+                                                                <span className="admin-order-item-text">
+                                                                    {item.title}{' '}
+                                                                    <span className="admin-order-item-qty">
+                                                                        (x{item.quantity})
+                                                                    </span>
                                                                 </span>
                                                             </li>
                                                         ))}

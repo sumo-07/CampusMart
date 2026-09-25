@@ -250,6 +250,32 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--neo-yellow) #F5F1EB;
+  overscroll-behavior: contain;
+}
+
+.order-items-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.order-items-list::-webkit-scrollbar-track {
+  background: #F5F1EB;
+  border: 1.5px solid var(--neo-border);
+  border-radius: var(--radius-pill);
+}
+
+.order-items-list::-webkit-scrollbar-thumb {
+  background: var(--neo-yellow);
+  border: 1.5px solid var(--neo-border);
+  border-radius: var(--radius-pill);
+}
+
+.order-items-list::-webkit-scrollbar-thumb:hover {
+  background: var(--neo-pink);
 }
 
 .order-item-row {
