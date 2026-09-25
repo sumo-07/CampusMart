@@ -16,23 +16,23 @@ export const ErrorPage = () => {
         statusCode = error.status;
         isNotFound = error.status === 404;
         if (error.status === 404) {
-            title = "Page Not Found";
-            message = error.data?.message || "The page you are looking for could not be found.";
+            title = "LOST IN THE SAUCE 💀";
+            message = error.data?.message || "Page went ghost. Major skill issue, or maybe this link is just completely cooked.";
         } else if (error.status === 401) {
-            title = "Access Denied";
-            message = "You are not authorized to view this page. Please log in with the correct credentials.";
+            title = "NO CLEARANCE HOMIE 🔒";
+            message = "You don't have the clearance for this page yet. Lock in and log in with your credentials.";
         } else if (error.status === 503) {
-            title = "Service Unavailable";
-            message = "Our servers are momentarily unavailable. Please check back in a few moments.";
+            title = "SERVERS ARE NAPPING 😴";
+            message = "Our servers are taking a quick power nap. Check back in a few seconds!";
         } else {
-            title = error.statusText || "Unexpected Routing Error";
-            message = error.data?.message || "Something went wrong while processing your request.";
+            title = error.statusText || "SOMETHING BROKE FR 💥";
+            message = error.data?.message || "We hit a weird glitch in the matrix while fetching this drop.";
         }
     } else if (error instanceof Error) {
         statusCode = 500;
         isNotFound = false;
-        title = "Application Error";
-        message = error.message || "An unexpected error occurred while loading this page.";
+        title = "ENGINEERING SKILL ISSUE 🛠️";
+        message = error.message || "An unexpected error occurred while loading this page. Our devs are cooking a fix.";
     }
 
     return (
@@ -40,20 +40,20 @@ export const ErrorPage = () => {
             {/* Top Navigation Bar */}
             <header className="error-page-header">
                 <Link to="/" className="error-brand-link">
-                    <img src={logo} alt="CampusMart Logo" className="error-brand-logo" />
-                    <span className="error-brand-name">CampusMart</span>
+                    <img src={logo} alt="Cartsy Logo" className="error-brand-logo" />
+                    <span className="error-brand-name">CARTSY</span>
                 </Link>
                 <Link to="/" className="btn btn-outline error-header-btn">
-                    <FaHome style={{ marginRight: "0.5rem" }} /> Home
+                    <FaHome style={{ marginRight: "0.5rem" }} /> Base Camp
                 </Link>
             </header>
 
             {/* Centered Error Card */}
             <main className="error-page-content">
                 <div className="error-card">
-                    <div className={`error-badge ${isNotFound ? "error-badge-404" : ""}`}>
-                        <FaExclamationTriangle />
-                        <span>{isNotFound ? "404 Not Found" : `Error ${statusCode}`}</span>
+                    <div className="neo-badge pink" style={{ marginBottom: "1.2rem" }}>
+                        <FaExclamationTriangle style={{ marginRight: "6px" }} />
+                        <span>{isNotFound ? "404 • SKILL ISSUE" : `ERROR ${statusCode}`}</span>
                     </div>
 
                     <h1 className="error-code">{statusCode}</h1>
@@ -62,13 +62,13 @@ export const ErrorPage = () => {
 
                     <div className="error-actions">
                         <button onClick={() => navigate(-1)} className="btn btn-outline" type="button">
-                            <FaArrowLeft style={{ marginRight: "0.5rem" }} /> Go Back
+                            <FaArrowLeft style={{ marginRight: "0.5rem" }} /> Fall Back
                         </button>
                         <Link to="/" className="btn btn-primary">
-                            <FaHome style={{ marginRight: "0.5rem" }} /> Back to Home
+                            <FaHome style={{ marginRight: "0.5rem" }} /> Base Camp
                         </Link>
-                        <Link to="/product" className="btn btn-outline">
-                            <FaShoppingBag style={{ marginRight: "0.5rem" }} /> Explore Products
+                        <Link to="/product" className="btn btn-pink">
+                            <FaShoppingBag style={{ marginRight: "0.5rem" }} /> Cop Drip 🔥
                         </Link>
                     </div>
 

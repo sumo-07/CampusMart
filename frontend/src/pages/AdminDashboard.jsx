@@ -3,6 +3,9 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import api from "../api/axiosConfig";
 import { updateOrderStatus } from "../utils/orderUtils";
+import { NeoSelect } from "../components/UI/NeoSelect";
+import { NeoStatusConfirmModal } from "../components/UI/NeoStatusConfirmModal";
+import { NeoToast } from "../components/UI/NeoToast";
 import "../components/css/admin.css";
 import "../components/css/orders.css";
 
@@ -29,6 +32,9 @@ export const AdminDashboard = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshingOrders, setRefreshingOrders] = useState(false);
+    const [pendingStatusChange, setPendingStatusChange] = useState(null);
+    const [updatingStatus, setUpdatingStatus] = useState(false);
+    const [toast, setToast] = useState(null);
 
     const handleRefreshOrders = useCallback(async (silent = false) => {
         const isSilent = silent === true;
@@ -194,9 +200,11 @@ export const AdminDashboard = () => {
     ).filter(Boolean).sort((a, b) => a.localeCompare(b));
 
     const handleStockUpdate = async (id, newStock) => {
+        const val = parseInt(newStock, 10);
+        const parsedStock = isNaN(val) ? 0 : Math.max(0, val);
         try {
-            await api.put(`/api/products/${id}`, { stock: Number(newStock) });
-            setProducts(products.map(p => p._id === id ? { ...p, stock: Number(newStock) } : p));
+            await api.put(`/api/products/${id}`, { stock: parsedStock });
+            setProducts(products.map(p => p._id === id ? { ...p, stock: parsedStock } : p));
             setEditingProduct(null);
             queryClient.invalidateQueries({ queryKey: ["products"] });
             queryClient.invalidateQueries({ queryKey: ["product"] });
@@ -253,6 +261,16 @@ export const AdminDashboard = () => {
             }
         }
 
+        if (Number(newProduct.price) < 0) {
+            alert("Price cannot be negative.");
+            return;
+        }
+
+        if (Number(newProduct.stock) < 0) {
+            alert("Stock cannot be negative.");
+            return;
+        }
+
         if (!finalThumbnail || !finalThumbnail.trim()) {
             alert("Please provide a product image either by uploading a file or entering an image URL.");
             return;
@@ -265,6 +283,8 @@ export const AdminDashboard = () => {
 
         const productPayload = {
             ...newProduct,
+            price: Math.max(0, Number(newProduct.price) || 0),
+            stock: Math.max(0, parseInt(newProduct.stock, 10) || 0),
             category: newProduct.category.trim(),
             thumbnail: finalThumbnail.trim(),
             thumbnailPublicId: finalThumbnailPublicId,
@@ -323,8 +343,17 @@ export const AdminDashboard = () => {
         window.scrollTo(0, 0); // Scroll to form
     };
 
-    const handleOrderStatusChange = async (orderId, newStatus) => {
+    const handleInitiateStatusChange = (orderId, newStatus, currentStatus) => {
+        if (!orderId || newStatus === currentStatus) return;
+        setPendingStatusChange({ orderId, newStatus, currentStatus });
+    };
+
+    const handleConfirmOrderStatusChange = async () => {
+        if (!pendingStatusChange) return;
+        const { orderId, newStatus } = pendingStatusChange;
+
         try {
+            setUpdatingStatus(true);
             const updated = await updateOrderStatus(orderId, newStatus);
             setOrders(prevOrders => prevOrders.map(o => {
                 if (o._id === orderId) {
@@ -347,9 +376,22 @@ export const AdminDashboard = () => {
                 const productsRes = await api.get("/api/products");
                 setProducts(productsRes.data.products);
             }
+            setPendingStatusChange(null);
+            setToast({
+                type: "success",
+                title: "Status Updated!",
+                message: `Order #${orderId.slice(-6)} successfully updated to "${newStatus}".`,
+            });
         } catch (error) {
             console.error("Failed to update order status:", error);
-            alert(error.response?.data?.message || "Failed to update order status");
+            setPendingStatusChange(null);
+            setToast({
+                type: "error",
+                title: "Update Failed",
+                message: error.response?.data?.message || "Failed to update order status",
+            });
+        } finally {
+            setUpdatingStatus(false);
         }
     };
 
@@ -662,21 +704,21 @@ export const AdminDashboard = () => {
                                     )}
                                 </div>
                                 <div className="admin-sort-wrapper">
-                                    <label htmlFor="product-sort-select" className="admin-control-label">Sort:</label>
-                                    <select
+                                    <span className="admin-control-label">Sort:</span>
+                                    <NeoSelect
                                         id="product-sort-select"
                                         value={productSort}
-                                        onChange={(e) => setProductSort(e.target.value)}
-                                        className="admin-sort-select"
-                                    >
-                                        <option value="default">Default / Catalog</option>
-                                        <option value="stock-asc">⚠️ Stock: Low to High</option>
-                                        <option value="stock-desc">Stock: High to Low</option>
-                                        <option value="price-asc">Price: Low to High</option>
-                                        <option value="price-desc">Price: High to Low</option>
-                                        <option value="title-asc">Title: A to Z</option>
-                                        <option value="title-desc">Title: Z to A</option>
-                                    </select>
+                                        onChange={setProductSort}
+                                        options={[
+                                            { value: "default", label: "Default / Catalog" },
+                                            { value: "stock-asc", label: "⚠️ Stock: Low to High" },
+                                            { value: "stock-desc", label: "Stock: High to Low" },
+                                            { value: "price-asc", label: "Price: Low to High" },
+                                            { value: "price-desc", label: "Price: High to Low" },
+                                            { value: "title-asc", label: "Title: A to Z" },
+                                            { value: "title-desc", label: "Title: Z to A" }
+                                        ]}
+                                    />
                                 </div>
                                 {(productSort !== "default" || searchQuery) && (
                                     <button
@@ -713,15 +755,53 @@ export const AdminDashboard = () => {
                                 <h3>{editFormProduct ? "Edit Product" : "Add New Product"}</h3>
                                 <form onSubmit={handleSaveProduct} className="admin-form">
                                     <input required type="text" placeholder="Title" value={newProduct.title} onChange={e => setNewProduct({ ...newProduct, title: e.target.value })} className="admin-form-input" />
-                                    <input required type="number" placeholder="Price (₹)" value={newProduct.price || ''} onChange={e => setNewProduct({ ...newProduct, price: Number(e.target.value) })} className="admin-form-input" />
-                                    <input required type="number" placeholder="Initial Stock" value={newProduct.stock || ''} onChange={e => setNewProduct({ ...newProduct, stock: Number(e.target.value) })} className="admin-form-input" />
+                                    <input
+                                        required
+                                        type="number"
+                                        min="0"
+                                        step="any"
+                                        placeholder="Price (₹)"
+                                        value={newProduct.price || ''}
+                                        onKeyDown={(e) => {
+                                            if (e.key === '-' || e.key === 'e') e.preventDefault();
+                                        }}
+                                        onChange={e => {
+                                            const val = e.target.value;
+                                            if (val === '') {
+                                                setNewProduct({ ...newProduct, price: '' });
+                                            } else {
+                                                const num = parseFloat(val);
+                                                setNewProduct({ ...newProduct, price: isNaN(num) ? '' : Math.max(0, num) });
+                                            }
+                                        }}
+                                        className="admin-form-input"
+                                    />
+                                    <input
+                                        required
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        placeholder="Initial Stock"
+                                        value={newProduct.stock === 0 ? '0' : (newProduct.stock || '')}
+                                        onKeyDown={(e) => {
+                                            if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
+                                        }}
+                                        onChange={e => {
+                                            const val = e.target.value;
+                                            if (val === '') {
+                                                setNewProduct({ ...newProduct, stock: '' });
+                                            } else {
+                                                const num = parseInt(val, 10);
+                                                setNewProduct({ ...newProduct, stock: isNaN(num) ? '' : Math.max(0, num) });
+                                            }
+                                        }}
+                                        className="admin-form-input"
+                                    />
                                     {!isCustomCategory ? (
                                         <div className="admin-category-control">
-                                            <select
-                                                required
+                                            <NeoSelect
                                                 value={allAvailableCategories.includes(newProduct.category) ? newProduct.category : (newProduct.category ? "__custom__" : "")}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
+                                                onChange={(val) => {
                                                     if (val === "__custom__") {
                                                         setIsCustomCategory(true);
                                                         setNewProduct({ ...newProduct, category: "" });
@@ -729,16 +809,16 @@ export const AdminDashboard = () => {
                                                         setNewProduct({ ...newProduct, category: val });
                                                     }
                                                 }}
-                                                className="admin-form-input admin-category-select"
-                                            >
-                                                <option value="" disabled>-- Select Category --</option>
-                                                {allAvailableCategories.map((cat) => (
-                                                    <option key={cat} value={cat}>
-                                                        {cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, " ")}
-                                                    </option>
-                                                ))}
-                                                <option value="__custom__">➕ + Add New Category</option>
-                                            </select>
+                                                placeholder="-- Select Category --"
+                                                options={[
+                                                    ...allAvailableCategories.map((cat) => ({
+                                                        value: cat,
+                                                        label: cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, " ")
+                                                    })),
+                                                    { value: "__custom__", label: "➕ + Add New Category" }
+                                                ]}
+                                                fullWidth={true}
+                                            />
                                         </div>
                                     ) : (
                                         <div className="admin-category-custom-box">
@@ -979,16 +1059,46 @@ export const AdminDashboard = () => {
                                                 <td>₹{product.price}</td>
                                                 <td>
                                                     {editingProduct === product._id ? (
-                                                        <input
-                                                            type="number"
-                                                            defaultValue={product.stock}
-                                                            onBlur={(e) => handleStockUpdate(product._id, e.target.value)}
-                                                            autoFocus
-                                                        />
+                                                        <div className="stock-edit-box">
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                step="1"
+                                                                className="stock-inline-input"
+                                                                defaultValue={product.stock}
+                                                                autoFocus
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
+                                                                    if (e.key === "Enter") {
+                                                                        handleStockUpdate(product._id, e.target.value);
+                                                                    } else if (e.key === "Escape") {
+                                                                        setEditingProduct(null);
+                                                                    }
+                                                                }}
+                                                                onBlur={(e) => handleStockUpdate(product._id, e.target.value)}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                className="stock-save-btn"
+                                                                onMouseDown={(e) => {
+                                                                    e.preventDefault();
+                                                                    const inputEl = e.currentTarget.parentElement.querySelector("input");
+                                                                    if (inputEl) handleStockUpdate(product._id, inputEl.value);
+                                                                }}
+                                                                title="Save stock"
+                                                            >
+                                                                ✓
+                                                            </button>
+                                                        </div>
                                                     ) : (
-                                                        <span onClick={() => setEditingProduct(product._id)}>
-                                                            {product.stock} <small>(click to edit)</small>
-                                                        </span>
+                                                        <div
+                                                            className="stock-display-pill"
+                                                            onClick={() => setEditingProduct(product._id)}
+                                                            title="Click to edit stock"
+                                                        >
+                                                            <span className="stock-qty">{product.stock}</span>
+                                                            <span className="stock-edit-hint">(click to edit)</span>
+                                                        </div>
                                                     )}
                                                 </td>
                                                 <td>
@@ -1036,24 +1146,10 @@ export const AdminDashboard = () => {
 
                 {activeTab === "orders" && (
                     <div className="admin-orders">
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginBottom: '1.25rem',
-                            flexWrap: 'wrap',
-                            gap: '12px'
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <h2 style={{ margin: 0, fontSize: '1.4rem' }}>Customer Orders</h2>
-                                <span style={{
-                                    background: 'rgba(255, 255, 255, 0.08)',
-                                    padding: '4px 12px',
-                                    borderRadius: '20px',
-                                    fontSize: '0.85rem',
-                                    fontWeight: 600,
-                                    color: 'var(--text-secondary)'
-                                }}>
+                        <div className="admin-orders-header">
+                            <div className="admin-orders-title-group">
+                                <h2 className="admin-orders-title">Customer Orders</h2>
+                                <span className="admin-orders-badge">
                                     {orders.length} {orders.length === 1 ? 'Order' : 'Orders'}
                                 </span>
                             </div>
@@ -1066,13 +1162,13 @@ export const AdminDashboard = () => {
                                 title="Fetch latest incoming orders from database"
                             >
                                 <span className={`refresh-icon ${refreshingOrders ? "spinning" : ""}`}>🔄</span>
-                                {refreshingOrders ? "Checking New Orders..." : "Refresh Orders"}
+                                <span>{refreshingOrders ? "Checking..." : "Refresh Orders"}</span>
                             </button>
                         </div>
 
-                        <div className="admin-orders-controls">
-                            <div className="admin-orders-search-filter">
-                                <div className="admin-search-wrapper">
+                        <div className="admin-orders-toolbar">
+                            <div className="admin-orders-filters-row">
+                                <div className="admin-search-wrapper orders-search">
                                     <span className="search-icon">🔍</span>
                                     <input
                                         type="text"
@@ -1094,37 +1190,37 @@ export const AdminDashboard = () => {
                                 </div>
 
                                 <div className="admin-filter-group">
-                                    <label htmlFor="order-status-select" className="admin-control-label">Status:</label>
-                                    <select
+                                    <span className="admin-control-label">Status:</span>
+                                    <NeoSelect
                                         id="order-status-select"
                                         value={orderStatusFilter}
-                                        onChange={(e) => setOrderStatusFilter(e.target.value)}
-                                        className="admin-sort-select"
-                                    >
-                                        <option value="all">📦 Confirmed Orders ({confirmedOrders.length})</option>
-                                        <option value="Pending">⏳ Pending Fulfillment ({pendingOrders})</option>
-                                        <option value="Processing">⚙️ Processing ({orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Processing').length})</option>
-                                        <option value="Shipped">🚚 Shipped ({orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Shipped').length})</option>
-                                        <option value="Delivered">✅ Delivered ({deliveredOrders})</option>
-                                        <option value="Cancelled">❌ Cancelled ({orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Cancelled').length})</option>
-                                        <option value="Abandoned">🛒 Abandoned Drafts ({abandonedOrders.length})</option>
-                                        <option value="all-with-drafts">📋 All Records (inc. Drafts) ({orders.length})</option>
-                                    </select>
+                                        onChange={setOrderStatusFilter}
+                                        options={[
+                                            { value: "all", label: `📦 Confirmed Orders (${confirmedOrders.length})` },
+                                            { value: "Pending", label: `⏳ Pending Fulfillment (${pendingOrders})` },
+                                            { value: "Processing", label: `⚙️ Processing (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Processing').length})` },
+                                            { value: "Shipped", label: `🚚 Shipped (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Shipped').length})` },
+                                            { value: "Delivered", label: `✅ Delivered (${deliveredOrders})` },
+                                            { value: "Cancelled", label: `❌ Cancelled (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Cancelled').length})` },
+                                            { value: "Abandoned", label: `🛒 Abandoned Drafts (${abandonedOrders.length})` },
+                                            { value: "all-with-drafts", label: `📋 All Records (inc. Drafts) (${orders.length})` }
+                                        ]}
+                                    />
                                 </div>
 
                                 <div className="admin-filter-group">
-                                    <label htmlFor="order-sort-select" className="admin-control-label">Sort:</label>
-                                    <select
+                                    <span className="admin-control-label">Sort:</span>
+                                    <NeoSelect
                                         id="order-sort-select"
                                         value={orderSort}
-                                        onChange={(e) => setOrderSort(e.target.value)}
-                                        className="admin-sort-select"
-                                    >
-                                        <option value="date-desc">📅 Date: Newest First</option>
-                                        <option value="date-asc">📅 Date: Oldest First</option>
-                                        <option value="amount-desc">💰 Total: High to Low</option>
-                                        <option value="amount-asc">💰 Total: Low to High</option>
-                                    </select>
+                                        onChange={setOrderSort}
+                                        options={[
+                                            { value: "date-desc", label: "📅 Date: Newest First" },
+                                            { value: "date-asc", label: "📅 Date: Oldest First" },
+                                            { value: "amount-desc", label: "💰 Total: High to Low" },
+                                            { value: "amount-asc", label: "💰 Total: Low to High" }
+                                        ]}
+                                    />
                                 </div>
 
                                 {(orderStatusFilter !== "all" || orderSearchQuery || orderSort !== "date-desc") && (
@@ -1143,11 +1239,13 @@ export const AdminDashboard = () => {
                                 )}
                             </div>
 
-                            <div className="admin-orders-count-indicator">
-                                Showing <strong>{sortedOrders.length}</strong> {orderStatusFilter === "Abandoned" ? "abandoned checkout(s)" : "order(s)"}
+                            <div className="admin-orders-summary-bar">
+                                <span className="admin-orders-count-text">
+                                    Showing <strong>{sortedOrders.length}</strong> {orderStatusFilter === "Abandoned" ? "abandoned checkout(s)" : "order(s)"}
+                                </span>
                                 {orderStatusFilter === "all" && abandonedOrders.length > 0 && (
-                                    <span style={{ marginLeft: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                                        ({abandonedOrders.length} unpaid draft{abandonedOrders.length > 1 ? 's' : ''} segregated in <button type="button" onClick={() => setOrderStatusFilter("Abandoned")} style={{ background: 'none', border: 'none', color: '#f43f5e', textDecoration: 'underline', cursor: 'pointer', padding: 0, font: 'inherit', fontWeight: 600 }}>Abandoned Drafts</button>)
+                                    <span className="admin-drafts-notice">
+                                        ({abandonedOrders.length} unpaid draft{abandonedOrders.length > 1 ? 's' : ''} segregated in <button type="button" onClick={() => setOrderStatusFilter("Abandoned")} className="admin-drafts-link">Abandoned Drafts</button>)
                                     </span>
                                 )}
                             </div>
@@ -1197,38 +1295,38 @@ export const AdminDashboard = () => {
                                                     </Link>
                                                 </td>
                                                 <td>
-                                                    <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                                                    <div className="admin-order-customer-name">
                                                         {(order.user && typeof order.user === 'object' && order.user.name)
                                                             ? order.user.name
                                                             : (order.shippingAddress?.fullName || (order.user ? "Customer" : "Guest"))}
                                                     </div>
                                                     {((order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone) && (
-                                                        <small style={{ color: 'var(--text-secondary)', display: 'block', marginTop: '2px' }}>
+                                                        <small className="admin-order-customer-contact">
                                                             {(order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone}
                                                         </small>
                                                     )}
                                                 </td>
-                                                <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                                                <td><strong style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 700 }}>₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</strong></td>
+                                                <td className="admin-order-date">{new Date(order.createdAt).toLocaleDateString()}</td>
+                                                <td><strong className="admin-order-total-amount">₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</strong></td>
                                                 <td>
-                                                    <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                                                        {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
-                                                    </span>
-                                                    <br />
-                                                    <small style={{
-                                                        fontWeight: 700,
-                                                        color: isAbandonedDraft(order)
-                                                            ? "#f43f5e"
-                                                            : (order.orderStatus === "Cancelled")
-                                                                ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "#06b6d4" : "#ef4444")
-                                                                : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "#22c55e" : "#eab308")
-                                                    }}>
-                                                        {isAbandonedDraft(order)
-                                                            ? "(Unpaid Draft)"
-                                                            : (order.orderStatus === "Cancelled")
-                                                                ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "(Refunded)" : "(Cancelled)")
-                                                                : (order.status ? `(${order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()})` : `(${order.paymentStatus || "Pending"})`)}
-                                                    </small>
+                                                    <div className="admin-payment-cell">
+                                                        <span className="admin-payment-method">
+                                                            {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
+                                                        </span>
+                                                        <span className={`admin-payment-pill ${
+                                                            isAbandonedDraft(order)
+                                                                ? "draft"
+                                                                : (order.orderStatus === "Cancelled")
+                                                                    ? "cancelled"
+                                                                    : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "paid" : "pending")
+                                                        }`}>
+                                                            {isAbandonedDraft(order)
+                                                                ? "Unpaid Draft"
+                                                                : (order.orderStatus === "Cancelled")
+                                                                    ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "Refunded" : "Cancelled")
+                                                                    : (order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending"))}
+                                                        </span>
+                                                    </div>
                                                 </td>
                                                 <td>
                                                     {isAbandonedDraft(order) ? (
@@ -1242,36 +1340,51 @@ export const AdminDashboard = () => {
                                                     )}
                                                 </td>
                                                 <td>
-                                                    <ul className="admin-order-items-list" style={{ listStyleType: "none", paddingLeft: "0", margin: 0, fontSize: "0.9rem" }}>
+                                                    <ul className="admin-order-items-list">
                                                         {order.orderItems.map((item, idx) => (
-                                                            <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                                                                <img src={item.thumbnail} alt={item.title} width="30" height="30" style={{ objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-glass)' }} />
-                                                                <span>
-                                                                    {item.title} <span style={{ color: 'var(--text-secondary)' }}>(x{item.quantity})</span>
+                                                            <li
+                                                                key={idx}
+                                                                className="admin-order-item-row"
+                                                                title={`${item.title} (Qty: ${item.quantity})`}
+                                                            >
+                                                                <img
+                                                                    src={item.thumbnail}
+                                                                    alt={item.title}
+                                                                    width="32"
+                                                                    height="32"
+                                                                />
+                                                                <span className="admin-order-item-text">
+                                                                    {item.title}{' '}
+                                                                    <span className="admin-order-item-qty">
+                                                                        (x{item.quantity})
+                                                                    </span>
                                                                 </span>
                                                             </li>
                                                         ))}
                                                     </ul>
                                                 </td>
                                                 <td>
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                    <div className="admin-order-actions-stack">
                                                         <Link
                                                             to={`/admin/orders/${order._id}`}
                                                             className="admin-btn-view-order"
                                                         >
                                                             👁️ Details
                                                         </Link>
-                                                        <select
-                                                            className="admin-status-select"
+                                                        <NeoSelect
+                                                            size="sm"
+                                                            fullWidth={true}
+                                                            alignRight={true}
                                                             value={order.orderStatus || "Pending"}
-                                                            onChange={(e) => handleOrderStatusChange(order._id, e.target.value)}
-                                                        >
-                                                            <option value="Pending">Pending</option>
-                                                            <option value="Processing">Processing</option>
-                                                            <option value="Shipped">Shipped</option>
-                                                            <option value="Delivered">Delivered</option>
-                                                            <option value="Cancelled">Cancelled</option>
-                                                        </select>
+                                                            onChange={(val) => handleInitiateStatusChange(order._id, val, order.orderStatus || "Pending")}
+                                                            options={[
+                                                                { value: "Pending", label: "Pending" },
+                                                                { value: "Processing", label: "Processing" },
+                                                                { value: "Shipped", label: "Shipped" },
+                                                                { value: "Delivered", label: "Delivered" },
+                                                                { value: "Cancelled", label: "Cancelled" }
+                                                            ]}
+                                                        />
                                                     </div>
                                                 </td>
                                             </tr>
@@ -1283,6 +1396,20 @@ export const AdminDashboard = () => {
                     </div>
                 )}
             </div>
+
+            {/* Customized Neobrutalist Status Confirmation Modal */}
+            <NeoStatusConfirmModal
+                isOpen={Boolean(pendingStatusChange)}
+                onClose={() => !updatingStatus && setPendingStatusChange(null)}
+                onConfirm={handleConfirmOrderStatusChange}
+                currentStatus={pendingStatusChange?.currentStatus || "Pending"}
+                newStatus={pendingStatusChange?.newStatus}
+                orderId={pendingStatusChange?.orderId}
+                loading={updatingStatus}
+            />
+
+            {/* Bottom-Right Floating Toast Notification */}
+            <NeoToast toast={toast} onClose={() => setToast(null)} />
         </section>
     );
 };

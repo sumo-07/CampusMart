@@ -68,6 +68,12 @@ const getProductsByCategory = async (req, res) => {
 const createProduct = async (req, res) => {
     try {
         const productData = { ...req.body };
+        if (productData.price !== undefined && Number(productData.price) < 0) {
+            return res.status(400).json({ message: "Price cannot be negative" });
+        }
+        if (productData.stock !== undefined && Number(productData.stock) < 0) {
+            return res.status(400).json({ message: "Stock cannot be negative" });
+        }
         // If a Cloudinary image was uploaded, ensure uploadedThumbnail & uploadedThumbnailPublicId are also populated
         if (productData.thumbnailPublicId && !productData.uploadedThumbnailPublicId) {
             productData.uploadedThumbnail = productData.thumbnail;
@@ -116,6 +122,13 @@ const updateProduct = async (req, res) => {
         if (product) {
             const oldUploadedPublicId = product.uploadedThumbnailPublicId || product.thumbnailPublicId;
             const updateData = { ...req.body };
+
+            if (updateData.price !== undefined && Number(updateData.price) < 0) {
+                return res.status(400).json({ message: "Price cannot be negative" });
+            }
+            if (updateData.stock !== undefined && Number(updateData.stock) < 0) {
+                return res.status(400).json({ message: "Stock cannot be negative" });
+            }
 
             // Determine if a new file was actually uploaded to Cloudinary
             const isNewFileUpload =

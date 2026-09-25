@@ -8,9 +8,10 @@ export const About = () => {
 
         {/* Page Heading */}
         <div className="about-header">
-          <h1 className="about-title">About Us</h1>
+          <div className="neo-badge yellow">📖 THE LORE</div>
+          <h1 className="about-title">WHO WE ARE (NO CAP)</h1>
           <p className="about-subtitle">
-            Built for students. Designed for convenience.
+            Zero corporate fluff. 100% authentic energy. We make sure you never take an L on everyday shopping.
           </p>
         </div>
 
@@ -18,48 +19,52 @@ export const About = () => {
         <div className="about-content">
 
           {/* Text */}
-          <div className="about-text">
+          <div className="about-text-card">
+            <h2 className="about-card-title">THE ORIGIN STORY ☕</h2>
             <p>
-              CampusMart is an e-commerce platform created specially for
-              college students who want quality products at affordable prices.
-              We understand campus life — tight schedules, limited budgets,
-              and the need for fast, reliable shopping.
+              <strong>Cartsy</strong> wasn't cooked up in some boring corporate boardroom. It was born out of pure frustration with clunky, overpriced retail sites charging insane markups for mid products that take two weeks to show up.
             </p>
 
             <p>
-              From daily essentials to trending gadgets, CampusMart connects
-              students with products that matter most. Our mission is to make
-              shopping simple, quick, and stress-free.
+              We know the drill — endless scrolling through cheap knockoffs, broken links, hidden checkout fees, and the desperate search for aesthetic room setups, fresh fits, and reliable everyday tech.
             </p>
 
             <p>
-              This platform is built using modern web technologies and focuses
-              on performance, usability, and scalability.
+              Cartsy delivers certified high-aura products, fits, room glow-ups, and daily essentials. Shipped straight to your doorstep, community-vetted, with zero hidden fees. Pure vibes only.
             </p>
           </div>
 
           {/* Image */}
-          <div className="about-image">
-            <img src={aboutImage} alt="About CampusMart" />
+          <div className="about-image-card">
+            <div className="about-image-tag">
+              <span>CARTSY HEADQUARTERS 📍</span>
+            </div>
+            <img src={aboutImage} alt="About Cartsy" />
+            <div className="about-image-caption">
+              <span>AURA +10,000 • KEEPING THE WHOLE SETUP DRIPPY</span>
+            </div>
           </div>
 
         </div>
 
         {/* Features / Values */}
         <div className="about-features">
-          <div className="feature-item">
-            <h3>Student Friendly</h3>
-            <p>Affordable pricing tailored for campus needs.</p>
+          <div className="feature-item f-yellow">
+            <div className="feature-icon">💸</div>
+            <h3>Wallet Friendly (Big W)</h3>
+            <p>Fair pricing that won't make your bank account cry. Maximum ROI, zero cap.</p>
           </div>
 
-          <div className="feature-item">
-            <h3>Fast & Reliable</h3>
-            <p>Quick delivery and trusted sellers.</p>
+          <div className="feature-item f-pink">
+            <div className="feature-icon">🚀</div>
+            <h3>Warp Speed Delivery</h3>
+            <p>From cart to your doorstep faster than instant noodles can cook.</p>
           </div>
 
-          <div className="feature-item">
-            <h3>Secure Shopping</h3>
-            <p>Safe payments and protected user data.</p>
+          <div className="feature-item f-green">
+            <div className="feature-icon">🛡️</div>
+            <h3>Locked In Security</h3>
+            <p>Razorpay encrypted checkout & COD handoffs. Your paper is 100% safe.</p>
           </div>
         </div>
 

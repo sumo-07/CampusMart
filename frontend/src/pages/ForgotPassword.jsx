@@ -36,7 +36,10 @@ export const ForgotPassword = () => {
   return (
     <section className="auth-section">
       <div className="auth-container">
-        <h2 className="auth-title">Forgot Password</h2>
+        <div style={{ textAlign: "center", marginBottom: "8px" }}>
+          <div className="neo-badge mint">🔑 NO STRESS</div>
+        </div>
+        <h2 className="auth-title">FORGOT PASSWORD?</h2>
 
         {isSubmitted ? (
           <div className="auth-success-card">
@@ -95,7 +98,7 @@ export const ForgotPassword = () => {
                     type="email"
                     id="reset-email"
                     className="form-input"
-                    placeholder="student@campus.edu"
+                    placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required

@@ -113,7 +113,7 @@ export const Checkout = () => {
           key: data.keyId,
           amount: data.razorpayOrder.amount,
           currency: data.razorpayOrder.currency,
-          name: "CampusMart",
+          name: "Cartsy",
           description: `Order #${data._id}`,
           order_id: data.razorpayOrder.id,
           prefill: {
@@ -122,7 +122,7 @@ export const Checkout = () => {
             contact: finalShippingAddress.phone,
           },
           theme: {
-            color: "#4f46e5",
+            color: "#FFE600",
           },
           handler: async function (response) {
             setIsSubmitting(true);
@@ -194,34 +194,58 @@ export const Checkout = () => {
 
   if (cartItems.length === 0) {
     return (
-      <section className="checkout-section">
-        <h2>No items in checkout</h2>
-        <button onClick={() => navigate("/product")}>Go to Products</button>
+      <section className="checkout-empty-section">
+        <div className="checkout-empty-card">
+          <div className="neo-badge pink" style={{ marginBottom: "1rem" }}>
+            💀 EMPTY DROP
+          </div>
+          <h2>NO DROPS IN CHECKOUT BESTIE</h2>
+          <p>Go bag some heat from the catalog first!</p>
+          <button onClick={() => navigate("/product")} className="btn btn-primary" style={{ marginTop: "1.5rem" }}>
+            Go to Drops 🔥
+          </button>
+        </div>
       </section>
     );
   }
 
   return (
     <section className="checkout-section">
-      <h1>Checkout</h1>
+      <div className="checkout-header-banner">
+        <div className="neo-badge yellow">⚡ FINAL STEP</div>
+        <h1 className="checkout-main-title">SECURE THE BAG</h1>
+        <p className="checkout-subtitle">Verify your drop spot and lock in payment. Zero delays, pure speed.</p>
+      </div>
 
       {/* Order Summary */}
       <div className="checkout-summary">
-        <h2>Order Summary</h2>
-        {cartItems.map((item) => (
-          <div key={item.productId} className="checkout-item">
-            <p>{item.title}</p>
-            <p>{item.quantity} × ₹{Number(item.price).toFixed(2)}</p>
-            <p>₹{(Number(item.price) * item.quantity).toFixed(2)}</p>
-          </div>
-        ))}
-        <hr />
-        <h3>Total: ₹{Number(totalPrice).toFixed(2)}</h3>
+        <div className="checkout-section-title-wrap">
+          <span className="checkout-badge-num">1</span>
+          <h2>BAG SUMMARY</h2>
+        </div>
+        <div className="checkout-items-list">
+          {cartItems.map((item) => (
+            <div key={item.productId} className="checkout-item">
+              <div className="checkout-item-title-box">
+                <p className="item-name">{item.title}</p>
+                <span className="item-calc">{item.quantity} × ₹{Number(item.price).toFixed(2)}</span>
+              </div>
+              <p className="item-final-price">₹{(Number(item.price) * item.quantity).toFixed(2)}</p>
+            </div>
+          ))}
+        </div>
+        <div className="checkout-total-row">
+          <span className="total-label">TOTAL TO PAY:</span>
+          <span className="total-amount">₹{Number(totalPrice).toFixed(2)}</span>
+        </div>
       </div>
 
       {/* Delivery Configuration */}
       <div className="checkout-delivery-section">
-        <h2>Delivery Details</h2>
+        <div className="checkout-section-title-wrap">
+          <span className="checkout-badge-num">2</span>
+          <h2>DELIVERY ADDRESS 📍</h2>
+        </div>
 
         {!selectedAddress ? (
           /* Empty state: No address found */
@@ -231,7 +255,7 @@ export const Checkout = () => {
             </div>
             <div className="no-address-info">
               <h3>No Delivery Address Found</h3>
-              <p>You haven't added a delivery address yet. Please add an address to proceed with checkout.</p>
+              <p>Where are we sending the goods? Add your delivery address to proceed.</p>
             </div>
             <button
               type="button"
@@ -241,7 +265,7 @@ export const Checkout = () => {
                 setIsAddressModalOpen(true);
               }}
             >
-              + Add Delivery Address
+              + Add Address 📍
             </button>
           </div>
         ) : (
@@ -250,7 +274,7 @@ export const Checkout = () => {
             <div className="checkout-address-header">
               <div className="checkout-recipient-info">
                 <span className="recipient-name">{selectedAddress.fullName}</span>
-                {selectedAddress.isDefault && <span className="default-badge">DEFAULT</span>}
+                {selectedAddress.isDefault && <span className="default-badge">MAIN SPOT</span>}
               </div>
               <div className="checkout-address-actions">
                 <button
@@ -262,7 +286,7 @@ export const Checkout = () => {
                   }}
                   title="Choose from saved addresses or edit"
                 >
-                  Change / Select Address
+                  Change Drop Spot
                 </button>
                 <button
                   type="button"
@@ -283,16 +307,16 @@ export const Checkout = () => {
                 <span>📍</span> {selectedAddress.address}
               </p>
               <p className="address-city-line">
-                {selectedAddress.city}, {selectedAddress.pincode}
+                {selectedAddress.city}, PIN: {selectedAddress.pincode}
               </p>
               <p className="address-phone-line">
-                <span>📞</span> Phone: <strong>+91 {selectedAddress.phone}</strong>
+                <span>📞</span> Contact: <strong>+91 {selectedAddress.phone}</strong>
               </p>
             </div>
 
             {user?.addresses && user.addresses.length > 1 && (
               <div className="checkout-address-pills-row">
-                <span className="pills-title">Deliver to:</span>
+                <span className="pills-title">Quick Switch:</span>
                 <div className="pills-container">
                   {user.addresses.map((addr) => (
                     <button
@@ -323,7 +347,10 @@ export const Checkout = () => {
 
       {/* Payment Method Configuration */}
       <div className="checkout-payment-section">
-        <h2>Select Payment Method</h2>
+        <div className="checkout-section-title-wrap">
+          <span className="checkout-badge-num">3</span>
+          <h2>CHOOSE PAYMENT VIBE</h2>
+        </div>
 
         {/* Razorpay Option */}
         <label className={`payment-method-card ${paymentMethod === "Razorpay" ? "selected" : ""}`}>
@@ -336,14 +363,14 @@ export const Checkout = () => {
           />
           <div className="payment-method-info">
             <strong className="payment-method-title">
-              💳 Online Payment via Razorpay
+              ⚡ Razorpay Instant (UPI / GPay / Cards / NetBanking)
             </strong>
             <span className="payment-method-desc">
-              Instant & secure: UPI (GPay, PhonePe, Paytm), Debit/Credit Cards, NetBanking.
+              Zero wait, confirmed instantly. Pay using QR code, PhonePe, Paytm, or Card.
             </span>
           </div>
           <span className="payment-method-badge instant">
-            Instant Active
+            RECOMMENDED 🚀
           </span>
         </label>
 
@@ -357,24 +384,30 @@ export const Checkout = () => {
             onChange={() => setPaymentMethod("COD")}
           />
           <div className="payment-method-info">
-            <strong className="payment-method-title">💵 Cash on Delivery (COD)</strong>
-            <span className="payment-method-desc">Pay in cash upon physical delivery of your campus items.</span>
+            <strong className="payment-method-title">💵 Cash on Delivery (Doorstep Handoff)</strong>
+            <span className="payment-method-desc">Pay cash in hand when the courier arrives at your doorstep.</span>
           </div>
           <span className="payment-method-badge cod">
-            Available
+            COD ACTIVE
           </span>
         </label>
       </div>
 
       {/* Actions */}
       <div className="checkout-actions">
-        <button onClick={() => navigate("/cart")} disabled={isSubmitting}>Back to Cart</button>
-        <button onClick={handlePlaceOrder} disabled={isSubmitting} style={{ background: "#4f46e5" }}>
+        <button className="btn-back-cart" onClick={() => navigate("/cart")} disabled={isSubmitting}>
+          ← Recheck Bag
+        </button>
+        <button 
+          className="btn-submit-order" 
+          onClick={handlePlaceOrder} 
+          disabled={isSubmitting}
+        >
           {isSubmitting
-            ? "Processing..."
+            ? "Cooking your order..."
             : paymentMethod === "Razorpay"
-            ? `Pay ₹${Number(totalPrice).toFixed(2)} with Razorpay`
-            : "Place Order (COD)"}
+            ? `PAY ₹${Number(totalPrice).toFixed(2)} VIA RAZORPAY ⚡`
+            : "LOCK IN ORDER (COD) 📦"}
         </button>
       </div>
     </section>

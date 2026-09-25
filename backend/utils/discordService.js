@@ -195,7 +195,7 @@ const buildOrderAlertEmbed = (order, customerDetails, clientUrl) => {
     const total = Number(order.totalPrice || order.amount || 0);
     const formattedTotal = `₹${total.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-    const customerName = customerDetails?.customerName || order.shippingAddress?.fullName || "Campus Customer";
+    const customerName = customerDetails?.customerName || order.shippingAddress?.fullName || "Customer";
     const customerEmail = customerDetails?.customerEmail || "N/A";
     const shipping = order.shippingAddress || {};
 
@@ -258,7 +258,7 @@ const buildOrderAlertEmbed = (order, customerDetails, clientUrl) => {
         },
         {
             name: "📍 Delivery Location",
-            value: `**${shipping.city || "Campus"}${shipping.pincode ? ` - ${shipping.pincode}` : ""}**\n*${shipping.address || "Campus Address"}*`,
+            value: `**${shipping.city || "Delivery Area"}${shipping.pincode ? ` - ${shipping.pincode}` : ""}**\n*${shipping.address || "Delivery Address"}*`,
             inline: true,
         },
         {
@@ -348,7 +348,7 @@ const sendDiscordOrderAlert = async (orderInput) => {
 
         // 3. Resolve customer details
         let customerEmail = "N/A";
-        let customerName = order.shippingAddress?.fullName || "Campus Customer";
+        let customerName = order.shippingAddress?.fullName || "Customer";
 
         if (order.user) {
             if (typeof order.user === "object" && order.user.email) {
@@ -366,7 +366,7 @@ const sendDiscordOrderAlert = async (orderInput) => {
         const embed = buildOrderAlertEmbed(order, { customerName, customerEmail });
 
         const payload = {
-            username: "CampusMart Order Alert",
+            username: "Cartsy Order Alert",
             embeds: [embed],
         };
 

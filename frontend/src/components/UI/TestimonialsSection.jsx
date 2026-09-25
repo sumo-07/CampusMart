@@ -5,31 +5,31 @@ import "../css/testimonials.css";
 export const TestimonialsSection = () => {
   const reviews = [
     {
-      text: "The 3D preview is a complete game changer! I could inspect the dorm desk lamp in a full 360-degree orbit before hitting purchase.",
+      text: "Cartsy drops are straight cinema fr fr! Copped the cyber kicks and the fit check went crazy. Aura +10,000 🚀",
       name: "Ujjawal",
-      role: "B.Tech Computer Science",
-      glow: "glow-blue",
+      role: "Verified Buyer • Locked In",
+      badgeColor: "yellow",
       initial: "U",
     },
     {
-      text: "Super fast deliveries directly to my hostel lobby. CampusMart has made styling my room and getting tech gear so convenient.",
+      text: "Delivered to my doorstep before my coffee was even ready. Cartsy is genuinely goated with the sauce 🔥",
       name: "Priyanshu",
-      role: "Mechanical Engineering",
-      glow: "glow-purple",
+      role: "Trendsetter • Daily Shopper",
+      badgeColor: "pink",
       initial: "P",
     },
     {
-      text: "Finally, a shop that doesn't look like a generic grid. The premium glassmorphic dark theme matches my coding setup perfectly!",
+      text: "Finally a store with insane aesthetic. The tactile neo-brutalist styling slaps so hard. Huge W!",
       name: "Aditi",
-      role: "Interaction Design Major",
-      glow: "glow-purple",
+      role: "Chief Aesthetic Officer",
+      badgeColor: "green",
       initial: "A",
     },
     {
-      text: "Authentic campus products and highly competitive student pricing. Finding dorm necessities is no longer a chore.",
+      text: "Prices don't violate my bank account. Absolute holy grail marketplace no cap.",
       name: "Rohan",
-      role: "MBA Program",
-      glow: "glow-blue",
+      role: "Creative Hustler",
+      badgeColor: "blue",
       initial: "R",
     },
   ];
@@ -42,20 +42,29 @@ export const TestimonialsSection = () => {
           {/* Left: Reviews List */}
           <div className="testimonials-content">
             <div className="testimonials-header">
-              <h2 className="testimonials-title">Campus Trust</h2>
+              <div className="neo-badge yellow" style={{ marginBottom: "0.8rem" }}>
+                ✨ ZERO PAID ACTORS
+              </div>
+              <h2 className="testimonials-title">THE COMMUNITY VIBE CHECK</h2>
               <p className="testimonials-subtitle">
-                See what students across the university campus are saying about their shopping experiences.
+                Straight facts from real shoppers, creators, and trendsetters. Authentic aura only.
               </p>
             </div>
 
             <div className="testimonials-list">
               {reviews.map((rev, idx) => (
-                <div key={idx} className={`testimonial-card ${rev.glow}`}>
+                <div key={idx} className="testimonial-card">
+                  <div className="testimonial-header-row">
+                    <span className={`neo-badge ${rev.badgeColor}`}>
+                      VERIFIED COP 📦
+                    </span>
+                    <span className="testimonial-stars">⭐⭐⭐⭐⭐</span>
+                  </div>
                   <p className="testimonial-text">
                     "{rev.text}"
                   </p>
                   <div className="testimonial-user">
-                    <div className="testimonial-avatar">
+                    <div className={`testimonial-avatar ${rev.badgeColor}`}>
                       {rev.initial}
                     </div>
                     <div className="testimonial-meta">
@@ -68,12 +77,17 @@ export const TestimonialsSection = () => {
             </div>
           </div>
 
-          {/* Right: 3D Glass Globe Display */}
+          {/* Right: 3D Globe Visual Frame */}
           <div className="testimonials-visual">
-            <GlassGlobe />
-            <div className="visual-stats">
-              <div className="stat-number">5,000+</div>
-              <div className="stat-label">Active Campus Members</div>
+            <div className="testimonials-globe-frame">
+              <div className="globe-tag">
+                <span>🌐 GLOBAL NETWORK ACTIVE</span>
+              </div>
+              <GlassGlobe />
+              <div className="visual-stats">
+                <div className="stat-number">10,000+</div>
+                <div className="stat-label">People Copping Heat Daily</div>
+              </div>
             </div>
           </div>
 

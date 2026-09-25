@@ -112,7 +112,7 @@ export const Orders = () => {
                 key: data.keyId,
                 amount: data.razorpayOrder.amount,
                 currency: data.razorpayOrder.currency,
-                name: "CampusMart",
+                name: "Cartsy",
                 description: `Order #${order._id}`,
                 order_id: data.razorpayOrder.id,
                 prefill: {
@@ -121,7 +121,7 @@ export const Orders = () => {
                     contact: order.shippingAddress?.phone || "",
                 },
                 theme: {
-                    color: "#4f46e5",
+                    color: "#FFE600",
                 },
                 handler: async function (response) {
                     try {
@@ -177,12 +177,21 @@ export const Orders = () => {
         );
     };
 
-    if (loading) return <p className="loading-text">Loading your orders...</p>;
+    if (loading) return (
+        <section className="orders-section">
+            <div className="orders-empty">
+                <h2>🍳 Fetching your drops...</h2>
+            </div>
+        </section>
+    );
 
     return (
         <section className="orders-section">
             <div className="orders-header-bar">
-                <h1 className="orders-title">My Orders</h1>
+                <div>
+                    <div className="neo-badge yellow">📦 ORDER TRACKING</div>
+                    <h1 className="orders-title">YOUR DROPS</h1>
+                </div>
                 <button
                     type="button"
                     onClick={handleManualRefresh}
@@ -191,19 +200,23 @@ export const Orders = () => {
                     title="Check latest order status from server"
                 >
                     <span className={`refresh-icon ${refreshing ? "spinning" : ""}`}>🔄</span>
-                    {refreshing ? "Checking..." : "Refresh Status"}
+                    {refreshing ? "Checking..." : "Vibe Check (Refresh)"}
                 </button>
             </div>
 
             {orders.length === 0 ? (
                 <div className="orders-list">
                     <div className="orders-empty">
-                        <p>You have no past orders.</p>
+                        <div className="neo-badge pink" style={{ marginBottom: "1rem" }}>
+                            💀 ZERO PAST DROPS
+                        </div>
+                        <h3>NO DROPS COPPED YET BESTIE</h3>
+                        <p>Your order history is looking like a ghost town. Time to change that.</p>
                         <button
                             onClick={() => navigate("/product")}
                             className="start-shopping-btn"
                         >
-                            Start Shopping
+                            Cop Some Heat 🔥
                         </button>
                     </div>
                 </div>

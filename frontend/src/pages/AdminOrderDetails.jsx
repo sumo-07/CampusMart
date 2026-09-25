@@ -3,6 +3,9 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { getOrderById, updateOrderStatus } from "../utils/orderUtils";
 import { PrintableOrderSlip } from "../components/PrintableOrderSlip";
+import { NeoSelect } from "../components/UI/NeoSelect";
+import { NeoStatusConfirmModal } from "../components/UI/NeoStatusConfirmModal";
+import { NeoToast } from "../components/UI/NeoToast";
 import "../components/css/admin.css";
 import "../components/css/orders.css";
 
@@ -15,7 +18,8 @@ export const AdminOrderDetails = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [updatingStatus, setUpdatingStatus] = useState(false);
-    const [statusMessage, setStatusMessage] = useState(null);
+    const [pendingStatusChange, setPendingStatusChange] = useState(null);
+    const [toast, setToast] = useState(null);
     const [copied, setCopied] = useState(false);
 
     const fetchOrderDetails = useCallback(async () => {
@@ -36,17 +40,20 @@ export const AdminOrderDetails = () => {
         fetchOrderDetails();
     }, [fetchOrderDetails]);
 
-    const handleStatusChange = async (newStatus) => {
-        if (!order || order.orderStatus === newStatus) return;
+    const handleStatusSelect = (newStatus) => {
+        if (!order || (order.orderStatus || "Pending") === newStatus) return;
+        setPendingStatusChange({
+            newStatus,
+            currentStatus: order.orderStatus || "Pending",
+        });
+    };
 
-        const confirmChange = window.confirm(
-            `Are you sure you want to update status from "${order.orderStatus || 'Pending'}" to "${newStatus}"?`
-        );
-        if (!confirmChange) return;
+    const handleConfirmStatusChange = async () => {
+        if (!pendingStatusChange || !order) return;
+        const { newStatus } = pendingStatusChange;
 
         try {
             setUpdatingStatus(true);
-            setStatusMessage(null);
             const updated = await updateOrderStatus(order._id, newStatus);
             
             setOrder(prev => ({
@@ -57,7 +64,12 @@ export const AdminOrderDetails = () => {
                     : (prev.user || updated.user),
             }));
 
-            setStatusMessage({ type: "success", text: `Order status successfully updated to "${newStatus}"` });
+            setPendingStatusChange(null);
+            setToast({
+                type: "success",
+                title: "Status Updated!",
+                message: `Order status successfully updated to "${newStatus}".`,
+            });
 
             queryClient.invalidateQueries({ queryKey: ["myOrders"] });
             // If cancelled or status changed, sync products cache
@@ -68,13 +80,14 @@ export const AdminOrderDetails = () => {
             }
         } catch (err) {
             console.error("Failed to update status:", err);
-            setStatusMessage({
+            setPendingStatusChange(null);
+            setToast({
                 type: "error",
-                text: err.response?.data?.message || "Failed to update order status",
+                title: "Update Failed",
+                message: err.response?.data?.message || "Failed to update order status",
             });
         } finally {
             setUpdatingStatus(false);
-            setTimeout(() => setStatusMessage(null), 5000);
         }
     };
 
@@ -255,31 +268,26 @@ export const AdminOrderDetails = () => {
                         </div>
 
                         <div className="status-updater-dropdown-wrapper">
-                            <label htmlFor="status-select">Change Status:</label>
-                            <select
+                            <span className="status-label">Change Status:</span>
+                            <NeoSelect
                                 id="status-select"
-                                className="admin-status-select large"
+                                size="md"
                                 value={currentStatus}
-                                onChange={(e) => handleStatusChange(e.target.value)}
+                                onChange={handleStatusSelect}
                                 disabled={updatingStatus}
-                            >
-                                <option value="Pending">Pending</option>
-                                <option value="Processing">Processing</option>
-                                <option value="Shipped">Shipped</option>
-                                <option value="Delivered">Delivered</option>
-                                <option value="Cancelled">Cancelled</option>
-                            </select>
+                                options={[
+                                    { value: "Pending", label: "Pending" },
+                                    { value: "Processing", label: "Processing" },
+                                    { value: "Shipped", label: "Shipped" },
+                                    { value: "Delivered", label: "Delivered" },
+                                    { value: "Cancelled", label: "Cancelled" }
+                                ]}
+                            />
                             {updatingStatus && <span className="status-spinner">Updating...</span>}
                         </div>
                     </div>
                 </div>
 
-                {/* Status Update Feedback Alert */}
-                {statusMessage && (
-                    <div className={`admin-status-toast ${statusMessage.type} no-print`}>
-                        {statusMessage.type === "success" ? "✓" : "⚠️"} {statusMessage.text}
-                    </div>
-                )}
 
                 {/* Grid Layout: Customer & Shipping, Payment Info, Order Summary */}
                 <div className="admin-details-grid">
@@ -464,7 +472,7 @@ export const AdminOrderDetails = () => {
                                             <span className="item-qty-pill">x{item.quantity}</span>
                                         </td>
                                         <td style={{ textAlign: "right" }}>
-                                            <strong style={{ color: "var(--text-primary)" }}>
+                                            <strong className="item-line-total">
                                                 ₹{(Number(item.price) * Number(item.quantity)).toFixed(2)}
                                             </strong>
                                         </td>
@@ -496,6 +504,20 @@ export const AdminOrderDetails = () => {
 
             {/* Dedicated Single-Page Tabular Black & White Printable Order Slip */}
             <PrintableOrderSlip order={order} />
+
+            {/* Customized Neobrutalist Status Confirmation Modal */}
+            <NeoStatusConfirmModal
+                isOpen={Boolean(pendingStatusChange)}
+                onClose={() => !updatingStatus && setPendingStatusChange(null)}
+                onConfirm={handleConfirmStatusChange}
+                currentStatus={pendingStatusChange?.currentStatus || currentStatus}
+                newStatus={pendingStatusChange?.newStatus}
+                orderId={order?._id}
+                loading={updatingStatus}
+            />
+
+            {/* Bottom-Right Floating Toast Notification */}
+            <NeoToast toast={toast} onClose={() => setToast(null)} />
         </section>
     );
 };

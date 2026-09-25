@@ -68,7 +68,7 @@ const generateOrderReceiptText = (order, customerName, clientUrl) => {
     const itemsText = (order.orderItems || [])
         .map(
             (item, index) =>
-                `${index + 1}. ${item.title || "Campus Item"} x ${item.quantity} - Rs. ${(Number(item.price) * Number(item.quantity)).toFixed(2)}`
+                `${index + 1}. ${item.title || "Item"} x ${item.quantity} - Rs. ${(Number(item.price) * Number(item.quantity)).toFixed(2)}`
         )
         .join("\n");
 
@@ -76,7 +76,7 @@ const generateOrderReceiptText = (order, customerName, clientUrl) => {
     const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
     const trackOrderUrl = `${baseUrl.replace(/\/$/, "")}/orders`;
 
-    return `CAMPUSMART - ORDER RECEIPT
+    return `CARTSY - ORDER RECEIPT
 ==========================================
 Thank you for your order, ${customerName}!
 ${isOnline ? "Your payment was received successfully." : "Your cash on delivery order has been placed."}
@@ -94,15 +94,15 @@ Grand Total: Rs. ${total}
 DELIVERY ADDRESS:
 ------------------------------------------
 ${shipping.fullName || customerName}
-${shipping.address || "Campus Address"}
+${shipping.address || "Delivery Address"}
 ${shipping.city || ""}${shipping.pincode ? " - " + shipping.pincode : ""}
 ${shipping.phone ? `Phone: ${shipping.phone}` : ""}
 
 Track your order anytime at:
 ${trackOrderUrl}
 
-Questions? Reply to this email or visit our campus desk.
-(C) ${new Date().getFullYear()} CampusMart. All rights reserved.
+Questions? Reply to this email or contact our support team.
+(C) ${new Date().getFullYear()} CARTSY. All rights reserved.
 `;
 };
 
@@ -127,7 +127,7 @@ const generateOrderReceiptHtml = (order, customerName, clientUrl) => {
             return `
             <tr style="border-bottom: 1px solid #e2e8f0;">
                 <td style="padding: 12px 16px; color: #1e293b; font-size: 14px; font-weight: 500;">
-                    ${item.title || "Campus Item"}
+                    ${item.title || "Item"}
                 </td>
                 <td style="padding: 12px 16px; color: #64748b; font-size: 14px; text-align: center;">
                     ${item.quantity}
@@ -155,7 +155,7 @@ const generateOrderReceiptHtml = (order, customerName, clientUrl) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Receipt - CampusMart</title>
+    <title>Order Receipt - CARTSY</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f1f5f9; padding: 30px 10px;">
@@ -167,7 +167,7 @@ const generateOrderReceiptHtml = (order, customerName, clientUrl) => {
                     <tr>
                         <td style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 32px 30px; text-align: center;">
                             <div style="font-size: 26px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-                                🎓 CampusMart
+                                🎓 CARTSY
                             </div>
                             <div style="font-size: 13px; color: #e0e7ff; margin-top: 4px; font-weight: 500; letter-spacing: 0.5px;">
                                 ONLINE STORE &bull; OFFICIAL RECEIPT
@@ -303,7 +303,7 @@ const generateOrderReceiptHtml = (order, customerName, clientUrl) => {
                         <td style="background-color: #0f172a; padding: 24px 30px; text-align: center;">
                             <p style="margin: 0; font-size: 13px; color: #94a3b8; line-height: 1.5;">
                                 Questions or need support? Reply directly to this email.<br>
-                                &copy; ${new Date().getFullYear()} CampusMart. All rights reserved.
+                                &copy; ${new Date().getFullYear()} CARTSY. All rights reserved.
                             </p>
                         </td>
                     </tr>
@@ -371,14 +371,14 @@ const sendOrderConfirmationEmail = async (orderInput) => {
         const shortId = String(order._id).slice(-8).toUpperCase();
         const isOnline = order.paymentMethod === "Razorpay";
         const subject = isOnline
-            ? `Payment Received & Order Confirmed #${shortId} - CampusMart`
-            : `Order Confirmed #${shortId} (Cash on Delivery) - CampusMart`;
+            ? `Payment Received & Order Confirmed #${shortId} - CARTSY`
+            : `Order Confirmed #${shortId} (Cash on Delivery) - CARTSY`;
 
         // Ensure From address uses the authenticated Gmail address for 100% SPF/DKIM alignment
-        let fromAddress = `"CampusMart" <${process.env.EMAIL_USER}>`;
+        let fromAddress = `"CARTSY" <${process.env.EMAIL_USER}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
-            const displayName = nameMatch ? nameMatch[1].trim() : "CampusMart";
+            const displayName = nameMatch ? nameMatch[1].trim() : "CARTSY";
             fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
         }
 
@@ -438,7 +438,7 @@ const getStatusConfig = (status, order, customerName) => {
                     &bull; If you are unavailable, please ensure someone is authorized to receive the package on your behalf.
                 `,
                 textInstructions: `Delivery Note: Your order has been dispatched and is on its way to ${shipping.address || "your delivery address"}. Please keep your phone reachable at ${shipping.phone || "the contact number provided"} for delivery coordination.`,
-                subject: `📦 Shipped! Order #${String(order._id).slice(-8).toUpperCase()} is on its way - CampusMart`,
+                subject: `📦 Shipped! Order #${String(order._id).slice(-8).toUpperCase()} is on its way - CARTSY`,
             };
 
         case "Delivered":
@@ -455,7 +455,7 @@ const getStatusConfig = (status, order, customerName) => {
                     &bull; If you have not received this package or have any questions, please reply directly to this email for support.
                 `,
                 textInstructions: `Delivered to ${shipping.fullName || customerName} at ${shipping.address || "your delivery address"}. If you have any questions, reply directly to this email.`,
-                subject: `✅ Delivered! Order #${String(order._id).slice(-8).toUpperCase()} - CampusMart`,
+                subject: `✅ Delivered! Order #${String(order._id).slice(-8).toUpperCase()} - CARTSY`,
             };
 
         case "Processing":
@@ -472,7 +472,7 @@ const getStatusConfig = (status, order, customerName) => {
                     &bull; You will receive another notification with tracking details as soon as your package is dispatched.
                 `,
                 textInstructions: `Our team is verifying and packing your items. You will receive another update when your package is dispatched.`,
-                subject: `⚙️ Processing: Order #${String(order._id).slice(-8).toUpperCase()} is being prepared - CampusMart`,
+                subject: `⚙️ Processing: Order #${String(order._id).slice(-8).toUpperCase()} is being prepared - CARTSY`,
             };
 
         case "Cancelled":
@@ -486,11 +486,11 @@ const getStatusConfig = (status, order, customerName) => {
                 instructionTitle: "📍 Cancellation Details",
                 instructionBody: isPaid
                     ? `&bull; A refund of <strong>₹${totalAmount}</strong> has been initiated to your original payment method. It will reflect in your account within 3–5 business days.<br>&bull; If you have any questions, reply to this email anytime.`
-                    : `&bull; Since this was a Cash on Delivery order, no amount was charged.<br>&bull; If you cancelled by mistake, feel free to place a new order on CampusMart anytime.`,
+                    : `&bull; Since this was a Cash on Delivery order, no amount was charged.<br>&bull; If you cancelled by mistake, feel free to place a new order on CARTSY anytime.`,
                 textInstructions: isPaid
                     ? `A refund of Rs. ${totalAmount} has been initiated to your original payment method (3-5 business days).`
                     : `Since this was Cash on Delivery, no payment was collected. Feel free to re-order anytime.`,
-                subject: `Order Cancelled: #${String(order._id).slice(-8).toUpperCase()} - CampusMart`,
+                subject: `Order Cancelled: #${String(order._id).slice(-8).toUpperCase()} - CARTSY`,
             };
 
         default:
@@ -503,8 +503,8 @@ const getStatusConfig = (status, order, customerName) => {
                 subheadline: "Your order status has been updated by our store team.",
                 instructionTitle: "📍 Order Details",
                 instructionBody: `Your order status is now <strong>${status}</strong>. You can track current progress in your account.`,
-                textInstructions: `Your order status is now ${status}. Track current progress in your CampusMart account.`,
-                subject: `Update: Order #${String(order._id).slice(-8).toUpperCase()} is ${status} - CampusMart`,
+                textInstructions: `Your order status is now ${status}. Track current progress in your CARTSY account.`,
+                subject: `Update: Order #${String(order._id).slice(-8).toUpperCase()} is ${status} - CARTSY`,
             };
     }
 };
@@ -529,7 +529,7 @@ const generateStatusUpdateHtml = (order, customerName, clientUrl, newStatus) => 
             return `
             <tr style="border-bottom: 1px solid #e2e8f0;">
                 <td style="padding: 10px 14px; color: #1e293b; font-size: 13px; font-weight: 500;">
-                    ${item.title || "Campus Item"}
+                    ${item.title || "Item"}
                 </td>
                 <td style="padding: 10px 14px; color: #64748b; font-size: 13px; text-align: center;">
                     ${item.quantity}
@@ -548,7 +548,7 @@ const generateStatusUpdateHtml = (order, customerName, clientUrl, newStatus) => 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Update - CampusMart</title>
+    <title>Order Update - CARTSY</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f1f5f9; padding: 30px 10px;">
@@ -560,7 +560,7 @@ const generateStatusUpdateHtml = (order, customerName, clientUrl, newStatus) => 
                     <tr>
                         <td style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 28px 30px; text-align: center;">
                             <div style="font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-                                🎓 CampusMart
+                                🎓 CARTSY
                             </div>
                             <div style="font-size: 12px; color: #e0e7ff; margin-top: 4px; font-weight: 500; letter-spacing: 0.5px;">
                                 ONLINE STORE &bull; ORDER STATUS UPDATE
@@ -641,7 +641,7 @@ const generateStatusUpdateHtml = (order, customerName, clientUrl, newStatus) => 
                                 Track Your Order
                             </a>
                             <div style="margin-top: 8px; font-size: 12px; color: #94a3b8;">
-                                View live order status and delivery timeline on CampusMart.
+                                View live order status and delivery timeline on CARTSY.
                             </div>
                             <p style="margin: 14px 0 0 0; font-size: 12px; color: #64748b; line-height: 1.5; text-align: center; word-break: break-all;">
                                 If the button above does not work, copy and paste this link into your browser:<br/>
@@ -655,7 +655,7 @@ const generateStatusUpdateHtml = (order, customerName, clientUrl, newStatus) => 
                         <td style="background-color: #0f172a; padding: 20px 30px; text-align: center;">
                             <p style="margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.5;">
                                 Questions about this order? Reply directly to this email.<br>
-                                &copy; ${new Date().getFullYear()} CampusMart. All rights reserved.
+                                &copy; ${new Date().getFullYear()} CARTSY. All rights reserved.
                             </p>
                         </td>
                     </tr>
@@ -683,10 +683,10 @@ const generateStatusUpdateText = (order, customerName, clientUrl, newStatus) => 
     const trackOrderUrl = `${baseUrl.replace(/\/$/, "")}/orders`;
 
     const itemsText = (order.orderItems || [])
-        .map((item, index) => `${index + 1}. ${item.title || "Campus Item"} x ${item.quantity} - Rs. ${(Number(item.price) * Number(item.quantity)).toFixed(2)}`)
+        .map((item, index) => `${index + 1}. ${item.title || "Item"} x ${item.quantity} - Rs. ${(Number(item.price) * Number(item.quantity)).toFixed(2)}`)
         .join("\n");
 
-    return `CAMPUSMART - ORDER UPDATE
+    return `CARTSY - ORDER UPDATE
 ==========================================
 Status: ${config.badgeText}
 Hi ${customerName}, ${config.subheadline}
@@ -705,7 +705,7 @@ ${itemsText}
 
 DELIVERY LOCATION:
 ${shipping.fullName || customerName}
-${shipping.address || "Campus Address"}
+${shipping.address || "Delivery Address"}
 ${shipping.city || ""}${shipping.pincode ? " - " + shipping.pincode : ""}
 ${shipping.phone ? `Phone: ${shipping.phone}` : ""}
 
@@ -713,7 +713,7 @@ Track live order status anytime:
 ${trackOrderUrl}
 
 Questions? Reply directly to this email.
-(C) ${new Date().getFullYear()} CampusMart. All rights reserved.
+(C) ${new Date().getFullYear()} CARTSY. All rights reserved.
 `;
 };
 
@@ -761,10 +761,10 @@ const sendOrderStatusEmail = async (orderInput, newStatus) => {
         const clientUrl = (process.env.URL || process.env.CLIENT_URL || "http://localhost:5173").trim();
         const config = getStatusConfig(newStatus, order, customerName);
 
-        let fromAddress = `"CampusMart" <${process.env.EMAIL_USER}>`;
+        let fromAddress = `"CARTSY" <${process.env.EMAIL_USER}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
-            const displayName = nameMatch ? nameMatch[1].trim() : "CampusMart";
+            const displayName = nameMatch ? nameMatch[1].trim() : "CARTSY";
             fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
         }
 
@@ -816,11 +816,11 @@ const generatePasswordResetText = ({ customerName, otp, resetToken, clientUrl, r
     const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
     const resetUrl = `${baseUrl.replace(/\/$/, "")}/reset-password?token=${resetToken}&email=${encodeURIComponent(recipientEmail)}`;
 
-    return `CAMPUSMART - PASSWORD RESET REQUEST
+    return `CARTSY - PASSWORD RESET REQUEST
 ==========================================
 Hello ${customerName || "there"},
 
-We received a request to reset the password for your CampusMart account (${recipientEmail}).
+We received a request to reset the password for your CARTSY account (${recipientEmail}).
 
 YOUR 6-DIGIT VERIFICATION CODE:
 ------------------------------------------
@@ -839,7 +839,7 @@ If you didn't request this, you can safely ignore this email.
 Your password will remain unchanged and your account is secure.
 
 Best regards,
-The CampusMart Team
+The CARTSY Team
 `;
 };
 
@@ -855,7 +855,7 @@ const generatePasswordResetHtml = ({ customerName, otp, resetToken, clientUrl, r
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Reset Request - CampusMart</title>
+    <title>Password Reset Request - CARTSY</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #cbd5e1;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #0b0f19; padding: 40px 12px;">
@@ -867,7 +867,7 @@ const generatePasswordResetHtml = ({ customerName, otp, resetToken, clientUrl, r
                     <tr>
                         <td style="background: linear-gradient(135deg, #0284c7 0%, #7c3aed 100%); padding: 32px 30px; text-align: center;">
                             <div style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-                                🎓 CampusMart
+                                🎓 CARTSY
                             </div>
                             <div style="font-size: 13px; color: #e0f2fe; margin-top: 5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">
                                 Account Security &bull; Password Reset
@@ -882,10 +882,10 @@ const generatePasswordResetHtml = ({ customerName, otp, resetToken, clientUrl, r
                                 Reset Your Password
                             </h1>
                             <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #94a3b8;">
-                                Hello <strong style="color: #f1f5f9;">${customerName || "CampusMart User"}</strong>,
+                                Hello <strong style="color: #f1f5f9;">${customerName || "CARTSY User"}</strong>,
                             </p>
                             <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #94a3b8;">
-                                We received a request to reset the password for your CampusMart account (<span style="color: #38bdf8;">${recipientEmail}</span>). You can reset your password using the 6-digit verification code below, or by clicking the direct reset button.
+                                We received a request to reset the password for your CARTSY account (<span style="color: #38bdf8;">${recipientEmail}</span>). You can reset your password using the 6-digit verification code below, or by clicking the direct reset button.
                             </p>
 
                             <!-- OTP CODE CARD -->
@@ -940,8 +940,8 @@ const generatePasswordResetHtml = ({ customerName, otp, resetToken, clientUrl, r
                     <tr>
                         <td style="background-color: #0f172a; padding: 22px 30px; text-align: center; border-top: 1px solid #1e293b;">
                             <div style="font-size: 12px; color: #64748b; line-height: 1.6;">
-                                Need assistance? Reach out to our campus student support.<br/>
-                                &copy; ${new Date().getFullYear()} CampusMart. All rights reserved.
+                                Need assistance? Reach out to our customer support team.<br/>
+                                &copy; ${new Date().getFullYear()} CARTSY. All rights reserved.
                             </div>
                         </td>
                     </tr>
@@ -968,10 +968,10 @@ const sendPasswordResetEmail = async ({ recipientEmail, customerName, otp, reset
 
         const resolvedClientUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
 
-        let fromAddress = `"CampusMart" <${process.env.EMAIL_USER}>`;
+        let fromAddress = `"CARTSY" <${process.env.EMAIL_USER}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
-            const displayName = nameMatch ? nameMatch[1].trim() : "CampusMart";
+            const displayName = nameMatch ? nameMatch[1].trim() : "CARTSY";
             fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
         }
 
@@ -994,7 +994,7 @@ const sendPasswordResetEmail = async ({ recipientEmail, customerName, otp, reset
             from: fromAddress,
             replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER,
             to: recipientEmail,
-            subject: "CampusMart Password Reset - Verification Code & Link",
+            subject: "CARTSY Password Reset - Verification Code & Link",
             text,
             html,
             headers: {
@@ -1019,11 +1019,11 @@ const generatePasswordResetSuccessText = ({ customerName, clientUrl, recipientEm
     const forgotUrl = `${baseUrl.replace(/\/$/, "")}/forgot-password`;
     const formattedDate = formatOrderDate(changedAt || Date.now());
 
-    return `CAMPUSMART - PASSWORD CHANGED SUCCESSFULLY
+    return `CARTSY - PASSWORD CHANGED SUCCESSFULLY
 ==========================================
 Hello ${customerName || "there"},
 
-This email confirms that the password for your CampusMart account (${recipientEmail}) was successfully updated on ${formattedDate}.
+This email confirms that the password for your CARTSY account (${recipientEmail}) was successfully updated on ${formattedDate}.
 
 You can now log in using your new password:
 ${loginUrl}
@@ -1033,11 +1033,11 @@ SECURITY NOTICE:
 If you did not make this change, please reset your password immediately to secure your account:
 ${forgotUrl}
 
-Or contact our campus support team if you suspect unauthorized activity.
+Or contact our support team if you suspect unauthorized activity.
 
 Best regards,
-The CampusMart Team
-(C) ${new Date().getFullYear()} CampusMart. All rights reserved.
+The CARTSY Team
+(C) ${new Date().getFullYear()} CARTSY. All rights reserved.
 `;
 };
 
@@ -1055,7 +1055,7 @@ const generatePasswordResetSuccessHtml = ({ customerName, clientUrl, recipientEm
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Changed Successfully - CampusMart</title>
+    <title>Password Changed Successfully - CARTSY</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #cbd5e1;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #0b0f19; padding: 40px 12px;">
@@ -1067,7 +1067,7 @@ const generatePasswordResetSuccessHtml = ({ customerName, clientUrl, recipientEm
                     <tr>
                         <td style="background: linear-gradient(135deg, #059669 0%, #0284c7 100%); padding: 32px 30px; text-align: center;">
                             <div style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-                                🎓 CampusMart
+                                🎓 CARTSY
                             </div>
                             <div style="font-size: 13px; color: #d1fae5; margin-top: 5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">
                                 Account Security &bull; Password Updated
@@ -1088,10 +1088,10 @@ const generatePasswordResetSuccessHtml = ({ customerName, clientUrl, recipientEm
                                 Your Password Has Been Reset
                             </h1>
                             <p style="margin: 0 0 18px 0; font-size: 15px; line-height: 1.6; color: #94a3b8; text-align: center;">
-                                Hello <strong style="color: #f1f5f9;">${customerName || "CampusMart User"}</strong>,
+                                Hello <strong style="color: #f1f5f9;">${customerName || "CARTSY User"}</strong>,
                             </p>
                             <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #94a3b8; text-align: center;">
-                                This email confirms that the password for your CampusMart account (<span style="color: #38bdf8;">${recipientEmail}</span>) was successfully updated on <strong style="color: #f1f5f9;">${formattedDate}</strong>.
+                                This email confirms that the password for your CARTSY account (<span style="color: #38bdf8;">${recipientEmail}</span>) was successfully updated on <strong style="color: #f1f5f9;">${formattedDate}</strong>.
                             </p>
 
                             <!-- DETAILS CARD -->
@@ -1115,7 +1115,7 @@ const generatePasswordResetSuccessHtml = ({ customerName, clientUrl, recipientEm
                             <!-- ACTION BUTTON -->
                             <div style="text-align: center; margin: 28px 0 20px 0;">
                                 <a href="${loginUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: linear-gradient(135deg, #00d2ff 0%, #a259ff 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; padding: 15px 36px; border-radius: 10px; box-shadow: 0 4px 18px rgba(0, 210, 255, 0.35);">
-                                    Log In to CampusMart &rarr;
+                                    Log In to CARTSY &rarr;
                                 </a>
                             </div>
 
@@ -1130,7 +1130,7 @@ const generatePasswordResetSuccessHtml = ({ customerName, clientUrl, recipientEm
                                     🛡️ Didn't request this change?
                                 </div>
                                 <div style="font-size: 13px; line-height: 1.5; color: #fca5a5;">
-                                    If you did not perform this password reset, please <a href="${forgotUrl}" target="_blank" rel="noopener noreferrer" style="color: #ffffff; text-decoration: underline; font-weight: 700;">reset your password immediately</a> to secure your account, or contact campus support.
+                                    If you did not perform this password reset, please <a href="${forgotUrl}" target="_blank" rel="noopener noreferrer" style="color: #ffffff; text-decoration: underline; font-weight: 700;">reset your password immediately</a> to secure your account, or contact customer support.
                                 </div>
                             </div>
                         </td>
@@ -1140,8 +1140,8 @@ const generatePasswordResetSuccessHtml = ({ customerName, clientUrl, recipientEm
                     <tr>
                         <td style="background-color: #0f172a; padding: 22px 30px; text-align: center; border-top: 1px solid #1e293b;">
                             <div style="font-size: 12px; color: #64748b; line-height: 1.6;">
-                                Need assistance? Reach out to our campus student support.<br/>
-                                &copy; ${new Date().getFullYear()} CampusMart. All rights reserved.
+                                Need assistance? Reach out to our customer support team.<br/>
+                                &copy; ${new Date().getFullYear()} CARTSY. All rights reserved.
                             </div>
                         </td>
                     </tr>
@@ -1168,10 +1168,10 @@ const sendPasswordResetSuccessEmail = async ({ recipientEmail, customerName, cli
 
         const resolvedClientUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
 
-        let fromAddress = `"CampusMart" <${process.env.EMAIL_USER}>`;
+        let fromAddress = `"CARTSY" <${process.env.EMAIL_USER}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
-            const displayName = nameMatch ? nameMatch[1].trim() : "CampusMart";
+            const displayName = nameMatch ? nameMatch[1].trim() : "CARTSY";
             fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
         }
 
@@ -1192,7 +1192,7 @@ const sendPasswordResetSuccessEmail = async ({ recipientEmail, customerName, cli
             from: fromAddress,
             replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER,
             to: recipientEmail,
-            subject: "CampusMart - Your Password Was Successfully Reset",
+            subject: "CARTSY - Your Password Was Successfully Reset",
             text,
             html,
             headers: {
@@ -1216,28 +1216,28 @@ const generateWelcomeEmailText = ({ customerName, clientUrl, recipientEmail }) =
     const catalogUrl = `${baseUrl.replace(/\/$/, "")}/product`;
     const displayName = customerName || "Student";
 
-    return `CAMPUSMART - WELCOME TO THE CAMPUS COMMUNITY!
+    return `CARTSY - WELCOME TO THE COMMUNITY!
 ==========================================
-Welcome to CampusMart, ${displayName}!
+Welcome to CARTSY, ${displayName}!
 
-We're thrilled to have you join our college student marketplace. CampusMart makes it easy, affordable, and safe to buy, sell, and explore great deals right on your campus.
+We're thrilled to have you join Cartsy! CARTSY makes it easy, affordable, and fun to discover aesthetic fits, trending gear, room essentials, and daily lifestyle drops with fast doorstep delivery.
 
-WHAT YOU CAN DO ON CAMPUSMART:
+WHAT YOU CAN DO ON CARTSY:
 ------------------------------------------
-* BUY & SAVE: Discover affordable textbooks, electronics, dorm gear, and study essentials listed by fellow students.
-* SELL QUICKLY: Turn your pre-loved books, gadgets, and notes into cash within your campus community.
-* MEET & TRADE SAFELY: Connect with peers directly for hassle-free handoffs without expensive shipping fees.
+* BUY & SAVE: Discover curated room aesthetics, streetwear fits, gadgets, and everyday lifestyle essentials at steal prices.
+* SELL QUICKLY: Turn your pre-loved gear, fits, and collectibles into cash with zero hassle.
+* FAST & SECURE: Enjoy encrypted checkouts and lightning doorstep delivery right to your door.
 
-EXPLORE CAMPUS DEALS:
+EXPLORE FRESH DROPS:
 ------------------------------------------
 Browse the catalog right now at:
 ${catalogUrl}
 
-Questions or feedback? Reply directly to this email or reach out to our campus desk.
+Questions or feedback? Reply directly to this email or reach out to our support team.
 
-Happy trading,
-The CampusMart Team
-(C) ${new Date().getFullYear()} CampusMart. All rights reserved.
+Happy shopping,
+The CARTSY Team
+(C) ${new Date().getFullYear()} CARTSY. All rights reserved.
 `;
 };
 
@@ -1247,14 +1247,14 @@ The CampusMart Team
 const generateWelcomeEmailHtml = ({ customerName, clientUrl, recipientEmail }) => {
     const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
     const catalogUrl = `${baseUrl.replace(/\/$/, "")}/product`;
-    const displayName = customerName || "Student";
+    const displayName = customerName || "Shopper";
 
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to CampusMart, ${displayName}!</title>
+    <title>Welcome to CARTSY, ${displayName}!</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #cbd5e1;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #0b0f19; padding: 40px 12px;">
@@ -1266,10 +1266,10 @@ const generateWelcomeEmailHtml = ({ customerName, clientUrl, recipientEmail }) =
                     <tr>
                         <td style="background: linear-gradient(135deg, #00d2ff 0%, #a259ff 100%); padding: 36px 30px; text-align: center;">
                             <div style="font-size: 30px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-                                🎓 CampusMart
+                                🛍️ CARTSY
                             </div>
                             <div style="font-size: 13px; color: #e0f2fe; margin-top: 6px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;">
-                                Your Campus Marketplace
+                                Your Daily Drip &amp; Lifestyle Marketplace
                             </div>
                         </td>
                     </tr>
@@ -1278,10 +1278,10 @@ const generateWelcomeEmailHtml = ({ customerName, clientUrl, recipientEmail }) =
                     <tr>
                         <td style="padding: 36px 32px 28px 32px;">
                             <h1 style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #f8fafc; line-height: 1.3; text-align: center;">
-                                Welcome to CampusMart, <span style="color: #38bdf8;">${displayName}</span>! 🎉
+                                Welcome to CARTSY, <span style="color: #38bdf8;">${displayName}</span>! 🎉
                             </h1>
                             <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #94a3b8; text-align: center;">
-                                We're excited to have you on board! CampusMart is your dedicated college hub to buy, sell, and discover student deals right within your campus community.
+                                We're excited to have you on board! CARTSY is your ultimate destination to discover aesthetic room setups, streetwear fits, trending tech, and curated essentials.
                             </p>
 
                             <!-- FEATURE CARDS -->
@@ -1297,7 +1297,7 @@ const generateWelcomeEmailHtml = ({ customerName, clientUrl, recipientEmail }) =
                                                 Buy &amp; Save Big
                                             </div>
                                             <div style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
-                                                Find student-priced textbooks, electronics, dorm essentials, and college gear from peers.
+                                                Find high-aura gear, tech accessories, room aesthetics, and fits at steal prices.
                                             </div>
                                         </td>
                                     </tr>
@@ -1314,24 +1314,24 @@ const generateWelcomeEmailHtml = ({ customerName, clientUrl, recipientEmail }) =
                                                 Sell Quickly for Cash
                                             </div>
                                             <div style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
-                                                Declutter your room and turn pre-loved books, gadgets, and supplies into cash with zero hassle.
+                                                Declutter your space and turn pre-loved items and collectibles into cash with zero hassle.
                                             </div>
                                         </td>
                                     </tr>
                                 </table>
 
-                                <!-- Card 3: Safe & Local -->
+                                <!-- Card 3: Safe & Fast Delivery -->
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: #1e293b; border: 1px solid #334155; border-radius: 12px;">
                                     <tr>
                                         <td style="padding: 16px; width: 48px; vertical-align: top; text-align: center; font-size: 26px;">
-                                            🤝
+                                            🚀
                                         </td>
                                         <td style="padding: 16px 16px 16px 0; vertical-align: middle;">
                                             <div style="font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 3px;">
-                                                Safe Campus Trades
+                                                Fast &amp; Safe Delivery
                                             </div>
                                             <div style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
-                                                Meet securely on campus for quick handoffs—no waiting weeks for delivery or paying shipping fees.
+                                                Lightning-quick doorstep delivery and secure encrypted checkout.
                                             </div>
                                         </td>
                                     </tr>
@@ -1341,7 +1341,7 @@ const generateWelcomeEmailHtml = ({ customerName, clientUrl, recipientEmail }) =
                             <!-- ACTION BUTTON -->
                             <div style="text-align: center; margin: 32px 0 20px 0;">
                                 <a href="${catalogUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: linear-gradient(135deg, #00d2ff 0%, #a259ff 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; padding: 16px 38px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 210, 255, 0.4);">
-                                    Explore Campus Deals &rarr;
+                                    Explore Fresh Drops &rarr;
                                 </a>
                             </div>
 
@@ -1356,8 +1356,8 @@ const generateWelcomeEmailHtml = ({ customerName, clientUrl, recipientEmail }) =
                     <tr>
                         <td style="background-color: #0f172a; padding: 24px 30px; text-align: center; border-top: 1px solid #1e293b;">
                             <div style="font-size: 12px; color: #64748b; line-height: 1.6;">
-                                Need help or have questions? Contact our campus desk anytime.<br/>
-                                &copy; ${new Date().getFullYear()} CampusMart. All rights reserved.
+                                Need help or have questions? Contact our support squad anytime.<br/>
+                                &copy; ${new Date().getFullYear()} CARTSY. All rights reserved.
                             </div>
                         </td>
                     </tr>
@@ -1384,10 +1384,10 @@ const sendWelcomeEmail = async ({ recipientEmail, customerName, clientUrl }) => 
 
         const resolvedClientUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
 
-        let fromAddress = `"CampusMart" <${process.env.EMAIL_USER}>`;
+        let fromAddress = `"CARTSY" <${process.env.EMAIL_USER}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
-            const displayName = nameMatch ? nameMatch[1].trim() : "CampusMart";
+            const displayName = nameMatch ? nameMatch[1].trim() : "CARTSY";
             fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
         }
 
@@ -1406,7 +1406,7 @@ const sendWelcomeEmail = async ({ recipientEmail, customerName, clientUrl }) => 
             from: fromAddress,
             replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER,
             to: recipientEmail,
-            subject: `Welcome to CampusMart, ${customerName || "Student"}! 🎓`,
+            subject: `Welcome to CARTSY, ${customerName || "Student"}! 🎓`,
             text,
             html,
             headers: {
@@ -1438,11 +1438,11 @@ const generateAdminNewOrderAlertText = (order, customerDetails, clientUrl) => {
     const itemsText = (order.orderItems || [])
         .map(
             (item, index) =>
-                `${index + 1}. ${item.title || "Campus Item"} x ${item.quantity} @ Rs. ${Number(item.price).toFixed(2)} = Rs. ${(Number(item.price) * Number(item.quantity)).toFixed(2)}`
+                `${index + 1}. ${item.title || "Item"} x ${item.quantity} @ Rs. ${Number(item.price).toFixed(2)} = Rs. ${(Number(item.price) * Number(item.quantity)).toFixed(2)}`
         )
         .join("\n");
 
-    return `CAMPUSMART - NEW ORDER ALERT FOR ADMIN
+    return `CARTSY - NEW ORDER ALERT FOR ADMIN
 ==========================================
 New Order #${shortId} received from ${customerDetails.customerName} (Rs. ${total})
 
@@ -1458,7 +1458,7 @@ Registered Email: ${customerDetails.customerEmail}
 Phone Number    : ${shipping.phone || "N/A"}
 Delivery Address:
 ${shipping.fullName || customerDetails.customerName}
-${shipping.address || "Campus Address"}
+${shipping.address || "Delivery Address"}
 ${shipping.city || ""}${shipping.pincode ? " - " + shipping.pincode : ""}
 
 ORDER ITEMS:
@@ -1471,7 +1471,7 @@ VIEW & MANAGE ORDER IN ADMIN DASHBOARD:
 ------------------------------------------
 ${adminOrderUrl}
 
-(C) ${new Date().getFullYear()} CampusMart Administrator Portal.
+(C) ${new Date().getFullYear()} CARTSY Administrator Portal.
 `;
 };
 
@@ -1496,7 +1496,7 @@ const generateAdminNewOrderAlertHtml = (order, customerDetails, clientUrl) => {
             (item) => `
             <tr>
                 <td style="padding: 12px 0; border-bottom: 1px solid #1f2937; color: #f8fafc; font-size: 14px; font-weight: 500;">
-                    ${item.title || "Campus Item"}
+                    ${item.title || "Item"}
                 </td>
                 <td style="padding: 12px 0; border-bottom: 1px solid #1f2937; color: #94a3b8; font-size: 14px; text-align: center;">
                     ${item.quantity}
@@ -1528,7 +1528,7 @@ const generateAdminNewOrderAlertHtml = (order, customerDetails, clientUrl) => {
                     <tr>
                         <td style="background: linear-gradient(135deg, #0284c7 0%, #7c3aed 100%); padding: 32px 30px; text-align: center;">
                             <div style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-                                🎓 CampusMart Admin Alert
+                                🎓 CARTSY Admin Alert
                             </div>
                             <div style="font-size: 13px; color: #e0f2fe; margin-top: 5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">
                                 New Order Notification
@@ -1596,7 +1596,7 @@ const generateAdminNewOrderAlertHtml = (order, customerDetails, clientUrl) => {
                                     <tr>
                                         <td style="font-size: 13px; color: #94a3b8; padding: 4px 0; vertical-align: top;">Delivery Address:</td>
                                         <td style="font-size: 13px; color: #f8fafc; padding: 4px 0; line-height: 1.4;">
-                                            ${shipping.address || "Campus Address"}<br/>
+                                            ${shipping.address || "Delivery Address"}<br/>
                                             ${shipping.city || ""}${shipping.pincode ? " - " + shipping.pincode : ""}
                                         </td>
                                     </tr>
@@ -1651,8 +1651,8 @@ const generateAdminNewOrderAlertHtml = (order, customerDetails, clientUrl) => {
                     <tr>
                         <td style="background-color: #0f172a; padding: 20px 30px; text-align: center; border-top: 1px solid #1e293b;">
                             <div style="font-size: 12px; color: #64748b; line-height: 1.5;">
-                                CampusMart Store Management System<br/>
-                                &copy; ${new Date().getFullYear()} CampusMart. All rights reserved.
+                                CARTSY Store Management System<br/>
+                                &copy; ${new Date().getFullYear()} CARTSY. All rights reserved.
                             </div>
                         </td>
                     </tr>
@@ -1729,7 +1729,7 @@ const sendAdminNewOrderAlert = async (orderInput) => {
 
         // 5. Resolve Customer Details
         let customerEmail = "N/A";
-        let customerName = order.shippingAddress?.fullName || "CampusMart Student";
+        let customerName = order.shippingAddress?.fullName || "CARTSY Student";
 
         if (order.user) {
             if (typeof order.user === "object" && order.user.email) {
@@ -1749,10 +1749,10 @@ const sendAdminNewOrderAlert = async (orderInput) => {
         const total = Number(order.totalPrice || order.amount || 0).toFixed(2);
         const subject = `New Order #${shortId} received from ${customerName} (Rs. ${total})`;
 
-        let fromAddress = `"CampusMart System" <${process.env.EMAIL_USER}>`;
+        let fromAddress = `"CARTSY System" <${process.env.EMAIL_USER}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
-            const displayName = nameMatch ? nameMatch[1].trim() : "CampusMart";
+            const displayName = nameMatch ? nameMatch[1].trim() : "CARTSY";
             fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
         }
 
@@ -1804,4 +1804,5 @@ module.exports = {
     generateAdminNewOrderAlertText,
     verifySmtpConnection,
 };
+
 

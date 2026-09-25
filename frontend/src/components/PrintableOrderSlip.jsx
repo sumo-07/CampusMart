@@ -25,7 +25,7 @@ export const PrintableOrderSlip = ({ order }) => {
             {/* Header: Company branding and order metadata */}
             <div className="slip-header">
                 <div className="slip-brand">
-                    <h1 className="slip-store-name">CAMPUSMART</h1>
+                    <h1 className="slip-store-name">CARTSY</h1>
                     <p className="slip-doc-type">OFFICIAL ORDER SLIP & INVOICE</p>
                 </div>
                 <div className="slip-meta-table">
@@ -147,7 +147,7 @@ export const PrintableOrderSlip = ({ order }) => {
 
             {/* Document Footer */}
             <div className="slip-footer">
-                <p>Thank you for your order with CampusMart! This is a computer-generated order slip.</p>
+                <p>Thank you for copping with Cartsy! Keep the daily drip alive 🔥</p>
             </div>
         </div>,
         document.body

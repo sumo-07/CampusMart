@@ -73,18 +73,18 @@ export const ProductQuickViewModal = ({ isOpen, onClose, product }) => {
           <div className="quickview-meta">
             <span className="quickview-rating">⭐ {rating} Rating</span>
             <span className={`quickview-stock ${stock > 0 ? (stock <= 5 ? "low" : "") : "out"}`}>
-              {stock > 0 ? (stock <= 5 ? `Only ${stock} left!` : `In Stock (${stock})`) : "Out of Stock"}
+              {stock > 0 ? (stock <= 5 ? `HURRY 🔥 Only ${stock} left!` : `IN STOCK ⚡ (${stock})`) : "COOKED 💀 (Sold Out)"}
             </span>
           </div>
 
           <p className="quickview-description">
-            {description || "Explore this premium campus item at CampusMart. Quality guaranteed for students."}
+            {description || "Explore this certified exclusive drip at Cartsy. Premium quality guaranteed, no cap."}
           </p>
 
           <div className="quickview-footer">
             <div className="quickview-price-container">
-              <span className="quickview-price-label">Student Price</span>
-              <span className="quickview-price">₹ {price}</span>
+              <span className="quickview-price-label">SPECIAL DROP PRICE</span>
+              <span className="quickview-price">₹{price}</span>
             </div>
 
             <div className="quickview-actions">

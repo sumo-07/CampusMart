@@ -114,33 +114,36 @@ export const ProductDetails = () => {
                         src={product.thumbnail}
                         alt={product.title}
                     />
+                    <div className="pd-image-badge">
+                        <span>🔥 VERIFIED DRIP</span>
+                    </div>
                 </div>
 
                 {/* Info */}
                 <div className="pd-info">
+                    <div className="pd-tag-row">
+                        <span className="pd-category-pill">{product.category}</span>
+                        <span className="pd-rating-pill">⭐ {product.rating} / 5.0</span>
+                    </div>
+
                     <h1 className="pd-title">{product.title}</h1>
 
-                    <p className="pd-price">₹{product.price}</p>
+                    <div className="pd-price-row">
+                        <span className="pd-price">₹{Number(product.price).toFixed(2)}</span>
+                        <span className="pd-price-badge">SPECIAL DROP RATE ⚡</span>
+                    </div>
 
                     <p className="pd-description">{product.description}</p>
 
-                    <p className="pd-category">
-                        Category: {product.category}
-                    </p>
-
-                    <p className="pd-rating">
-                        Rating: {product.rating} ⭐
-                    </p>
-
                     {product.stock !== undefined && (
                         <div className="pd-stock-info">
-                            <span className="pd-stock-label">Availability:</span>
+                            <span className="pd-stock-label">DROP STATUS:</span>
                             <span className={`pd-stock-badge ${product.stock > 0 ? (product.stock <= 5 ? "low" : "in") : "out"}`}>
                                 {product.stock > 0
                                     ? (product.stock <= 5
-                                        ? `⚠️ Only ${product.stock} left in stock - Order soon`
-                                        : `✓ In Stock (${product.stock} units available)`)
-                                    : "✕ Currently Out of Stock"}
+                                        ? `⚠️ Only ${product.stock} left in stock - Don't get cooked!`
+                                        : `✓ In Stock (${product.stock} units locked & loaded)`)
+                                    : "✕ Currently Cooked (Sold Out)"}
                             </span>
                         </div>
                     )}
@@ -149,8 +152,8 @@ export const ProductDetails = () => {
                     {!user?.isAdmin && (
                         <div className="pd-actions">
                             {product.stock <= 0 ? (
-                                <button className="pd-btn add-cart-btn" disabled>
-                                    Out of Stock
+                                <button className="pd-btn add-cart-btn disabled" disabled>
+                                    Cooked (Sold Out) 💀
                                 </button>
                             ) : getItemQuantity(product._id || product.id || productId) > 0 ? (
                                 <div className="pd-cart-qty-control">
@@ -163,7 +166,7 @@ export const ProductDetails = () => {
                                         −
                                     </button>
                                     <span className="pd-qty-display">
-                                        {getItemQuantity(product._id || product.id || productId)} in Cart
+                                        {getItemQuantity(product._id || product.id || productId)} IN BAG
                                     </span>
                                     <button
                                         type="button"
@@ -192,7 +195,7 @@ export const ProductDetails = () => {
                                     onClick={handleAddToCart}
                                     disabled={addingToCart}
                                 >
-                                    {addingToCart ? "Adding..." : "Add to Cart"}
+                                    {addingToCart ? "Securing..." : "Secure The Bag 🛍️"}
                                 </button>
                             )}
 
@@ -201,7 +204,7 @@ export const ProductDetails = () => {
                                 onClick={handleBuyNow}
                                 disabled={product.stock <= 0}
                             >
-                                {product.stock <= 0 ? "Out of Stock" : "Buy Now"}
+                                {product.stock <= 0 ? "Out of Stock" : "Instant Cop ⚡"}
                             </button>
                         </div>
                     )}
@@ -209,31 +212,41 @@ export const ProductDetails = () => {
 
                 {/* ------------------ Reviews Section ------------------ */}
                 <div className="pd-reviews">
-                    <h2 className="pd-reviews-title">Customer Reviews</h2>
+                    <div className="pd-reviews-header">
+                        <div className="neo-badge green">💬 REAL FEEDBACK</div>
+                        <h2 className="pd-reviews-title">COMMUNITY VIBE CHECK (REVIEWS)</h2>
+                    </div>
 
                     {product.reviews && product.reviews.length > 0 ? (
-                        product.reviews.map((review, index) => (
-                            <div key={index} className="pd-review-card">
-                                <div className="pd-review-header">
-                                    <strong className="pd-reviewer">
-                                        {review.reviewerName}
-                                    </strong>
-                                    <span className="pd-review-rating">
-                                        {review.rating} ⭐
-                                    </span>
+                        <div className="pd-reviews-list">
+                            {product.reviews.map((review, index) => (
+                                <div key={index} className="pd-review-card">
+                                    <div className="pd-review-header">
+                                        <div className="pd-reviewer-wrap">
+                                            <span className="pd-reviewer-icon">👤</span>
+                                            <strong className="pd-reviewer">
+                                                {review.reviewerName}
+                                            </strong>
+                                        </div>
+                                        <span className="pd-review-rating">
+                                            ⭐ {review.rating} / 5
+                                        </span>
+                                    </div>
+
+                                    <p className="pd-review-comment">
+                                        "{review.comment}"
+                                    </p>
+
+                                    <p className="pd-review-date">
+                                        {review.date ? new Date(review.date).toLocaleDateString() : "Recent Drop"}
+                                    </p>
                                 </div>
-
-                                <p className="pd-review-comment">
-                                    {review.comment}
-                                </p>
-
-                                <p className="pd-review-date">
-                                    {review.date}
-                                </p>
-                            </div>
-                        ))
+                            ))}
+                        </div>
                     ) : (
-                        <p>No reviews available.</p>
+                        <div className="pd-empty-reviews">
+                            <p>No reviews yet bestie. Be the first legend to drop feedback!</p>
+                        </div>
                     )}
                 </div>
 

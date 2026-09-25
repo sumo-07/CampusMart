@@ -1,0 +1,501 @@
+/* ==================== NEOBRUTALIST FEEDBACK MODAL & TOAST STYLES ==================== */
+
+/* --- Modal Overlay & Backdrop --- */
+.neo-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(10, 10, 10, 0.65);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: neoFadeIn 0.18s ease-out forwards;
+}
+
+@keyframes neoFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* --- Modal Box --- */
+.neo-confirm-modal {
+  background: #FFFFFF;
+  border: var(--border-thick);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-hard-xl);
+  max-width: 460px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  animation: neoPopIn 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes neoPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Modal Header */
+.neo-confirm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  background: #FFFDF9;
+  border-bottom: var(--border-thick);
+}
+
+.neo-confirm-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.neo-confirm-icon-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: var(--border-medium);
+  background: var(--neo-yellow);
+  box-shadow: var(--shadow-hard-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: var(--neo-border);
+  flex-shrink: 0;
+}
+
+.neo-confirm-title {
+  margin: 0;
+  font-family: var(--font-header);
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--neo-border);
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
+}
+
+.neo-confirm-close-btn {
+  background: #FFFFFF;
+  border: var(--border-medium);
+  border-radius: var(--radius-sm);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-hard-xs);
+  transition: var(--transition-tactile);
+  color: var(--neo-border);
+  padding: 0;
+}
+
+.neo-confirm-close-btn:hover {
+  background: var(--neo-pink);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.neo-confirm-close-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
+/* Modal Body */
+.neo-confirm-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: #FFFFFF;
+}
+
+.neo-confirm-prompt {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333333;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.neo-confirm-order-ref {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: #F4F4F4;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid #CCC;
+  color: #111;
+  display: inline-block;
+  margin-left: 0.3rem;
+}
+
+/* Status Transition Flow */
+.neo-confirm-status-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: #FDF9F0;
+  padding: 1rem 1.2rem;
+  border: var(--border-medium);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-hard-xs);
+}
+
+.neo-confirm-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.85rem;
+  border: var(--border-medium);
+  border-radius: var(--radius-full, 9999px);
+  font-family: var(--font-header);
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  box-shadow: var(--shadow-hard-xs);
+}
+
+.neo-confirm-pill.from {
+  background: #FFFFFF;
+  color: #444;
+}
+
+.neo-confirm-arrow {
+  font-size: 1.1rem;
+  color: var(--neo-border);
+  font-weight: 900;
+}
+
+.neo-confirm-pill.to {
+  color: var(--neo-border);
+}
+
+/* Status Colors for New Target */
+.neo-confirm-pill.to.pending {
+  background: var(--neo-yellow);
+}
+
+.neo-confirm-pill.to.processing {
+  background: #B3E5FC;
+}
+
+.neo-confirm-pill.to.shipped {
+  background: #E1BEE7;
+}
+
+.neo-confirm-pill.to.delivered {
+  background: var(--neo-green);
+}
+
+.neo-confirm-pill.to.cancelled {
+  background: #FFCDD2;
+  color: #B71C1C;
+}
+
+/* Note / Warning Box */
+.neo-confirm-note {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-md);
+  border: 1.5px solid #0A0A0A;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.neo-confirm-note.info {
+  background: #EBF5FB;
+  border-color: #2980B9;
+  color: #1A5276;
+}
+
+.neo-confirm-note.warning {
+  background: #FDEDEC;
+  border-color: #E74C3C;
+  color: #922B21;
+}
+
+.neo-confirm-note.success {
+  background: #EAFAF1;
+  border-color: #27AE60;
+  color: #196F3D;
+}
+
+/* Modal Footer */
+.neo-confirm-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.15rem 1.5rem;
+  background: #FAF8F5;
+  border-top: var(--border-thick);
+}
+
+.neo-confirm-btn {
+  padding: 0.65rem 1.25rem;
+  font-family: var(--font-header);
+  font-size: 0.9rem;
+  font-weight: 800;
+  border-radius: var(--radius-md);
+  border: var(--border-thick);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: var(--transition-tactile);
+}
+
+.neo-confirm-btn.cancel {
+  background: #FFFFFF;
+  color: var(--neo-border);
+  box-shadow: var(--shadow-hard-xs);
+}
+
+.neo-confirm-btn.cancel:hover:not(:disabled) {
+  background: #F0F0F0;
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.neo-confirm-btn.cancel:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
+.neo-confirm-btn.confirm {
+  background: var(--neo-green);
+  color: var(--neo-border);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.neo-confirm-btn.confirm.is-cancelled {
+  background: var(--neo-pink);
+}
+
+.neo-confirm-btn.confirm:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard);
+  filter: brightness(1.03);
+}
+
+.neo-confirm-btn.confirm:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--neo-border);
+}
+
+.neo-confirm-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Spin animation for loading state */
+.neo-spin {
+  animation: neoSpinAnim 0.8s linear infinite;
+}
+
+@keyframes neoSpinAnim {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
+/* ==================== NEOBRUTALIST FLOATING TOAST (BOTTOM RIGHT) ==================== */
+.neo-toast-container {
+  position: fixed;
+  bottom: 1.75rem;
+  right: 1.75rem;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.neo-toast-item {
+  pointer-events: auto;
+  background: #FFFFFF;
+  border: var(--border-thick);
+  border-radius: var(--radius-lg);
+  box-shadow: 5px 5px 0px var(--neo-border);
+  padding: 1rem 1.25rem;
+  min-width: 320px;
+  max-width: 420px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  position: relative;
+  overflow: hidden;
+  animation: neoToastSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.neo-toast-item.exiting {
+  animation: neoToastSlideOut 0.25s ease-in forwards;
+}
+
+@keyframes neoToastSlideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes neoToastSlideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+.neo-toast-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: var(--border-medium);
+  box-shadow: var(--shadow-hard-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 900;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.neo-toast-item.success .neo-toast-badge {
+  background: var(--neo-green);
+  color: var(--neo-border);
+}
+
+.neo-toast-item.error .neo-toast-badge {
+  background: var(--neo-pink);
+  color: var(--neo-border);
+}
+
+.neo-toast-item.info .neo-toast-badge {
+  background: var(--neo-yellow);
+  color: var(--neo-border);
+}
+
+.neo-toast-content {
+  flex: 1;
+  min-width: 0;
+  padding-right: 0.5rem;
+}
+
+.neo-toast-title {
+  margin: 0 0 0.25rem 0;
+  font-family: var(--font-header);
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: var(--neo-border);
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
+}
+
+.neo-toast-message {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #444444;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.neo-toast-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  color: #777;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+  border-radius: var(--radius-xs);
+  transition: color 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.neo-toast-close-btn:hover {
+  color: var(--neo-border);
+  transform: scale(1.15);
+}
+
+/* Slim progress indicator at bottom of toast */
+.neo-toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3.5px;
+  background: var(--neo-border);
+  width: 100%;
+  transform-origin: left;
+  animation: neoProgressShrink 4s linear forwards;
+}
+
+.neo-toast-item.success .neo-toast-progress {
+  background: var(--neo-green);
+}
+
+.neo-toast-item.error .neo-toast-progress {
+  background: var(--neo-pink);
+}
+
+.neo-toast-item.info .neo-toast-progress {
+  background: var(--neo-yellow);
+}
+
+@keyframes neoProgressShrink {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+@media (max-width: 540px) {
+  .neo-confirm-modal {
+    max-width: 95vw;
+  }
+
+  .neo-toast-container {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+  }
+
+  .neo-toast-item {
+    min-width: 0;
+    max-width: 100%;
+  }
+}

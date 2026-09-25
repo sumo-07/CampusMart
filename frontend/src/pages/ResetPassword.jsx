@@ -206,7 +206,7 @@ export const ResetPassword = () => {
               Password Reset Complete!
             </h3>
             <p className="auth-subtitle">
-              Your CampusMart password has been securely updated. You can now log in with your new credentials.
+              Your Cartsy password has been securely updated. You're locked and loaded to cop drops again.
             </p>
             <p style={{ fontSize: "0.85rem", color: "var(--accent-blue)", marginBottom: "1.5rem" }}>
               Redirecting to login page in 3 seconds...
@@ -279,7 +279,7 @@ export const ResetPassword = () => {
                   type="email"
                   id="verify-email"
                   className="form-input"
-                  placeholder="student@campus.edu"
+                  placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
