@@ -4,6 +4,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import api from "../api/axiosConfig";
 import { updateOrderStatus } from "../utils/orderUtils";
 import { NeoSelect } from "../components/UI/NeoSelect";
+import { NeoStatusConfirmModal } from "../components/UI/NeoStatusConfirmModal";
+import { NeoToast } from "../components/UI/NeoToast";
 import "../components/css/admin.css";
 import "../components/css/orders.css";
 
@@ -30,6 +32,9 @@ export const AdminDashboard = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshingOrders, setRefreshingOrders] = useState(false);
+    const [pendingStatusChange, setPendingStatusChange] = useState(null);
+    const [updatingStatus, setUpdatingStatus] = useState(false);
+    const [toast, setToast] = useState(null);
 
     const handleRefreshOrders = useCallback(async (silent = false) => {
         const isSilent = silent === true;
@@ -338,8 +343,17 @@ export const AdminDashboard = () => {
         window.scrollTo(0, 0); // Scroll to form
     };
 
-    const handleOrderStatusChange = async (orderId, newStatus) => {
+    const handleInitiateStatusChange = (orderId, newStatus, currentStatus) => {
+        if (!orderId || newStatus === currentStatus) return;
+        setPendingStatusChange({ orderId, newStatus, currentStatus });
+    };
+
+    const handleConfirmOrderStatusChange = async () => {
+        if (!pendingStatusChange) return;
+        const { orderId, newStatus } = pendingStatusChange;
+
         try {
+            setUpdatingStatus(true);
             const updated = await updateOrderStatus(orderId, newStatus);
             setOrders(prevOrders => prevOrders.map(o => {
                 if (o._id === orderId) {
@@ -362,9 +376,22 @@ export const AdminDashboard = () => {
                 const productsRes = await api.get("/api/products");
                 setProducts(productsRes.data.products);
             }
+            setPendingStatusChange(null);
+            setToast({
+                type: "success",
+                title: "Status Updated!",
+                message: `Order #${orderId.slice(-6)} successfully updated to "${newStatus}".`,
+            });
         } catch (error) {
             console.error("Failed to update order status:", error);
-            alert(error.response?.data?.message || "Failed to update order status");
+            setPendingStatusChange(null);
+            setToast({
+                type: "error",
+                title: "Update Failed",
+                message: error.response?.data?.message || "Failed to update order status",
+            });
+        } finally {
+            setUpdatingStatus(false);
         }
     };
 
@@ -1349,7 +1376,7 @@ export const AdminDashboard = () => {
                                                             fullWidth={true}
                                                             alignRight={true}
                                                             value={order.orderStatus || "Pending"}
-                                                            onChange={(val) => handleOrderStatusChange(order._id, val)}
+                                                            onChange={(val) => handleInitiateStatusChange(order._id, val, order.orderStatus || "Pending")}
                                                             options={[
                                                                 { value: "Pending", label: "Pending" },
                                                                 { value: "Processing", label: "Processing" },
@@ -1369,6 +1396,20 @@ export const AdminDashboard = () => {
                     </div>
                 )}
             </div>
+
+            {/* Customized Neobrutalist Status Confirmation Modal */}
+            <NeoStatusConfirmModal
+                isOpen={Boolean(pendingStatusChange)}
+                onClose={() => !updatingStatus && setPendingStatusChange(null)}
+                onConfirm={handleConfirmOrderStatusChange}
+                currentStatus={pendingStatusChange?.currentStatus || "Pending"}
+                newStatus={pendingStatusChange?.newStatus}
+                orderId={pendingStatusChange?.orderId}
+                loading={updatingStatus}
+            />
+
+            {/* Bottom-Right Floating Toast Notification */}
+            <NeoToast toast={toast} onClose={() => setToast(null)} />
         </section>
     );
 };
