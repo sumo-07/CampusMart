@@ -1035,24 +1035,10 @@ export const AdminDashboard = () => {
 
                 {activeTab === "orders" && (
                     <div className="admin-orders">
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginBottom: '1.25rem',
-                            flexWrap: 'wrap',
-                            gap: '12px'
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <h2 style={{ margin: 0, fontSize: '1.4rem' }}>Customer Orders</h2>
-                                <span style={{
-                                    background: 'rgba(255, 255, 255, 0.08)',
-                                    padding: '4px 12px',
-                                    borderRadius: '20px',
-                                    fontSize: '0.85rem',
-                                    fontWeight: 600,
-                                    color: 'var(--text-secondary)'
-                                }}>
+                        <div className="admin-orders-header">
+                            <div className="admin-orders-title-group">
+                                <h2 className="admin-orders-title">Customer Orders</h2>
+                                <span className="admin-orders-badge">
                                     {orders.length} {orders.length === 1 ? 'Order' : 'Orders'}
                                 </span>
                             </div>
@@ -1065,13 +1051,13 @@ export const AdminDashboard = () => {
                                 title="Fetch latest incoming orders from database"
                             >
                                 <span className={`refresh-icon ${refreshingOrders ? "spinning" : ""}`}>🔄</span>
-                                {refreshingOrders ? "Checking New Orders..." : "Refresh Orders"}
+                                <span>{refreshingOrders ? "Checking..." : "Refresh Orders"}</span>
                             </button>
                         </div>
 
-                        <div className="admin-orders-controls">
-                            <div className="admin-orders-search-filter">
-                                <div className="admin-search-wrapper">
+                        <div className="admin-orders-toolbar">
+                            <div className="admin-orders-filters-row">
+                                <div className="admin-search-wrapper orders-search">
                                     <span className="search-icon">🔍</span>
                                     <input
                                         type="text"
@@ -1142,11 +1128,13 @@ export const AdminDashboard = () => {
                                 )}
                             </div>
 
-                            <div className="admin-orders-count-indicator">
-                                Showing <strong>{sortedOrders.length}</strong> {orderStatusFilter === "Abandoned" ? "abandoned checkout(s)" : "order(s)"}
+                            <div className="admin-orders-summary-bar">
+                                <span className="admin-orders-count-text">
+                                    Showing <strong>{sortedOrders.length}</strong> {orderStatusFilter === "Abandoned" ? "abandoned checkout(s)" : "order(s)"}
+                                </span>
                                 {orderStatusFilter === "all" && abandonedOrders.length > 0 && (
-                                    <span style={{ marginLeft: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                                        ({abandonedOrders.length} unpaid draft{abandonedOrders.length > 1 ? 's' : ''} segregated in <button type="button" onClick={() => setOrderStatusFilter("Abandoned")} style={{ background: 'none', border: 'none', color: '#f43f5e', textDecoration: 'underline', cursor: 'pointer', padding: 0, font: 'inherit', fontWeight: 600 }}>Abandoned Drafts</button>)
+                                    <span className="admin-drafts-notice">
+                                        ({abandonedOrders.length} unpaid draft{abandonedOrders.length > 1 ? 's' : ''} segregated in <button type="button" onClick={() => setOrderStatusFilter("Abandoned")} className="admin-drafts-link">Abandoned Drafts</button>)
                                     </span>
                                 )}
                             </div>
@@ -1196,38 +1184,38 @@ export const AdminDashboard = () => {
                                                     </Link>
                                                 </td>
                                                 <td>
-                                                    <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                                                    <div className="admin-order-customer-name">
                                                         {(order.user && typeof order.user === 'object' && order.user.name)
                                                             ? order.user.name
                                                             : (order.shippingAddress?.fullName || (order.user ? "Customer" : "Guest"))}
                                                     </div>
                                                     {((order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone) && (
-                                                        <small style={{ color: 'var(--text-secondary)', display: 'block', marginTop: '2px' }}>
+                                                        <small className="admin-order-customer-contact">
                                                             {(order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone}
                                                         </small>
                                                     )}
                                                 </td>
-                                                <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                                                <td><strong style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 700 }}>₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</strong></td>
+                                                <td className="admin-order-date">{new Date(order.createdAt).toLocaleDateString()}</td>
+                                                <td><strong className="admin-order-total-amount">₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</strong></td>
                                                 <td>
-                                                    <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                                                        {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
-                                                    </span>
-                                                    <br />
-                                                    <small style={{
-                                                        fontWeight: 700,
-                                                        color: isAbandonedDraft(order)
-                                                            ? "#f43f5e"
-                                                            : (order.orderStatus === "Cancelled")
-                                                                ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "#06b6d4" : "#ef4444")
-                                                                : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "#22c55e" : "#eab308")
-                                                    }}>
-                                                        {isAbandonedDraft(order)
-                                                            ? "(Unpaid Draft)"
-                                                            : (order.orderStatus === "Cancelled")
-                                                                ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "(Refunded)" : "(Cancelled)")
-                                                                : (order.status ? `(${order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()})` : `(${order.paymentStatus || "Pending"})`)}
-                                                    </small>
+                                                    <div className="admin-payment-cell">
+                                                        <span className="admin-payment-method">
+                                                            {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
+                                                        </span>
+                                                        <span className={`admin-payment-pill ${
+                                                            isAbandonedDraft(order)
+                                                                ? "draft"
+                                                                : (order.orderStatus === "Cancelled")
+                                                                    ? "cancelled"
+                                                                    : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "paid" : "pending")
+                                                        }`}>
+                                                            {isAbandonedDraft(order)
+                                                                ? "Unpaid Draft"
+                                                                : (order.orderStatus === "Cancelled")
+                                                                    ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "Refunded" : "Cancelled")
+                                                                    : (order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending"))}
+                                                        </span>
+                                                    </div>
                                                 </td>
                                                 <td>
                                                     {isAbandonedDraft(order) ? (

@@ -597,13 +597,14 @@
   background: #FFFFFF;
   border: var(--border-thick);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-hard-xl);
-  overflow: hidden;
+  box-shadow: var(--shadow-hard);
+  overflow-x: auto;
   margin-bottom: 2.5rem;
 }
 
 .products-table {
   width: 100%;
+  min-width: 1080px;
   border-collapse: collapse;
   text-align: left;
 }
@@ -611,7 +612,7 @@
 .products-table th {
   background: #FAF7F2;
   border-bottom: var(--border-thick);
-  padding: 1.1rem 1.4rem;
+  padding: 1rem 1.4rem;
   font-family: var(--font-header);
   font-size: 0.85rem;
   font-weight: 900;
@@ -621,12 +622,19 @@
 }
 
 .products-table td {
-  padding: 1.1rem 1.4rem;
+  padding: 1rem 1.4rem;
   border-bottom: var(--border-medium);
   font-size: 0.92rem;
   font-weight: 600;
   color: var(--neo-border);
   vertical-align: middle;
+}
+
+.products-table th:last-child,
+.products-table td:last-child {
+  width: 145px;
+  min-width: 145px;
+  padding-right: 1.5rem;
 }
 
 .products-table tbody tr:hover {
@@ -862,14 +870,14 @@
   list-style-type: none;
   padding: 2px 6px 2px 0;
   margin: 0;
-  font-size: 0.88rem;
-  max-height: 110px;
+  font-size: 0.85rem;
+  max-height: 135px;
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-width: 175px;
+  gap: 6px;
+  min-width: 190px;
   max-width: 250px;
   scrollbar-width: thin;
   scrollbar-color: var(--neo-border) #FAF7F2;
@@ -877,7 +885,7 @@
 }
 
 .admin-order-items-list::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 
 .admin-order-items-list::-webkit-scrollbar-button {
@@ -903,15 +911,18 @@
 .admin-order-item-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   line-height: 1.25;
-  transition: background-color 0.1s ease;
+  padding: 4px 6px;
   border-radius: var(--radius-xs);
-  padding: 2px 4px;
+  background: #FAF7F2;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: var(--transition-tactile);
 }
 
 .admin-order-item-row:hover {
-  background: rgba(0, 0, 0, 0.03);
+  background: #F5EFE6;
+  border-color: var(--neo-border);
 }
 
 .admin-order-item-row img {
@@ -927,25 +938,19 @@
 
 .admin-order-item-text {
   color: var(--neo-border);
-  font-weight: 700;
+  font-family: var(--font-header);
+  font-weight: 800;
+  font-size: 0.82rem;
   word-break: break-word;
-  cursor: default !important;
-  padding: 0 !important;
-  background: none !important;
-  transform: none !important;
-  display: inline !important;
+  line-height: 1.2;
 }
 
 .admin-order-item-qty {
-  color: var(--text-secondary);
-  font-weight: 700;
-  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: var(--font-header);
+  font-weight: 800;
+  font-size: 0.76rem;
   white-space: nowrap;
-  cursor: default !important;
-  padding: 0 !important;
-  background: none !important;
-  transform: none !important;
-  display: inline !important;
 }
 
 .pagination {
@@ -994,40 +999,312 @@
   cursor: not-allowed;
 }
 
-/* Orders Status Selector */
-.admin-status-select {
-  padding: 6px 10px;
-  border: 1.5px solid var(--neo-border);
-  border-radius: var(--radius-sm);
-  background: #FFFFFF;
+/* ==================== ORDERS SECTION TOOLBAR & HEADER ==================== */
+.admin-orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-orders-title-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-orders-title {
+  margin: 0;
+  font-family: var(--font-header);
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--neo-border);
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+}
+
+.admin-orders-badge {
   font-family: var(--font-header);
   font-weight: 800;
   font-size: 0.82rem;
-  cursor: pointer;
+  color: var(--neo-border);
+  background: #FFFFFF;
+  border: 2px solid var(--neo-border);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
   box-shadow: var(--shadow-hard-xs);
+  display: inline-flex;
+  align-items: center;
 }
 
-.admin-status-select:active {
-  transform: translate(1px, 1px);
+.orders-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: #FFFFFF;
+  border: var(--border-medium);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-hard-sm);
+  font-family: var(--font-header);
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: var(--neo-border);
+  cursor: pointer;
+  transition: var(--transition-tactile);
+  text-transform: uppercase;
 }
 
+.orders-refresh-btn:hover:not(:disabled) {
+  background: var(--neo-pink);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard);
+}
+
+.orders-refresh-btn:active:not(:disabled) {
+  transform: translate(1.5px, 1.5px) scale(0.98);
+  box-shadow: 1px 1px 0px var(--neo-border);
+}
+
+.orders-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-orders-toolbar {
+  background: #FFFFFF;
+  border: var(--border-thick);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-hard);
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-orders-filters-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.admin-orders-filters-row .orders-search {
+  min-width: 260px;
+  flex: 1;
+}
+
+.admin-filter-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-orders-summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 0.85rem;
+  border-top: 1.5px solid #F0ECE4;
+  font-family: var(--font-header);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.admin-orders-count-text strong {
+  color: var(--neo-border);
+  font-weight: 900;
+}
+
+.admin-drafts-notice {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-drafts-link {
+  background: #FFF0F3;
+  color: #E11D48;
+  border: 1.5px solid #E11D48;
+  border-radius: var(--radius-pill);
+  padding: 2px 10px;
+  font-family: var(--font-header);
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition-tactile);
+  box-shadow: 1px 1px 0px #E11D48;
+}
+
+.admin-drafts-link:hover {
+  background: #FFE4E8;
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0px #E11D48;
+}
+
+/* ==================== ORDERS TABLE CELLS ==================== */
 .admin-order-id-link {
   font-family: var(--font-header);
   font-weight: 900;
+  font-size: 0.82rem;
+  letter-spacing: 0.5px;
   color: var(--neo-border);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  display: inline-block;
+  background: #FAF7F2;
+  border: 1.5px solid var(--neo-border);
+  border-radius: var(--radius-xs);
+  padding: 4px 8px;
+  box-shadow: 1.5px 1.5px 0px var(--neo-border);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
   transition: var(--transition-tactile);
 }
 
 .admin-order-id-link:hover {
-  color: #2563EB;
+  background: var(--neo-pink);
+  transform: translate(-1px, -1px);
+  box-shadow: 2.5px 2.5px 0px var(--neo-border);
+  color: var(--neo-border);
 }
 
 .admin-order-id-link:active {
   transform: translate(1px, 1px);
-  filter: brightness(0.85);
+  box-shadow: 0.5px 0.5px 0px var(--neo-border);
+}
+
+.admin-order-customer-name {
+  font-family: var(--font-header);
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: var(--neo-border);
+  line-height: 1.25;
+}
+
+.admin-order-customer-contact {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 3px;
+  word-break: break-all;
+}
+
+.admin-order-date {
+  font-family: var(--font-header);
+  font-weight: 700;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.admin-order-total-amount {
+  font-family: var(--font-header);
+  font-weight: 900;
+  font-size: 1rem;
+  color: var(--neo-border);
+  letter-spacing: -0.3px;
+}
+
+.admin-payment-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.admin-payment-method {
+  font-family: var(--font-header);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--neo-border);
+}
+
+.admin-payment-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--neo-border);
+  box-shadow: 1px 1px 0px var(--neo-border);
+  font-family: var(--font-header);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+
+.admin-payment-pill.paid {
+  background: var(--neo-green);
+  color: var(--neo-border);
+}
+
+.admin-payment-pill.pending {
+  background: var(--neo-yellow);
+  color: var(--neo-border);
+}
+
+.admin-payment-pill.draft,
+.admin-payment-pill.cancelled {
+  background: #FFF0F3;
+  color: #E11D48;
+  border-color: #E11D48;
+  box-shadow: 1px 1px 0px #E11D48;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--neo-border);
+  box-shadow: 1.5px 1.5px 0px var(--neo-border);
+  font-family: var(--font-header);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.status-badge.pending {
+  background: var(--neo-yellow);
+  color: var(--neo-border);
+}
+
+.status-badge.processing {
+  background: var(--neo-blue);
+  color: var(--neo-border);
+}
+
+.status-badge.shipped {
+  background: var(--neo-purple);
+  color: var(--neo-border);
+}
+
+.status-badge.delivered {
+  background: var(--neo-green);
+  color: var(--neo-border);
+}
+
+.status-badge.cancelled,
+.status-badge.draft {
+  background: #FFF0F3;
+  color: #E11D48;
+  border-color: #E11D48;
+  box-shadow: 1.5px 1.5px 0px #E11D48;
 }
 
 /* ==================== ORDER DETAILS PAGE SPECIFIC ==================== */
