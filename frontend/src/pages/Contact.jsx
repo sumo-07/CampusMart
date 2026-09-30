@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axiosConfig";
+import { NeoSelect } from "../components/UI/NeoSelect";
 import "../components/css/contact.css";
 
 export const Contact = () => {
@@ -144,7 +145,7 @@ export const Contact = () => {
                   type="button"
                   onClick={handleReset}
                   className="form-btn form-btn-primary"
-                  style={{ maxWidth: "260px", margin: "0 auto" }}
+                  style={{ maxWidth: "16.25rem", margin: "0 auto" }}
                 >
                   Send Another Message
                 </button>
@@ -205,18 +206,23 @@ export const Contact = () => {
 
                   <div className="form-group">
                     <label htmlFor="subject">Topic / Subject</label>
-                    <select
+                    <NeoSelect
                       id="subject"
-                      name="subject"
                       value={formData.subject}
-                      onChange={handleChange}
-                    >
-                      <option value="General Inquiry">General Inquiry</option>
-                      <option value="Order & Delivery Support">Order & Delivery Support</option>
-                      <option value="Product & Listing Assistance">Product & Listing Assistance</option>
-                      <option value="Account & Login Help">Account & Login Help</option>
-                      <option value="Feedback / Bug Report">Feedback / Bug Report</option>
-                    </select>
+                      onChange={(val) => {
+                        setFormData((prev) => ({ ...prev, subject: val }));
+                        if (errorMessage) setErrorMessage("");
+                      }}
+                      options={[
+                        "General Inquiry",
+                        "Order & Delivery Support",
+                        "Product & Listing Assistance",
+                        "Account & Login Help",
+                        "Feedback / Bug Report",
+                      ]}
+                      fullWidth={true}
+                      size="md"
+                    />
                   </div>
                 </div>
 

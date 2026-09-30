@@ -244,7 +244,7 @@ main {
   gap: 6px;
   padding: 4px 10px;
   font-family: var(--font-header);
-  font-size: 0.75rem;
+  font-size: 1rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -370,7 +370,7 @@ select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-color: #FAF7F2;
+  background-color: var(--neo-cream);
   border: var(--border-medium);
   border-radius: var(--radius-md);
   font-family: var(--font-body);
@@ -380,17 +380,18 @@ select {
   box-shadow: var(--shadow-hard-xs);
   cursor: pointer;
   outline: none;
-  padding: 0.6rem 2.2rem 0.6rem 1rem;
+  padding: 0.65rem 2.2rem 0.65rem 0.95rem;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230A0A0A' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 13px;
+  background-position: right 0.75rem center;
+  background-size: 0.85rem;
   transition: var(--transition-tactile);
+  color-scheme: light;
 }
 
 select:hover {
   background-color: #FFFFFF;
-  transform: translate(-1px, -1px);
+  transform: translate(-0.06rem, -0.06rem);
   box-shadow: var(--shadow-hard-sm);
 }
 
@@ -402,8 +403,8 @@ select:focus {
 
 select option {
   background-color: #FFFFFF;
-  color: #0A0A0A;
-  padding: 8px 12px;
+  color: var(--neo-border);
+  padding: 0.5rem 0.75rem;
   font-family: inherit;
   font-weight: 700;
 }
