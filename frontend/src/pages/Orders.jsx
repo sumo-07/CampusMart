@@ -28,6 +28,59 @@ export const Orders = () => {
         enabled: Boolean(user && !authLoading),
     });
 
+    const ORDERS_PER_PAGE = 5;
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const totalPages = Math.ceil(orders.length / ORDERS_PER_PAGE);
+
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(1);
+        }
+    }, [orders.length, totalPages, currentPage]);
+
+    const startIndex = (currentPage - 1) * ORDERS_PER_PAGE;
+    const currentOrders = orders.slice(startIndex, startIndex + ORDERS_PER_PAGE);
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const getPaginationRange = (current, total, isMobile = false) => {
+        if (total <= 1) return [];
+
+        if (isMobile) {
+            if (total <= 4) {
+                return Array.from({ length: total }, (_, i) => i + 1);
+            }
+            if (current <= 2) {
+                return [1, 2, "...", total];
+            }
+            if (current >= total - 1) {
+                return [1, "...", total - 1, total];
+            }
+            return [1, "...", current, "...", total];
+        }
+
+        if (total <= 7) {
+            return Array.from({ length: total }, (_, i) => i + 1);
+        }
+
+        if (current <= 4) {
+            return [1, 2, 3, 4, 5, "...", total];
+        }
+
+        if (current >= total - 3) {
+            return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+        }
+
+        return [1, "...", current - 1, current, current + 1, "...", total];
+    };
+
+    const desktopPageRange = getPaginationRange(currentPage, totalPages, false);
+    const mobilePageRange = getPaginationRange(currentPage, totalPages, true);
+
     const handleManualRefresh = async () => {
         try {
             await refetchOrders();
@@ -221,182 +274,259 @@ export const Orders = () => {
                     </div>
                 </div>
             ) : (
-                <div className="orders-list">
-                    {orders.map((order) => {
-                        const status = order.orderStatus || "Pending";
-                        const canCancel = status === "Pending" || status === "Processing";
-                        const paymentMethod = order.paymentMethod || "COD";
-                        let paymentStatus = order.status
-                            ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase())
-                            : (order.paymentStatus || "Pending");
+                <>
+                    <div className="orders-list">
+                        {currentOrders.map((order) => {
+                            const status = order.orderStatus || "Pending";
+                            const canCancel = status === "Pending" || status === "Processing";
+                            const paymentMethod = order.paymentMethod || "COD";
+                            let paymentStatus = order.status
+                                ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase())
+                                : (order.paymentStatus || "Pending");
 
-                        if (status === "Cancelled") {
-                            if (order.status === "PAID" || order.paymentStatus === "Paid" || paymentStatus === "Paid") {
-                                paymentStatus = "Refunded";
-                            } else {
-                                paymentStatus = "Cancelled";
+                            if (status === "Cancelled") {
+                                if (order.status === "PAID" || order.paymentStatus === "Paid" || paymentStatus === "Paid") {
+                                    paymentStatus = "Refunded";
+                                } else {
+                                    paymentStatus = "Cancelled";
+                                }
                             }
-                        }
 
-                        const isUnpaidPending = paymentMethod === "Razorpay" && (paymentStatus === "Pending" || paymentStatus === "Failed") && status !== "Cancelled";
+                            const isUnpaidPending = paymentMethod === "Razorpay" && (paymentStatus === "Pending" || paymentStatus === "Failed") && status !== "Cancelled";
 
-                        return (
-                            <div key={order._id} className="order-card">
-                                {/* Order Top Summary Bar */}
-                                <div className="order-top-bar">
-                                    <div className="order-top-info">
-                                        <span className="order-placed-text">
-                                            Placed on {new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-                                        </span>
-                                        <span className="order-top-divider">•</span>
-                                        <span className="order-top-id">Order #{order._id}</span>
+                            return (
+                                <div key={order._id} className="order-card">
+                                    {/* Order Top Summary Bar */}
+                                    <div className="order-top-bar">
+                                        <div className="order-top-info">
+                                            <span className="order-placed-text">
+                                                Placed on {new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                                            </span>
+                                            <span className="order-top-divider">•</span>
+                                            <span className="order-top-id" title={`Order #${order._id}`}>Order #{order._id}</span>
+                                        </div>
+                                        <div className="order-top-status">
+                                            {renderStatusBadge(status)}
+                                        </div>
                                     </div>
-                                    <div className="order-top-status">
-                                        {renderStatusBadge(status)}
-                                    </div>
-                                </div>
 
-                                {/* Out-of-Stock Alert Banner for Pending Orders */}
-                                {order.hasOutOfStockItems && (
-                                    <div className="order-out-of-stock-alert">
-                                        <span>⚠️</span>
-                                        <span>Items in this pending order are currently out of stock. Payment is disabled. You can cancel and remove this order below.</span>
-                                    </div>
-                                )}
+                                    {/* Out-of-Stock Alert Banner for Pending Orders */}
+                                    {order.hasOutOfStockItems && (
+                                        <div className="order-out-of-stock-alert">
+                                            <span>⚠️</span>
+                                            <span>Items in this pending order are currently out of stock. Payment is disabled. You can cancel and remove this order below.</span>
+                                        </div>
+                                    )}
 
-                                {/* Two-Column Grid */}
-                                <div className="order-body-grid">
-                                    {/* Left: Ordered Items Column */}
-                                    <div className="order-items-column">
-                                        <h3 className="order-section-subtitle">Items Ordered ({order.orderItems.length})</h3>
-                                        <div className="order-items-list">
-                                            {order.orderItems.map((item, index) => (
-                                                <div key={index} className="order-item-row">
-                                                    <div className="item-image-wrapper">
-                                                        <img src={item.thumbnail} alt={item.title} />
+                                    {/* Two-Column Grid */}
+                                    <div className="order-body-grid">
+                                        {/* Left: Ordered Items Column */}
+                                        <div className="order-items-column">
+                                            <h3 className="order-section-subtitle">Items Ordered ({order.orderItems.length})</h3>
+                                            <div className="order-items-list">
+                                                {order.orderItems.map((item, index) => (
+                                                    <div key={index} className="order-item-row">
+                                                        <div className="item-image-wrapper">
+                                                            <img src={item.thumbnail} alt={item.title} />
+                                                        </div>
+                                                        <div className="item-details">
+                                                            <p
+                                                                className="item-title"
+                                                                onClick={() => navigate(`/product/${item.productId}`)}
+                                                            >
+                                                                {item.title}
+                                                            </p>
+                                                            <p className="item-meta">
+                                                                Qty: {item.quantity} × ₹{Number(item.price).toFixed(2)}
+                                                            </p>
+                                                            <p className="item-subtotal">
+                                                                Item Total: ₹{(item.quantity * Number(item.price)).toFixed(2)}
+                                                            </p>
+                                                            {item.isOutOfStock && (
+                                                                <span className="item-out-of-stock-badge">
+                                                                    ⚠️ Out of Stock (Only {item.availableStock ?? 0} left)
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                    <div className="item-details">
-                                                        <p
-                                                             className="item-title"
-                                                             onClick={() => navigate(`/product/${item.productId}`)}
-                                                        >
-                                                            {item.title}
-                                                        </p>
-                                                        <p className="item-meta">
-                                                            Qty: {item.quantity} × ₹{Number(item.price).toFixed(2)}
-                                                        </p>
-                                                        <p className="item-subtotal">
-                                                            Item Total: ₹{(item.quantity * Number(item.price)).toFixed(2)}
-                                                        </p>
-                                                        {item.isOutOfStock && (
-                                                            <span className="item-out-of-stock-badge">
-                                                                ⚠️ Out of Stock (Only {item.availableStock ?? 0} left)
-                                                            </span>
-                                                        )}
-                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Right: Order Details Sidebar */}
+                                        <div className="order-details-sidebar">
+                                            <h3 className="order-section-subtitle">Order Details</h3>
+                                            
+                                            <div className="order-sidebar-block">
+                                                <span className="sidebar-label">Order Total</span>
+                                                <span className="sidebar-total-price">₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</span>
+                                            </div>
+
+                                            <div className="sidebar-divider" />
+
+                                            <div className="order-sidebar-block">
+                                                <span className="sidebar-label">Delivery Address</span>
+                                                <div className="sidebar-address">
+                                                    <strong className="address-name">{order.shippingAddress.fullName}</strong>
+                                                    <p className="address-line">{order.shippingAddress.address}</p>
+                                                    <p className="address-line">{order.shippingAddress.city} - {order.shippingAddress.pincode}</p>
+                                                    {order.shippingAddress.phone && (
+                                                        <p className="address-phone">📞 {order.shippingAddress.phone}</p>
+                                                    )}
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                            </div>
 
-                                    {/* Right: Order Details Sidebar */}
-                                    <div className="order-details-sidebar">
-                                        <h3 className="order-section-subtitle">Order Details</h3>
-                                        
-                                        <div className="order-sidebar-block">
-                                            <span className="sidebar-label">Order Total</span>
-                                            <span className="sidebar-total-price">₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</span>
-                                        </div>
+                                            <div className="sidebar-divider" />
 
-                                        <div className="sidebar-divider" />
-
-                                        <div className="order-sidebar-block">
-                                            <span className="sidebar-label">Delivery Address</span>
-                                            <div className="sidebar-address">
-                                                <strong className="address-name">{order.shippingAddress.fullName}</strong>
-                                                <p className="address-line">{order.shippingAddress.address}</p>
-                                                <p className="address-line">{order.shippingAddress.city} - {order.shippingAddress.pincode}</p>
-                                                {order.shippingAddress.phone && (
-                                                    <p className="address-phone">📞 {order.shippingAddress.phone}</p>
+                                            <div className="order-sidebar-block">
+                                                <span className="sidebar-label">Payment</span>
+                                                <div className="sidebar-payment">
+                                                    <span className="payment-method-name">
+                                                        {paymentMethod === "COD" ? "💵 Cash on Delivery" : (paymentMethod === "Razorpay" ? "💳 Online (Razorpay)" : paymentMethod)}
+                                                    </span>
+                                                    <span className={`payment-status-tag ${paymentStatus.toLowerCase()}`}>
+                                                        {paymentStatus}
+                                                    </span>
+                                                </div>
+                                                {isUnpaidPending && order.expiresAt && (
+                                                    <span className="order-expiry-notice">
+                                                        ⏱️ Unpaid order expires in {Math.max(1, Math.ceil((new Date(order.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)))} days
+                                                    </span>
                                                 )}
                                             </div>
-                                        </div>
 
-                                        <div className="sidebar-divider" />
+                                            <div className="sidebar-actions">
+                                                {isUnpaidPending && (
+                                                    order.hasOutOfStockItems ? (
+                                                        <button
+                                                            className="btn-pay-now-sidebar btn-out-of-stock"
+                                                            disabled={true}
+                                                            title="Cannot proceed: items in this order are out of stock."
+                                                        >
+                                                            ⛔ Out of Stock
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            className="btn-pay-now-sidebar"
+                                                            onClick={() => handlePayNow(order)}
+                                                            disabled={payingId === order._id || cancellingId === order._id}
+                                                        >
+                                                            {payingId === order._id ? "Opening..." : "💳 Pay Now"}
+                                                        </button>
+                                                    )
+                                                )}
 
-                                        <div className="order-sidebar-block">
-                                            <span className="sidebar-label">Payment</span>
-                                            <div className="sidebar-payment">
-                                                <span className="payment-method-name">
-                                                    {paymentMethod === "COD" ? "💵 Cash on Delivery" : (paymentMethod === "Razorpay" ? "💳 Online (Razorpay)" : paymentMethod)}
-                                                </span>
-                                                <span className={`payment-status-tag ${paymentStatus.toLowerCase()}`}>
-                                                    {paymentStatus}
-                                                </span>
-                                            </div>
-                                            {isUnpaidPending && order.expiresAt && (
-                                                <span className="order-expiry-notice">
-                                                    ⏱️ Unpaid order expires in {Math.max(1, Math.ceil((new Date(order.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)))} days
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        <div className="sidebar-actions">
-                                            {isUnpaidPending && (
-                                                order.hasOutOfStockItems ? (
+                                                {isUnpaidPending ? (
                                                     <button
-                                                        className="btn-pay-now-sidebar btn-out-of-stock"
-                                                        disabled={true}
-                                                        title="Cannot proceed: items in this order are out of stock."
-                                                    >
-                                                        ⛔ Out of Stock
-                                                    </button>
-                                                ) : (
-                                                    <button
-                                                        className="btn-pay-now-sidebar"
-                                                        onClick={() => handlePayNow(order)}
-                                                        disabled={payingId === order._id || cancellingId === order._id}
-                                                    >
-                                                        {payingId === order._id ? "Opening..." : "💳 Pay Now"}
-                                                    </button>
-                                                )
-                                            )}
-
-                                            {isUnpaidPending ? (
-                                                <button
-                                                    className="btn-remove-order-sidebar"
-                                                    onClick={() => handleCancelOrder(order._id, true)}
-                                                    disabled={cancellingId === order._id || payingId === order._id}
-                                                >
-                                                    {cancellingId === order._id ? "Removing..." : "🗑️ Cancel & Remove Order"}
-                                                </button>
-                                            ) : (
-                                                canCancel && (
-                                                    <button
-                                                        className="btn-cancel-order-sidebar"
-                                                        onClick={() => handleCancelOrder(order._id, false)}
+                                                        className="btn-remove-order-sidebar"
+                                                        onClick={() => handleCancelOrder(order._id, true)}
                                                         disabled={cancellingId === order._id || payingId === order._id}
                                                     >
-                                                        {cancellingId === order._id ? "Cancelling..." : "Cancel Order"}
+                                                        {cancellingId === order._id ? "Removing..." : "🗑️ Cancel & Remove Order"}
                                                     </button>
-                                                )
-                                            )}
+                                                ) : (
+                                                    canCancel && (
+                                                        <button
+                                                            className="btn-cancel-order-sidebar"
+                                                            onClick={() => handleCancelOrder(order._id, false)}
+                                                            disabled={cancellingId === order._id || payingId === order._id}
+                                                        >
+                                                            {cancellingId === order._id ? "Cancelling..." : "Cancel Order"}
+                                                        </button>
+                                                    )
+                                                )}
 
-                                            <button
-                                                type="button"
-                                                className="btn-print-order-slip-sidebar no-print"
-                                                onClick={() => handlePrintOrder(order)}
-                                                title="Print packing slip or invoice"
-                                            >
-                                                🖨️ Print Order Slip
-                                            </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn-print-order-slip-sidebar no-print"
+                                                    onClick={() => handlePrintOrder(order)}
+                                                    title="Print packing slip or invoice"
+                                                >
+                                                    🖨️ Print Order Slip
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Pagination (Matching Products Page Neo Theme) */}
+                    {totalPages > 1 && (
+                        <div className="pagination-container">
+                            <nav className="pagination" aria-label="Orders Pagination">
+                                <button
+                                    type="button"
+                                    className="pagination-btn nav"
+                                    disabled={currentPage === 1}
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    aria-label="Go to previous page"
+                                >
+                                    ← Prev
+                                </button>
+
+                                {/* Desktop range */}
+                                <div className="pagination-numbers pagination-numbers-desktop">
+                                    {desktopPageRange.map((item, idx) =>
+                                        item === "..." ? (
+                                            <span key={`desk-ellipsis-${idx}`} className="pagination-ellipsis" aria-hidden="true">
+                                                …
+                                            </span>
+                                        ) : (
+                                            <button
+                                                key={`desk-page-${item}`}
+                                                type="button"
+                                                className={`pagination-btn ${currentPage === item ? "active" : ""}`}
+                                                onClick={() => handlePageChange(item)}
+                                                aria-label={`Go to page ${item}`}
+                                                aria-current={currentPage === item ? "page" : undefined}
+                                            >
+                                                {item}
+                                            </button>
+                                        )
+                                    )}
+                                </div>
+
+                                {/* Mobile range */}
+                                <div className="pagination-numbers pagination-numbers-mobile">
+                                    {mobilePageRange.map((item, idx) =>
+                                        item === "..." ? (
+                                            <span key={`mob-ellipsis-${idx}`} className="pagination-ellipsis" aria-hidden="true">
+                                                …
+                                            </span>
+                                        ) : (
+                                            <button
+                                                key={`mob-page-${item}`}
+                                                type="button"
+                                                className={`pagination-btn ${currentPage === item ? "active" : ""}`}
+                                                onClick={() => handlePageChange(item)}
+                                                aria-label={`Go to page ${item}`}
+                                                aria-current={currentPage === item ? "page" : undefined}
+                                            >
+                                                {item}
+                                            </button>
+                                        )
+                                    )}
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="pagination-btn nav"
+                                    disabled={currentPage === totalPages}
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    aria-label="Go to next page"
+                                >
+                                    Next →
+                                </button>
+                            </nav>
+
+                            <div className="pagination-info">
+                                Showing <strong>{startIndex + 1}</strong>–<strong>{Math.min(startIndex + ORDERS_PER_PAGE, orders.length)}</strong> of <strong>{orders.length}</strong> drops • Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
                             </div>
-                        );
-                    })}
-                </div>
+                        </div>
+                    )}
+                </>
             )}
 
             {/* Dedicated Single-Page Tabular Black & White Printable Order Slip */}
