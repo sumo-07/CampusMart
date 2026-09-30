@@ -75,7 +75,7 @@ export const Footer = () => {
         {/* Newsletter */}
         <div className="footer-newsletter">
           <h4 className="footer-title">VIP Drop Alert 🔥</h4>
-          <p className="footer-text" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>
+          <p className="footer-text footer-newsletter-text">
             Get secret discount codes, midnight drop alerts, and meme drops straight to your inbox. No spam, strictly heat.
           </p>
           <form className="newsletter-form" onSubmit={handleSubscribe}>
@@ -98,11 +98,11 @@ export const Footer = () => {
       {/* Bottom Bar */}
       <div className="container">
         <div className="footer-bottom">
-          <p>© {new Date().getFullYear()} Cartsy. Built with ☕ & zero chill for hype legends.</p>
-          <p style={{ display: 'flex', gap: '1.5rem' }}>
-            <a href="#" className="footer-link" style={{ fontSize: '0.85rem' }}>Privacy Policy</a>
-            <a href="#" className="footer-link" style={{ fontSize: '0.85rem' }}>Terms of Service</a>
-          </p>
+          <p className="footer-copyright">© {new Date().getFullYear()} Cartsy. Built with ☕ & zero chill for hype legends.</p>
+          <div className="footer-legal-links">
+            <a href="#" className="footer-link">Privacy Policy</a>
+            <a href="#" className="footer-link">Terms of Service</a>
+          </div>
         </div>
       </div>
     </footer>

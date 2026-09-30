@@ -183,26 +183,31 @@
   scrollbar-color: var(--neo-border) #FAF7F2;
 }
 
+.filter-content::-webkit-scrollbar,
 .filter-dropdown::-webkit-scrollbar {
   width: 5px;
 }
 
+.filter-content::-webkit-scrollbar-button,
 .filter-dropdown::-webkit-scrollbar-button {
   display: none;
   width: 0;
   height: 0;
 }
 
+.filter-content::-webkit-scrollbar-track,
 .filter-dropdown::-webkit-scrollbar-track {
   background: #FAF7F2;
   border-radius: var(--radius-pill);
 }
 
+.filter-content::-webkit-scrollbar-thumb,
 .filter-dropdown::-webkit-scrollbar-thumb {
   background: var(--neo-border) !important;
   border-radius: var(--radius-pill);
 }
 
+.filter-content::-webkit-scrollbar-thumb:hover,
 .filter-dropdown::-webkit-scrollbar-thumb:hover {
   background: #383838 !important;
 }
@@ -458,43 +463,46 @@
   /* Amazon Sticky Search Controls Bar */
   .products-controls-bar {
     top: 64px;
-    padding: 8px 10px;
-    gap: 8px;
-    margin-bottom: 1.4rem;
+    padding: 7px 9px;
+    gap: 7px;
+    margin-bottom: 1.2rem;
+    border: 2px solid var(--neo-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-hard-xs);
+    box-shadow: 2px 2px 0px var(--neo-border);
+    overflow: visible !important;
+    z-index: 95;
   }
 
   .products-search input {
-    padding: 0.65rem 2.4rem 0.65rem 2.5rem;
-    font-size: 0.88rem;
+    padding: 0.58rem 2.2rem 0.58rem 2.3rem;
+    font-size: 0.82rem;
+    border: 2px solid var(--neo-border);
     border-radius: var(--radius-sm);
   }
 
   .search-symbol {
-    left: 0.85rem;
-    font-size: 1rem;
+    left: 0.75rem;
+    font-size: 0.9rem;
   }
 
   .clear-search-btn {
-    right: 0.85rem;
-    width: 22px;
-    height: 22px;
-    font-size: 0.72rem;
+    right: 0.75rem;
+    width: 20px;
+    height: 20px;
+    font-size: 0.68rem;
   }
 
-  /* Amazon Horizontal Scrolling Filter Chips */
+  /* Mobile Filters Row & Compact Neo-Pop Dropdowns */
   .products-filters {
     gap: 6px;
     width: 100%;
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding-bottom: 2px;
-    flex-wrap: nowrap;
+    overflow: visible !important;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 96;
   }
 
   .products-filters::-webkit-scrollbar {
@@ -502,29 +510,80 @@
   }
 
   .filter-block {
+    position: relative;
     flex-shrink: 0;
   }
 
   .filter-toggle {
-    padding: 0.45rem 0.8rem;
-    font-size: 0.76rem;
+    padding: 0.38rem 0.68rem;
+    font-size: 0.74rem;
     white-space: nowrap;
+    border: 1.5px solid var(--neo-border);
     border-radius: var(--radius-pill);
+    box-shadow: 1.5px 1.5px 0px var(--neo-border);
     gap: 5px;
+    font-weight: 800;
+  }
+
+  .filter-toggle .filter-arrow {
+    font-size: 0.58rem;
   }
 
   .filter-clear {
-    padding: 0.45rem 0.8rem;
-    font-size: 0.76rem;
+    padding: 0.38rem 0.68rem;
+    font-size: 0.74rem;
     white-space: nowrap;
+    border: 1.5px solid var(--neo-border);
     border-radius: var(--radius-pill);
+    box-shadow: 1.5px 1.5px 0px var(--neo-border);
     flex-shrink: 0;
+    font-weight: 800;
   }
 
   .filter-content {
-    min-width: 180px;
-    max-width: 88vw;
-    z-index: 120;
+    position: absolute;
+    top: calc(100% + 6px);
+    background: #FFFFFF;
+    border: 2px solid var(--neo-border);
+    border-radius: 10px;
+    box-shadow: 3px 3px 0px var(--neo-border);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 200;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filter-block-category .filter-content {
+    left: 0;
+    right: auto;
+    min-width: 160px;
+    max-width: 210px;
+    max-height: 210px;
+    overflow-y: auto;
+  }
+
+  .filter-block-price .filter-content {
+    right: 0;
+    left: auto;
+    min-width: 130px;
+    max-width: 160px;
+    max-height: none;
+  }
+
+  .filter-btn {
+    text-align: left;
+    padding: 5px 9px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .filter-btn.active {
+    background: var(--neo-yellow);
+    border-color: var(--neo-border);
   }
 
   /* ALWAYS 2 Products Per Row (Amazon Structure) */
@@ -596,6 +655,29 @@
   .products-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px;
+  }
+
+  .filter-toggle,
+  .filter-clear {
+    padding: 0.32rem 0.58rem;
+    font-size: 0.7rem;
+    gap: 3px;
+  }
+
+  .filter-block-category .filter-content {
+    min-width: 145px;
+    max-width: 190px;
+    max-height: 190px;
+  }
+
+  .filter-block-price .filter-content {
+    min-width: 120px;
+    max-width: 150px;
+  }
+
+  .filter-btn {
+    padding: 4px 7px;
+    font-size: 0.72rem;
   }
 }
 

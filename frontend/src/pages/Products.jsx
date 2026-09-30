@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 
@@ -25,6 +25,32 @@ export const Products = () => {
 
   const [showCategories, setShowCategories] = useState(false);
   const [showPrice, setShowPrice] = useState(false);
+
+  const categoryDropdownRef = useRef(null);
+  const priceDropdownRef = useRef(null);
+
+  // Close dropdowns when tapping outside
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (
+        categoryDropdownRef.current &&
+        !categoryDropdownRef.current.contains(e.target) &&
+        priceDropdownRef.current &&
+        !priceDropdownRef.current.contains(e.target)
+      ) {
+        setShowCategories(false);
+        setShowPrice(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, []);
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -231,7 +257,7 @@ export const Products = () => {
           {/* Filters */}
           <div className="products-filters">
             {/* Categories */}
-            <div className="filter-block">
+            <div className="filter-block filter-block-category" ref={categoryDropdownRef}>
               <button
                 className={`filter-toggle ${activeCategory ? "active-filter" : ""}`}
                 onClick={() => {
@@ -269,7 +295,7 @@ export const Products = () => {
             </div>
 
             {/* Price */}
-            <div className="filter-block">
+            <div className="filter-block filter-block-price" ref={priceDropdownRef}>
               <button
                 className={`filter-toggle ${activeSort ? "active-filter" : ""}`}
                 onClick={() => {
