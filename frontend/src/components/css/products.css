@@ -441,7 +441,7 @@
   }
 
   .products-container {
-    padding: 0 10px;
+    padding: 0 0.85rem;
   }
 
   .products-page-header {
@@ -589,8 +589,8 @@
   /* ALWAYS 2 Products Per Row (Amazon Structure) */
   .products-grid {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px;
-    margin-bottom: 2.5rem;
+    gap: 1.25rem 0.9rem;
+    margin-bottom: 2.8rem;
   }
 
   .products-empty-state {
@@ -647,36 +647,49 @@
 }
 
 
-@media (max-width: 380px) {
+/* --- Compact Mobile Devices (<= 480px) --- */
+@media (max-width: 480px) {
   .products-container {
-    padding: 0 8px;
+    padding: 0 0.65rem;
   }
 
   .products-grid {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 8px;
+    gap: 1.15rem 0.75rem;
+  }
+}
+
+/* --- Ultra-Compact Phones (<= 380px) --- */
+@media (max-width: 380px) {
+  .products-container {
+    padding: 0 0.5rem;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem 0.6rem;
   }
 
   .filter-toggle,
   .filter-clear {
     padding: 0.32rem 0.58rem;
     font-size: 0.7rem;
-    gap: 3px;
+    gap: 0.2rem;
   }
 
   .filter-block-category .filter-content {
-    min-width: 145px;
-    max-width: 190px;
-    max-height: 190px;
+    min-width: 9rem;
+    max-width: 12rem;
+    max-height: 12rem;
   }
 
   .filter-block-price .filter-content {
-    min-width: 120px;
-    max-width: 150px;
+    min-width: 7.5rem;
+    max-width: 9.5rem;
   }
 
   .filter-btn {
-    padding: 4px 7px;
+    padding: 0.25rem 0.45rem;
     font-size: 0.72rem;
   }
 }

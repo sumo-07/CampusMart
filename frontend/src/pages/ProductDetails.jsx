@@ -12,6 +12,7 @@ export const ProductDetails = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [addingToCart, setAddingToCart] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
     const { user } = useContext(AuthContext);
     const { getItemQuantity, updateQuantity, addToCart, MAX_ITEM_QUANTITY } = useCart();
 
@@ -107,19 +108,51 @@ export const ProductDetails = () => {
         <section className="pd-section">
             <div className="pd-container">
 
-                {/* Image */}
-                <div className="pd-image-wrapper">
-                    <img
-                        className="pd-image"
-                        src={product.thumbnail}
-                        alt={product.title}
-                    />
-                    <div className="pd-image-badge">
-                        <span>🔥 VERIFIED DRIP</span>
+                {/* Breadcrumbs Navigation Bar */}
+                <div className="pd-nav-bar">
+                    <button type="button" onClick={() => navigate(-1)} className="pd-back-btn">
+                        ← Back
+                    </button>
+                    <div className="pd-breadcrumbs">
+                        <span onClick={() => navigate("/")} className="pd-breadcrumb-link">Home</span>
+                        <span className="pd-breadcrumb-sep">/</span>
+                        <span onClick={() => navigate("/product")} className="pd-breadcrumb-link">Drops</span>
+                        <span className="pd-breadcrumb-sep">/</span>
+                        <span className="pd-breadcrumb-current">{product.category}</span>
                     </div>
                 </div>
 
-                {/* Info */}
+                {/* Left Column: Image & Thumbnails */}
+                <div className="pd-gallery-col">
+                    <div className="pd-image-wrapper">
+                        <img
+                            className="pd-image"
+                            src={selectedImage || product.thumbnail}
+                            alt={product.title}
+                        />
+                        <div className="pd-image-badge">
+                            <span>🔥 VERIFIED DRIP</span>
+                        </div>
+                    </div>
+
+                    {product.images && product.images.length > 1 && (
+                        <div className="pd-thumbnails-row">
+                            {product.images.slice(0, 5).map((img, idx) => (
+                                <button
+                                    key={idx}
+                                    type="button"
+                                    className={`pd-thumbnail-btn ${(selectedImage === img || (!selectedImage && img === product.thumbnail)) ? "active" : ""}`}
+                                    onClick={() => setSelectedImage(img)}
+                                    aria-label={`Preview angle ${idx + 1}`}
+                                >
+                                    <img src={img} alt="" />
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Right Column: Info */}
                 <div className="pd-info">
                     <div className="pd-tag-row">
                         <span className="pd-category-pill">{product.category}</span>
@@ -135,6 +168,22 @@ export const ProductDetails = () => {
 
                     <p className="pd-description">{product.description}</p>
 
+                    {/* Trust Perks */}
+                    <div className="pd-perks-row">
+                        <div className="pd-perk-chip">
+                            <span className="pd-perk-icon">⚡</span>
+                            <span>Quick Dispatch</span>
+                        </div>
+                        <div className="pd-perk-chip">
+                            <span className="pd-perk-icon">🛡️</span>
+                            <span>100% Legit</span>
+                        </div>
+                        <div className="pd-perk-chip">
+                            <span className="pd-perk-icon">📦</span>
+                            <span>Campus Drop</span>
+                        </div>
+                    </div>
+
                     {product.stock !== undefined && (
                         <div className="pd-stock-info">
                             <span className="pd-stock-label">DROP STATUS:</span>
@@ -149,65 +198,63 @@ export const ProductDetails = () => {
                     )}
 
                     {/* Actions */}
-                    {!user?.isAdmin && (
-                        <div className="pd-actions">
-                            {product.stock <= 0 ? (
-                                <button className="pd-btn add-cart-btn disabled" disabled>
-                                    Cooked (Sold Out) 💀
-                                </button>
-                            ) : getItemQuantity(product._id || product.id || productId) > 0 ? (
-                                <div className="pd-cart-qty-control">
-                                    <button
-                                        type="button"
-                                        className="pd-qty-btn"
-                                        onClick={() => updateQuantity(product._id || product.id || productId, "dec")}
-                                        title="Decrease quantity"
-                                    >
-                                        −
-                                    </button>
-                                    <span className="pd-qty-display">
-                                        {getItemQuantity(product._id || product.id || productId)} IN BAG
-                                    </span>
-                                    <button
-                                        type="button"
-                                        className="pd-qty-btn"
-                                        onClick={() => {
-                                            const currentQty = getItemQuantity(product._id || product.id || productId);
-                                            if (currentQty >= (MAX_ITEM_QUANTITY || 5)) {
-                                                alert(`Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item`);
-                                                return;
-                                            }
-                                            if (product.stock !== undefined && currentQty >= product.stock) {
-                                                alert(`Only ${product.stock} items available in stock`);
-                                                return;
-                                            }
-                                            updateQuantity(product._id || product.id || productId, "inc");
-                                        }}
-                                        disabled={getItemQuantity(product._id || product.id || productId) >= (MAX_ITEM_QUANTITY || 5) || (product.stock !== undefined && getItemQuantity(product._id || product.id || productId) >= product.stock)}
-                                        title={getItemQuantity(product._id || product.id || productId) >= (MAX_ITEM_QUANTITY || 5) ? `Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item` : "Increase quantity"}
-                                    >
-                                        +
-                                    </button>
-                                </div>
-                            ) : (
-                                <button
-                                    className="pd-btn add-cart-btn"
-                                    onClick={handleAddToCart}
-                                    disabled={addingToCart}
-                                >
-                                    {addingToCart ? "Securing..." : "Secure The Bag 🛍️"}
-                                </button>
-                            )}
-
-                            <button 
-                                className="pd-btn buy-now-btn"
-                                onClick={handleBuyNow}
-                                disabled={product.stock <= 0}
-                            >
-                                {product.stock <= 0 ? "Out of Stock" : "Instant Cop ⚡"}
+                    <div className="pd-actions">
+                        {product.stock <= 0 ? (
+                            <button className="pd-btn add-cart-btn disabled" disabled>
+                                Cooked (Sold Out) 💀
                             </button>
-                        </div>
-                    )}
+                        ) : getItemQuantity(product._id || product.id || productId) > 0 ? (
+                            <div className="pd-cart-qty-control">
+                                <button
+                                    type="button"
+                                    className="pd-qty-btn"
+                                    onClick={() => updateQuantity(product._id || product.id || productId, "dec")}
+                                    title="Decrease quantity"
+                                >
+                                    −
+                                </button>
+                                <span className="pd-qty-display">
+                                    {getItemQuantity(product._id || product.id || productId)} IN BAG
+                                </span>
+                                <button
+                                    type="button"
+                                    className="pd-qty-btn"
+                                    onClick={() => {
+                                        const currentQty = getItemQuantity(product._id || product.id || productId);
+                                        if (currentQty >= (MAX_ITEM_QUANTITY || 5)) {
+                                            alert(`Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item`);
+                                            return;
+                                        }
+                                        if (product.stock !== undefined && currentQty >= product.stock) {
+                                            alert(`Only ${product.stock} items available in stock`);
+                                            return;
+                                        }
+                                        updateQuantity(product._id || product.id || productId, "inc");
+                                    }}
+                                    disabled={getItemQuantity(product._id || product.id || productId) >= (MAX_ITEM_QUANTITY || 5) || (product.stock !== undefined && getItemQuantity(product._id || product.id || productId) >= product.stock)}
+                                    title={getItemQuantity(product._id || product.id || productId) >= (MAX_ITEM_QUANTITY || 5) ? `Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item` : "Increase quantity"}
+                                >
+                                    +
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                className="pd-btn add-cart-btn"
+                                onClick={handleAddToCart}
+                                disabled={addingToCart}
+                            >
+                                {addingToCart ? "Securing..." : "Secure The Bag 🛍️"}
+                            </button>
+                        )}
+
+                        <button 
+                            className="pd-btn buy-now-btn"
+                            onClick={handleBuyNow}
+                            disabled={product.stock <= 0}
+                        >
+                            {product.stock <= 0 ? "Out of Stock" : "Instant Cop ⚡"}
+                        </button>
+                    </div>
                 </div>
 
                 {/* ------------------ Reviews Section ------------------ */}
