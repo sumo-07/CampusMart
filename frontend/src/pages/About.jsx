@@ -51,20 +51,26 @@ export const About = () => {
         <div className="about-features">
           <div className="feature-item f-yellow">
             <div className="feature-icon">💸</div>
-            <h3>Wallet Friendly (Big W)</h3>
-            <p>Fair pricing that won't make your bank account cry. Maximum ROI, zero cap.</p>
+            <div className="feature-content">
+              <h3>Wallet Friendly (Big W)</h3>
+              <p>Fair pricing that won't make your bank account cry. Maximum ROI, zero cap.</p>
+            </div>
           </div>
 
           <div className="feature-item f-pink">
             <div className="feature-icon">🚀</div>
-            <h3>Warp Speed Delivery</h3>
-            <p>From cart to your doorstep faster than instant noodles can cook.</p>
+            <div className="feature-content">
+              <h3>Warp Speed Delivery</h3>
+              <p>From cart to your doorstep faster than instant noodles can cook.</p>
+            </div>
           </div>
 
           <div className="feature-item f-green">
             <div className="feature-icon">🛡️</div>
-            <h3>Locked In Security</h3>
-            <p>Razorpay encrypted checkout & COD handoffs. Your paper is 100% safe.</p>
+            <div className="feature-content">
+              <h3>Locked In Security</h3>
+              <p>Razorpay encrypted checkout & COD handoffs. Your paper is 100% safe.</p>
+            </div>
           </div>
         </div>
 
