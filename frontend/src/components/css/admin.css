@@ -2555,7 +2555,30 @@
   }
 }
 
-/* Responsive */
+/* Mobile Swipe Hint for Tables */
+.admin-table-mobile-hint {
+  display: none;
+  font-family: var(--font-header);
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--neo-border);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  text-align: center;
+  padding: 6px 12px;
+  background: #FFF9D2;
+  border: 1.5px dashed var(--neo-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.6rem;
+}
+
+@media (max-width: 1080px) {
+  .admin-table-mobile-hint {
+    display: block;
+  }
+}
+
+/* Responsive Breakpoints */
 @media (max-width: 900px) {
   .admin-details-grid {
     grid-template-columns: 1fr;
@@ -2566,8 +2589,220 @@
   }
 }
 
+@media (max-width: 768px) {
+  .section-admin {
+    padding: 1.5rem 0 4rem 0;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .admin-header h1 {
+    font-size: 2rem;
+    letter-spacing: -0.5px;
+  }
+
+  .admin-tabs {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-tabs .tab-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.82rem;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .admin-overview {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .metric-card {
+    padding: 1.4rem 1rem;
+  }
+
+  .metric-card p {
+    font-size: 2.2rem;
+  }
+
+  .metric-card h3 {
+    font-size: 0.78rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .admin-toolbar-row {
+    padding: 1.1rem;
+    gap: 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: 1.5rem;
+  }
+
+  .admin-toolbar-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .admin-toolbar-group h2 {
+    font-size: 1.25rem;
+    margin: 0;
+  }
+
+  .admin-search-wrapper {
+    width: 100%;
+  }
+
+  .admin-search-input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .admin-sort-wrapper {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .admin-sort-select {
+    flex: 1;
+  }
+
+  .admin-toolbar-actions {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+
+  .admin-btn-sync,
+  .admin-btn-action {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .admin-orders-controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .admin-filter-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .admin-filter-group .neo-select-container {
+    flex: 1;
+  }
+
+  .admin-order-header-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+  .order-header-status-controls {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .admin-details-top-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.9rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .admin-breadcrumb {
+    gap: 6px;
+    font-size: 0.82rem;
+  }
+
+  .admin-back-btn,
+  .admin-back-link,
+  .breadcrumb-current {
+    font-size: 0.78rem !important;
+    padding: 5px 10px;
+  }
+
+  .admin-details-actions {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+
+  .admin-details-actions button {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .items-summary-card {
+    padding: 1.15rem;
+  }
+
+  .admin-details-card {
+    padding: 1.15rem;
+  }
+
+  .payment-overview-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .products-table-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 @media (max-width: 650px) {
   .admin-image-section-body {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 480px) {
+  .admin-overview {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .admin-header h1 {
+    font-size: 1.65rem;
+  }
+
+  .metric-card p {
+    font-size: 1.9rem;
+  }
+
+  .admin-order-title {
+    font-size: 1.15rem;
+    word-break: break-all;
+  }
+
+  .order-id-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

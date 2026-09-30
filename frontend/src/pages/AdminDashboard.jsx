@@ -1016,6 +1016,9 @@ export const AdminDashboard = () => {
                             </div>
                         )}
 
+                        <div className="admin-table-mobile-hint">
+                            <span>👈 Scroll horizontally to view all columns 👉</span>
+                        </div>
                         <div className="products-table-wrapper">
                             <div className="products-table-inner">
                                 <div className="products-table-header-wrap">
@@ -1273,6 +1276,9 @@ export const AdminDashboard = () => {
                             </div>
                         </div>
 
+                        <div className="admin-table-mobile-hint">
+                            <span>👈 Scroll horizontally to view all columns 👉</span>
+                        </div>
                         <div className="products-table-wrapper">
                             <div className="products-table-inner">
                                 <div className="products-table-header-wrap">
