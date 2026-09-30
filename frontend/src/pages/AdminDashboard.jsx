@@ -1017,32 +1017,52 @@ export const AdminDashboard = () => {
                         )}
 
                         <div className="products-table-wrapper">
-                            <table className="products-table">
-                                <thead>
-                                    <tr>
-                                        <th>Image</th>
-                                        <th className="sortable-th" onClick={() => handleProductSortToggle("title")} title="Sort by Title">
-                                            <div className="th-content">
-                                                <span>Title</span>
-                                                {getSortIcon(productSort, "title-asc", "title-desc")}
-                                            </div>
-                                        </th>
-                                        <th className="sortable-th" onClick={() => handleProductSortToggle("price")} title="Sort by Price">
-                                            <div className="th-content">
-                                                <span>Price</span>
-                                                {getSortIcon(productSort, "price-asc", "price-desc")}
-                                            </div>
-                                        </th>
-                                        <th className="sortable-th" onClick={() => handleProductSortToggle("stock")} title="Sort by Stock">
-                                            <div className="th-content">
-                                                <span>Stock</span>
-                                                {getSortIcon(productSort, "stock-asc", "stock-desc")}
-                                            </div>
-                                        </th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                            <div className="products-table-inner">
+                                <div className="products-table-header-wrap">
+                                    <table className="products-table products-table-head">
+                                        <colgroup>
+                                            <col style={{ width: '90px' }} />
+                                            <col style={{ width: '38%' }} />
+                                            <col style={{ width: '18%' }} />
+                                            <col style={{ width: '18%' }} />
+                                            <col style={{ width: '140px' }} />
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th>Image</th>
+                                                <th className="sortable-th" onClick={() => handleProductSortToggle("title")} title="Sort by Title">
+                                                    <div className="th-content">
+                                                        <span>Title</span>
+                                                        {getSortIcon(productSort, "title-asc", "title-desc")}
+                                                    </div>
+                                                </th>
+                                                <th className="sortable-th" onClick={() => handleProductSortToggle("price")} title="Sort by Price">
+                                                    <div className="th-content">
+                                                        <span>Price</span>
+                                                        {getSortIcon(productSort, "price-asc", "price-desc")}
+                                                    </div>
+                                                </th>
+                                                <th className="sortable-th" onClick={() => handleProductSortToggle("stock")} title="Sort by Stock">
+                                                    <div className="th-content">
+                                                        <span>Stock</span>
+                                                        {getSortIcon(productSort, "stock-asc", "stock-desc")}
+                                                    </div>
+                                                </th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                                <div className="products-table-scroll">
+                                    <table className="products-table products-table-body">
+                                        <colgroup>
+                                            <col style={{ width: '90px' }} />
+                                            <col style={{ width: '38%' }} />
+                                            <col style={{ width: '18%' }} />
+                                            <col style={{ width: '18%' }} />
+                                            <col style={{ width: '140px' }} />
+                                        </colgroup>
+                                        <tbody>
                                     {paginatedProducts.length === 0 ? (
                                         <tr>
                                             <td colSpan="5" style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
@@ -1113,6 +1133,8 @@ export const AdminDashboard = () => {
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
 
                         {totalPages > 1 && (
                             <div className="pagination">
@@ -1252,30 +1274,56 @@ export const AdminDashboard = () => {
                         </div>
 
                         <div className="products-table-wrapper">
-                            <table className="products-table">
-                                <thead>
-                                    <tr>
-                                        <th>Order ID</th>
-                                        <th>Customer</th>
-                                        <th className="sortable-th" onClick={() => handleOrderSortToggle("date")} title="Sort by Date">
-                                            <div className="th-content">
-                                                <span>Date</span>
-                                                {getSortIcon(orderSort, "date-asc", "date-desc")}
-                                            </div>
-                                        </th>
-                                        <th className="sortable-th" onClick={() => handleOrderSortToggle("amount")} title="Sort by Total Amount">
-                                            <div className="th-content">
-                                                <span>Total</span>
-                                                {getSortIcon(orderSort, "amount-asc", "amount-desc")}
-                                            </div>
-                                        </th>
-                                        <th>Payment</th>
-                                        <th>Status</th>
-                                        <th>Items Ordered</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                            <div className="products-table-inner">
+                                <div className="products-table-header-wrap">
+                                    <table className="products-table products-table-head">
+                                        <colgroup>
+                                            <col style={{ width: '11%' }} />
+                                            <col style={{ width: '17%' }} />
+                                            <col style={{ width: '9%' }} />
+                                            <col style={{ width: '8%' }} />
+                                            <col style={{ width: '10%' }} />
+                                            <col style={{ width: '11%' }} />
+                                            <col style={{ width: '18%' }} />
+                                            <col style={{ width: '16%' }} />
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th>Order ID</th>
+                                                <th>Customer</th>
+                                                <th className="sortable-th" onClick={() => handleOrderSortToggle("date")} title="Sort by Date">
+                                                    <div className="th-content">
+                                                        <span>Date</span>
+                                                        {getSortIcon(orderSort, "date-asc", "date-desc")}
+                                                    </div>
+                                                </th>
+                                                <th className="sortable-th" onClick={() => handleOrderSortToggle("amount")} title="Sort by Total Amount">
+                                                    <div className="th-content">
+                                                        <span>Total</span>
+                                                        {getSortIcon(orderSort, "amount-asc", "amount-desc")}
+                                                    </div>
+                                                </th>
+                                                <th>Payment</th>
+                                                <th>Status</th>
+                                                <th>Items Ordered</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                                <div className="products-table-scroll">
+                                    <table className="products-table products-table-body">
+                                        <colgroup>
+                                            <col style={{ width: '11%' }} />
+                                            <col style={{ width: '17%' }} />
+                                            <col style={{ width: '9%' }} />
+                                            <col style={{ width: '8%' }} />
+                                            <col style={{ width: '10%' }} />
+                                            <col style={{ width: '11%' }} />
+                                            <col style={{ width: '18%' }} />
+                                            <col style={{ width: '16%' }} />
+                                        </colgroup>
+                                        <tbody>
                                     {sortedOrders.length === 0 ? (
                                         <tr>
                                             <td colSpan="8" style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
@@ -1393,6 +1441,8 @@ export const AdminDashboard = () => {
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
                     </div>
                 )}
             </div>

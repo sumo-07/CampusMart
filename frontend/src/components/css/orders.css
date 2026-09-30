@@ -3,7 +3,7 @@
   max-width: 1050px;
   width: 100%;
   margin: 0 auto;
-  padding: 3rem 24px 5rem 24px;
+  padding: 1.5rem 24px 2rem 24px;
   min-height: calc(100vh - 120px);
   display: flex;
   flex-direction: column;
@@ -14,8 +14,8 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  padding-bottom: 1.5rem;
-  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1.2rem;
   border-bottom: var(--border-thick);
   flex-wrap: wrap;
   gap: 16px;
@@ -70,12 +70,18 @@
 }
 
 @keyframes spinOrdersRefresh {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ==================== EMPTY STATE ==================== */
 .orders-empty {
+  flex-shrink: 0;
   text-align: center;
   padding: 4rem 2rem;
   background: #FFFFFF;
@@ -124,9 +130,45 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  max-height: calc(100vh - 230px);
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding: 6px 14px 24px 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--neo-border) #FAF7F2;
+  overscroll-behavior: contain;
+}
+
+.orders-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.orders-list::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.orders-list::-webkit-scrollbar-track {
+  background: #FAF7F2;
+  border: 1.5px solid var(--neo-border);
+  border-radius: var(--radius-pill);
+}
+
+.orders-list::-webkit-scrollbar-thumb {
+  background: var(--neo-border) !important;
+  border-radius: var(--radius-pill);
+  min-height: 50px;
+}
+
+.orders-list::-webkit-scrollbar-thumb:hover {
+  background: #383838 !important;
 }
 
 .order-card {
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
   background: #FFFFFF;
   border: var(--border-thick);
   border-radius: var(--radius-xl);
@@ -431,7 +473,8 @@
   color: var(--neo-border);
 }
 
-.payment-status-tag.failed, .payment-status-tag.cancelled {
+.payment-status-tag.failed,
+.payment-status-tag.cancelled {
   background: var(--neo-pink);
   color: var(--neo-border);
 }
@@ -479,7 +522,8 @@
   filter: brightness(0.92);
 }
 
-.btn-remove-order-sidebar, .btn-cancel-order-sidebar {
+.btn-remove-order-sidebar,
+.btn-cancel-order-sidebar {
   padding: 0.65rem;
   background: #FFF0F3;
   color: #E11D48;
@@ -493,12 +537,14 @@
   transition: var(--transition-tactile);
 }
 
-.btn-remove-order-sidebar:hover, .btn-cancel-order-sidebar:hover {
+.btn-remove-order-sidebar:hover,
+.btn-cancel-order-sidebar:hover {
   background: #FFE4E8;
   transform: translate(-1px, -1px);
 }
 
-.btn-remove-order-sidebar:active, .btn-cancel-order-sidebar:active {
+.btn-remove-order-sidebar:active,
+.btn-cancel-order-sidebar:active {
   transform: translate(1.5px, 1.5px) scale(0.98);
   box-shadow: 0.5px 0.5px 0px var(--neo-border);
   background: #FFD2DA;
@@ -533,6 +579,7 @@
   .order-body-grid {
     grid-template-columns: 1fr;
   }
+
   .order-items-column {
     border-right: none;
     border-bottom: var(--border-thick);

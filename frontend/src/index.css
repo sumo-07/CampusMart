@@ -8,13 +8,13 @@
   --bg-dark: #0A0A0A;
   --bg-footer: #0A0A0A;
   --card-bg: #FFFFFF;
-  
+
   /* Text Tokens */
   --text-primary: #0A0A0A;
   --text-secondary: #383838;
   --text-muted: #666666;
   --text-inverted: #FFFFFF;
-  
+
   /* Gen-Z Neo-Pop Vibrant Accents */
   --neo-yellow: #FFE600;
   --neo-pink: #FF6EA7;
@@ -44,12 +44,12 @@
   --shadow-purple: var(--shadow-hard);
   --bg-glass: #FFFFFF;
   --border-glass: var(--neo-border);
-  
+
   /* Tactile Neobrutalist Borders */
   --border-thick: 2.5px solid var(--neo-border);
   --border-medium: 2px solid var(--neo-border);
   --border-thin: 1.5px solid var(--neo-border);
-  
+
   /* Hard Offset Drop Shadows - ZERO BLUR */
   --shadow-hard-xs: 1.5px 1.5px 0px var(--neo-border);
   --shadow-hard-sm: 2px 2px 0px var(--neo-border);
@@ -60,7 +60,7 @@
   --shadow-hard-pink: 4px 4px 0px var(--neo-pink);
   --shadow-hard-hover: 6px 6px 0px var(--neo-border);
   --shadow-hard-active: 1px 1px 0px var(--neo-border);
-  
+
   /* Corner Radii */
   --radius-xs: 4px;
   --radius-sm: 8px;
@@ -68,14 +68,14 @@
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-pill: 9999px;
-  
+
   /* Typography */
   --font-header: 'Space Grotesk', 'Outfit', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
   --font-mono: 'Space Grotesk', monospace;
   --font-meme: 'Luckiest Guy', cursive;
   --font-comic: 'Comic Neue', cursive, sans-serif;
-  
+
   /* Tactile Spring Transitions */
   --transition-tactile: transform 0.12s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.12s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease;
   --transition-smooth: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -302,6 +302,7 @@ main {
   from {
     transform: translateX(0);
   }
+
   to {
     transform: translateX(-50%);
   }
@@ -333,9 +334,9 @@ a.btn,
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1),
-              box-shadow 0.12s cubic-bezier(0.2, 0, 0, 1),
-              filter 0.08s ease,
-              background-color 0.15s ease;
+    box-shadow 0.12s cubic-bezier(0.2, 0, 0, 1),
+    filter 0.08s ease,
+    background-color 0.15s ease;
 }
 
 /* Universal tactile press-down click feedback on ALL buttons across the entire project */
