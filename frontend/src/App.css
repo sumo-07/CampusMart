@@ -612,6 +612,88 @@ a.nav-auth-btn:active {
   }
 }
 
+/* ==================== TABLETS & MEDIUM SCREENS (Surface Pro 10 @ 960px, iPad Pro) ==================== */
+@media (max-width: 1150px) and (min-width: 861px) {
+  .section-navbar .container {
+    height: 3.55rem;
+    padding: 0 8px 0 12px;
+  }
+
+  .navbar-brand {
+    gap: 0.45rem;
+  }
+
+  .navbar-brand img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .brand-name {
+    font-size: 1.22rem;
+    letter-spacing: -0.3px;
+  }
+
+  .location-tag-hover {
+    padding: 2px 8px;
+    height: 26px;
+    gap: 3px;
+  }
+
+  .location-tag-hover .location-pin {
+    font-size: 0.78rem;
+  }
+
+  .location-tag-hover .location-city {
+    font-size: 0.75rem;
+    max-width: 78px;
+  }
+
+  .navbar ul {
+    gap: 0.32rem;
+  }
+
+  .nav-link {
+    font-size: 0.82rem;
+    padding: 0.3rem 0.55rem;
+  }
+
+  .nav-link.active {
+    padding: 0.3rem 0.75rem;
+  }
+
+  .nav-bag-link {
+    gap: 1px;
+  }
+
+  .nav-cart-badge {
+    padding: 1px 5px;
+    font-size: 0.68rem;
+    margin-left: 2px;
+  }
+
+  .nav-user-chip {
+    font-size: 0.78rem;
+    padding: 0.28rem 0.65rem;
+    max-width: 105px;
+  }
+
+  .nav-admin-chip {
+    font-size: 0.78rem !important;
+    padding: 0.28rem 0.65rem !important;
+  }
+
+  .nav-btn-logout {
+    font-size: 0.78rem;
+    padding: 0.28rem 0.65rem;
+  }
+
+  .nav-auth-btn,
+  a.nav-auth-btn {
+    font-size: 0.82rem !important;
+    padding: 0.35rem 0.85rem !important;
+  }
+}
+
 @media (max-width: 860px) {
   /* Keep floating pill navbar single-line and compact on mobile */
   .section-navbar {
