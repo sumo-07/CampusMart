@@ -28,23 +28,64 @@ export const Orders = () => {
         enabled: Boolean(user && !authLoading),
     });
 
+    const [searchQuery, setSearchQuery] = useState("");
     const ORDERS_PER_PAGE = 5;
     const [currentPage, setCurrentPage] = useState(1);
 
-    const totalPages = Math.ceil(orders.length / ORDERS_PER_PAGE);
+    const filteredOrders = orders.filter((order) => {
+        if (!searchQuery.trim()) return true;
+        const query = searchQuery.trim().toLowerCase();
+
+        // 1. Order ID match (full or partial)
+        if (order._id && order._id.toLowerCase().includes(query)) return true;
+
+        // 2. Product titles in ordered items
+        const hasMatchingItem = order.orderItems?.some((item) =>
+            item.title?.toLowerCase().includes(query)
+        );
+        if (hasMatchingItem) return true;
+
+        // 3. Shipping details (recipient, address, city, phone, pincode)
+        const addr = order.shippingAddress;
+        if (addr) {
+            if (addr.fullName?.toLowerCase().includes(query)) return true;
+            if (addr.city?.toLowerCase().includes(query)) return true;
+            if (addr.address?.toLowerCase().includes(query)) return true;
+            if (addr.phone?.toLowerCase().includes(query)) return true;
+            if (addr.pincode && String(addr.pincode).toLowerCase().includes(query)) return true;
+        }
+
+        // 4. Status or Payment method
+        if (order.orderStatus?.toLowerCase().includes(query)) return true;
+        if (order.paymentMethod?.toLowerCase().includes(query)) return true;
+
+        return false;
+    });
+
+    const totalPages = Math.ceil(filteredOrders.length / ORDERS_PER_PAGE);
 
     useEffect(() => {
         if (currentPage > totalPages && totalPages > 0) {
             setCurrentPage(1);
         }
-    }, [orders.length, totalPages, currentPage]);
+    }, [filteredOrders.length, totalPages, currentPage]);
 
     const startIndex = (currentPage - 1) * ORDERS_PER_PAGE;
-    const currentOrders = orders.slice(startIndex, startIndex + ORDERS_PER_PAGE);
+    const currentOrders = filteredOrders.slice(startIndex, startIndex + ORDERS_PER_PAGE);
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
         window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+        setCurrentPage(1);
+    };
+
+    const handleClearSearch = () => {
+        setSearchQuery("");
+        setCurrentPage(1);
     };
 
     const getPaginationRange = (current, total, isMobile = false) => {
@@ -256,27 +297,77 @@ export const Orders = () => {
                     {refreshing ? "Checking..." : "Vibe Check (Refresh)"}
                 </button>
             </div>
-
-            {orders.length === 0 ? (
-                <div className="orders-list">
-                    <div className="orders-empty">
-                        <div className="neo-badge pink" style={{ marginBottom: "1rem" }}>
-                            💀 ZERO PAST DROPS
-                        </div>
-                        <h3>NO DROPS COPPED YET BESTIE</h3>
-                        <p>Your order history is looking like a ghost town. Time to change that.</p>
-                        <button
-                            onClick={() => navigate("/product")}
-                            className="start-shopping-btn"
-                        >
-                            Cop Some Heat 🔥
-                        </button>
-                    </div>
-                </div>
-            ) : (
-                <>
-                    <div className="orders-list">
-                        {currentOrders.map((order) => {
+ 
+             {/* Orders Search Bar */}
+             {orders.length > 0 && (
+                 <div className="orders-search-bar">
+                     <div className="orders-search-input-wrap">
+                         <span className="orders-search-icon" aria-hidden="true">🔍</span>
+                         <input
+                             type="text"
+                             className="orders-search-input"
+                             placeholder="Search orders by ID, product, recipient, or city..."
+                             value={searchQuery}
+                             onChange={handleSearchChange}
+                             aria-label="Search orders"
+                         />
+                         {searchQuery && (
+                             <button
+                                 type="button"
+                                 className="orders-clear-search-btn"
+                                 onClick={handleClearSearch}
+                                 aria-label="Clear order search"
+                                 title="Clear search"
+                             >
+                                 ✕
+                             </button>
+                         )}
+                     </div>
+                     {searchQuery && (
+                         <div className="orders-search-results-meta">
+                             Found <strong>{filteredOrders.length}</strong> matching drop{filteredOrders.length === 1 ? "" : "s"}
+                         </div>
+                     )}
+                 </div>
+             )}
+ 
+             {orders.length === 0 ? (
+                 <div className="orders-list">
+                     <div className="orders-empty">
+                         <div className="neo-badge pink" style={{ marginBottom: "1rem" }}>
+                             💀 ZERO PAST DROPS
+                         </div>
+                         <h3>NO DROPS COPPED YET BESTIE</h3>
+                         <p>Your order history is looking like a ghost town. Time to change that.</p>
+                         <button
+                             onClick={() => navigate("/product")}
+                             className="start-shopping-btn"
+                         >
+                             Cop Some Heat 🔥
+                         </button>
+                     </div>
+                 </div>
+             ) : filteredOrders.length === 0 ? (
+                 <div className="orders-list">
+                     <div className="orders-empty orders-search-empty">
+                         <div className="neo-badge yellow" style={{ marginBottom: "1rem" }}>
+                             🔍 ZERO RESULTS
+                         </div>
+                         <h3>NO DROPS FOUND FOR "{searchQuery}"</h3>
+                         <p>We checked order IDs, item titles, names, and delivery addresses. Try checking for typos or clear your search.</p>
+                         <button
+                             type="button"
+                             onClick={handleClearSearch}
+                             className="start-shopping-btn"
+                         >
+                             Clear Search ✕
+                         </button>
+                     </div>
+                 </div>
+             ) : (
+                 <>
+                     <div className="orders-list">
+                         {currentOrders.map((order) => {
                             const status = order.orderStatus || "Pending";
                             const canCancel = status === "Pending" || status === "Processing";
                             const paymentMethod = order.paymentMethod || "COD";
@@ -522,7 +613,7 @@ export const Orders = () => {
                             </nav>
 
                             <div className="pagination-info">
-                                Showing <strong>{startIndex + 1}</strong>–<strong>{Math.min(startIndex + ORDERS_PER_PAGE, orders.length)}</strong> of <strong>{orders.length}</strong> drops • Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+                                Showing <strong>{startIndex + 1}</strong>–<strong>{Math.min(startIndex + ORDERS_PER_PAGE, filteredOrders.length)}</strong> of <strong>{filteredOrders.length}</strong> drops • Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
                             </div>
                         </div>
                     )}

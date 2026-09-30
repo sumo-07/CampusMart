@@ -93,6 +93,103 @@
   }
 }
 
+/* ==================== ORDERS SEARCH BAR ==================== */
+.orders-search-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.orders-search-input-wrap {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.orders-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.85rem 3rem 0.85rem 3.1rem;
+  background: #FFFFFF;
+  border: var(--border-thick);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-hard-xs);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--neo-border);
+  outline: none;
+  transition: var(--transition-tactile);
+}
+
+.orders-search-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.orders-search-input:focus {
+  transform: translate(-0.08rem, -0.08rem);
+  box-shadow: var(--shadow-hard-sm);
+  background: #FFFDF8;
+}
+
+.orders-search-icon {
+  position: absolute;
+  left: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.15rem;
+  pointer-events: none;
+  user-select: none;
+}
+
+.orders-clear-search-btn {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #FAF7F2;
+  border: 1.5px solid var(--neo-border);
+  border-radius: 50%;
+  width: 1.65rem;
+  height: 1.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 0.75rem;
+  color: var(--neo-border);
+  transition: var(--transition-tactile);
+  user-select: none;
+}
+
+.orders-clear-search-btn:hover {
+  background: var(--neo-pink);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.orders-clear-search-btn:active {
+  transform: translateY(-50%) scale(0.95);
+  box-shadow: 0.5px 0.5px 0 var(--neo-border);
+}
+
+.orders-search-results-meta {
+  font-family: var(--font-header);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding: 0 0.25rem;
+  letter-spacing: 0.015rem;
+}
+
+.orders-search-results-meta strong {
+  color: var(--neo-border);
+}
+
 /* ==================== EMPTY STATE ==================== */
 .orders-empty {
   flex-shrink: 0;
@@ -826,6 +923,34 @@
     border-radius: var(--radius-sm);
   }
 
+  /* Mobile Search Bar */
+  .orders-search-bar {
+    margin-bottom: 1.15rem;
+    gap: 0.35rem;
+  }
+
+  .orders-search-input {
+    padding: 0.65rem 2.4rem 0.65rem 2.4rem;
+    font-size: 0.82rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .orders-search-icon {
+    left: 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .orders-clear-search-btn {
+    right: 0.65rem;
+    width: 1.45rem;
+    height: 1.45rem;
+    font-size: 0.7rem;
+  }
+
+  .orders-search-results-meta {
+    font-size: 0.75rem;
+  }
+
   /* Orders List */
   .orders-list {
     gap: 1.25rem;
@@ -1117,6 +1242,23 @@
   .orders-refresh-btn {
     padding: 0.3rem 0.5rem;
     font-size: 0.68rem;
+  }
+
+  .orders-search-input {
+    padding: 0.55rem 2.1rem 0.55rem 2.1rem;
+    font-size: 0.76rem;
+  }
+
+  .orders-search-icon {
+    left: 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .orders-clear-search-btn {
+    right: 0.5rem;
+    width: 1.3rem;
+    height: 1.3rem;
+    font-size: 0.65rem;
   }
 
   .order-top-bar {
