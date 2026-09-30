@@ -217,122 +217,219 @@ export const Checkout = () => {
         <p className="checkout-subtitle">Verify your drop spot and lock in payment. Zero delays, pure speed.</p>
       </div>
 
-      {/* Order Summary */}
-      <div className="checkout-summary">
-        <div className="checkout-section-title-wrap">
-          <span className="checkout-badge-num">1</span>
-          <h2>BAG SUMMARY</h2>
-        </div>
-        <div className="checkout-items-list">
-          {cartItems.map((item) => (
-            <div key={item.productId} className="checkout-item">
-              <div className="checkout-item-title-box">
-                <p className="item-name">{item.title}</p>
-                <span className="item-calc">{item.quantity} × ₹{Number(item.price).toFixed(2)}</span>
-              </div>
-              <p className="item-final-price">₹{(Number(item.price) * item.quantity).toFixed(2)}</p>
+      <div className="checkout-main-grid">
+        <div className="checkout-steps-col">
+          {/* Delivery Configuration (Step 1) */}
+          <div className="checkout-step-card checkout-delivery-section">
+            <div className="checkout-section-title-wrap">
+              <span className="checkout-badge-num">1</span>
+              <h2>DELIVERY ADDRESS 📍</h2>
             </div>
-          ))}
-        </div>
-        <div className="checkout-total-row">
-          <span className="total-label">TOTAL TO PAY:</span>
-          <span className="total-amount">₹{Number(totalPrice).toFixed(2)}</span>
-        </div>
-      </div>
 
-      {/* Delivery Configuration */}
-      <div className="checkout-delivery-section">
-        <div className="checkout-section-title-wrap">
-          <span className="checkout-badge-num">2</span>
-          <h2>DELIVERY ADDRESS 📍</h2>
-        </div>
-
-        {!selectedAddress ? (
-          /* Empty state: No address found */
-          <div className="checkout-no-address-box">
-            <div className="no-address-icon-wrap">
-              <span className="no-address-icon">📍</span>
-            </div>
-            <div className="no-address-info">
-              <h3>No Delivery Address Found</h3>
-              <p>Where are we sending the goods? Add your delivery address to proceed.</p>
-            </div>
-            <button
-              type="button"
-              className="checkout-btn-add-address"
-              onClick={() => {
-                setModalInitialNew(true);
-                setIsAddressModalOpen(true);
-              }}
-            >
-              + Add Address 📍
-            </button>
-          </div>
-        ) : (
-          /* Active Selected Address Card */
-          <div className="checkout-address-card">
-            <div className="checkout-address-header">
-              <div className="checkout-recipient-info">
-                <span className="recipient-name">{selectedAddress.fullName}</span>
-                {selectedAddress.isDefault && <span className="default-badge">MAIN SPOT</span>}
-              </div>
-              <div className="checkout-address-actions">
+            {!selectedAddress ? (
+              /* Empty state: No address found */
+              <div className="checkout-no-address-box">
+                <div className="no-address-icon-wrap">
+                  <span className="no-address-icon">📍</span>
+                </div>
+                <div className="no-address-info">
+                  <h3>No Delivery Address Found</h3>
+                  <p>Where are we sending the goods? Add your delivery address to proceed.</p>
+                </div>
                 <button
                   type="button"
-                  className="checkout-address-action-btn"
-                  onClick={() => {
-                    setModalInitialNew(false);
-                    setIsAddressModalOpen(true);
-                  }}
-                  title="Choose from saved addresses or edit"
-                >
-                  Change Drop Spot
-                </button>
-                <button
-                  type="button"
-                  className="checkout-address-action-btn primary"
+                  className="checkout-btn-add-address"
                   onClick={() => {
                     setModalInitialNew(true);
                     setIsAddressModalOpen(true);
                   }}
-                  title="Add another delivery address"
                 >
-                  + Add New
+                  + Add Address 📍
                 </button>
               </div>
-            </div>
-
-            <div className="checkout-address-body">
-              <p className="address-line">
-                <span>📍</span> {selectedAddress.address}
-              </p>
-              <p className="address-city-line">
-                {selectedAddress.city}, PIN: {selectedAddress.pincode}
-              </p>
-              <p className="address-phone-line">
-                <span>📞</span> Contact: <strong>+91 {selectedAddress.phone}</strong>
-              </p>
-            </div>
-
-            {user?.addresses && user.addresses.length > 1 && (
-              <div className="checkout-address-pills-row">
-                <span className="pills-title">Quick Switch:</span>
-                <div className="pills-container">
-                  {user.addresses.map((addr) => (
+            ) : (
+              /* Active Selected Address Card */
+              <div className="checkout-address-card">
+                <div className="checkout-address-header">
+                  <div className="checkout-recipient-info">
+                    <span className="recipient-name">{selectedAddress.fullName}</span>
+                    {selectedAddress.isDefault && <span className="default-badge">MAIN SPOT</span>}
+                  </div>
+                  <div className="checkout-address-actions">
                     <button
-                      key={addr._id}
                       type="button"
-                      className={`address-quick-pill ${selectedAddress._id === addr._id ? "active" : ""}`}
-                      onClick={() => setSelectedAddressId(addr._id)}
+                      className="checkout-address-action-btn"
+                      onClick={() => {
+                        setModalInitialNew(false);
+                        setIsAddressModalOpen(true);
+                      }}
+                      title="Choose from saved addresses or edit"
                     >
-                      {addr.fullName} ({addr.city})
+                      Change Drop Spot
                     </button>
-                  ))}
+                    <button
+                      type="button"
+                      className="checkout-address-action-btn primary"
+                      onClick={() => {
+                        setModalInitialNew(true);
+                        setIsAddressModalOpen(true);
+                      }}
+                      title="Add another delivery address"
+                    >
+                      + Add New
+                    </button>
+                  </div>
                 </div>
+
+                <div className="checkout-address-body">
+                  <p className="address-line">
+                    <span>📍</span> {selectedAddress.address}
+                  </p>
+                  <p className="address-city-line">
+                    {selectedAddress.city}, PIN: {selectedAddress.pincode}
+                  </p>
+                  <p className="address-phone-line">
+                    <span>📞</span> Contact: <strong>+91 {selectedAddress.phone}</strong>
+                  </p>
+                </div>
+
+                {user?.addresses && user.addresses.length > 1 && (
+                  <div className="checkout-address-pills-row">
+                    <span className="pills-title">Quick Switch:</span>
+                    <div className="pills-container">
+                      {user.addresses.map((addr) => (
+                        <button
+                          key={addr._id}
+                          type="button"
+                          className={`address-quick-pill ${selectedAddress._id === addr._id ? "active" : ""}`}
+                          onClick={() => setSelectedAddressId(addr._id)}
+                        >
+                          {addr.fullName} ({addr.city})
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
+
+          {/* Step 2: Bag Summary */}
+          <div className="checkout-step-card checkout-summary-section">
+            <div className="checkout-section-title-wrap">
+              <span className="checkout-badge-num">2</span>
+              <h2>BAG SUMMARY</h2>
+            </div>
+
+            <div className="checkout-items-list">
+              {cartItems.map((item) => (
+                <div key={item.productId} className="checkout-item">
+                  <div className="checkout-item-title-box">
+                    <p className="item-name">{item.title}</p>
+                    <span className="item-calc">{item.quantity} × ₹{Number(item.price).toFixed(2)}</span>
+                  </div>
+                  <p className="item-final-price">₹{(Number(item.price) * item.quantity).toFixed(2)}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="checkout-total-row">
+              <span className="total-label">BAG SUBTOTAL:</span>
+              <span className="total-amount">₹{Number(totalPrice).toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Step 3: Choose Payment Vibe & Place Order */}
+        <aside className="checkout-sidebar-col">
+          <div className="checkout-step-card checkout-payment-section">
+            <div className="checkout-section-title-wrap">
+              <span className="checkout-badge-num">3</span>
+              <h2>CHOOSE PAYMENT VIBE</h2>
+            </div>
+
+            {/* Razorpay Option */}
+            <label className={`payment-method-card ${paymentMethod === "Razorpay" ? "selected" : ""}`}>
+              <div className="payment-method-radio-wrap">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="Razorpay"
+                  checked={paymentMethod === "Razorpay"}
+                  onChange={() => setPaymentMethod("Razorpay")}
+                />
+              </div>
+              <div className="payment-method-info">
+                <div className="payment-method-header-row">
+                  <strong className="payment-method-title">
+                    ⚡ Razorpay Instant
+                  </strong>
+                  <span className="payment-method-badge instant">
+                    RECOMMENDED 🚀
+                  </span>
+                </div>
+                <p className="payment-method-subtext">UPI, GPay, PhonePe, Cards, NetBanking</p>
+                <span className="payment-method-desc">
+                  Zero wait, confirmed instantly. Pay using QR code, PhonePe, Paytm, or Card.
+                </span>
+              </div>
+            </label>
+
+            {/* COD Option */}
+            <label className={`payment-method-card ${paymentMethod === "COD" ? "selected" : ""}`}>
+              <div className="payment-method-radio-wrap">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="COD"
+                  checked={paymentMethod === "COD"}
+                  onChange={() => setPaymentMethod("COD")}
+                />
+              </div>
+              <div className="payment-method-info">
+                <div className="payment-method-header-row">
+                  <strong className="payment-method-title">
+                    💵 Cash on Delivery
+                  </strong>
+                  <span className="payment-method-badge cod">
+                    COD ACTIVE
+                  </span>
+                </div>
+                <p className="payment-method-subtext">Doorstep Handoff</p>
+                <span className="payment-method-desc">
+                  Pay cash in hand when the courier arrives at your doorstep.
+                </span>
+              </div>
+            </label>
+
+            <div className="checkout-final-pay-row">
+              <span className="final-pay-label">TOTAL TO PAY:</span>
+              <span className="final-pay-amount">₹{Number(totalPrice).toFixed(2)}</span>
+            </div>
+
+            <div className="checkout-actions">
+              <button 
+                className="btn-submit-order" 
+                onClick={handlePlaceOrder} 
+                disabled={isSubmitting}
+              >
+                {isSubmitting
+                  ? "Cooking your order..."
+                  : paymentMethod === "Razorpay"
+                  ? `PAY ₹${Number(totalPrice).toFixed(2)} VIA RAZORPAY ⚡`
+                  : "LOCK IN ORDER (COD) 📦"}
+              </button>
+              <button className="btn-back-cart" onClick={() => navigate("/cart")} disabled={isSubmitting}>
+                ← Recheck Bag
+              </button>
+            </div>
+
+            <div className="checkout-trust-badge">
+              <span>🔒 256-Bit Encrypted & Verified</span>
+              <small>Instant refunds on order failure • Zero risk</small>
+            </div>
+          </div>
+        </aside>
       </div>
 
       {/* Address Modal Interface (Exact same as navbar) */}
@@ -344,72 +441,6 @@ export const Checkout = () => {
           onAddressSelected={(id) => setSelectedAddressId(id)}
         />
       )}
-
-      {/* Payment Method Configuration */}
-      <div className="checkout-payment-section">
-        <div className="checkout-section-title-wrap">
-          <span className="checkout-badge-num">3</span>
-          <h2>CHOOSE PAYMENT VIBE</h2>
-        </div>
-
-        {/* Razorpay Option */}
-        <label className={`payment-method-card ${paymentMethod === "Razorpay" ? "selected" : ""}`}>
-          <input
-            type="radio"
-            name="paymentMethod"
-            value="Razorpay"
-            checked={paymentMethod === "Razorpay"}
-            onChange={() => setPaymentMethod("Razorpay")}
-          />
-          <div className="payment-method-info">
-            <strong className="payment-method-title">
-              ⚡ Razorpay Instant (UPI / GPay / Cards / NetBanking)
-            </strong>
-            <span className="payment-method-desc">
-              Zero wait, confirmed instantly. Pay using QR code, PhonePe, Paytm, or Card.
-            </span>
-          </div>
-          <span className="payment-method-badge instant">
-            RECOMMENDED 🚀
-          </span>
-        </label>
-
-        {/* COD Option */}
-        <label className={`payment-method-card ${paymentMethod === "COD" ? "selected" : ""}`}>
-          <input
-            type="radio"
-            name="paymentMethod"
-            value="COD"
-            checked={paymentMethod === "COD"}
-            onChange={() => setPaymentMethod("COD")}
-          />
-          <div className="payment-method-info">
-            <strong className="payment-method-title">💵 Cash on Delivery (Doorstep Handoff)</strong>
-            <span className="payment-method-desc">Pay cash in hand when the courier arrives at your doorstep.</span>
-          </div>
-          <span className="payment-method-badge cod">
-            COD ACTIVE
-          </span>
-        </label>
-      </div>
-
-      {/* Actions */}
-      <div className="checkout-actions">
-        <button className="btn-back-cart" onClick={() => navigate("/cart")} disabled={isSubmitting}>
-          ← Recheck Bag
-        </button>
-        <button 
-          className="btn-submit-order" 
-          onClick={handlePlaceOrder} 
-          disabled={isSubmitting}
-        >
-          {isSubmitting
-            ? "Cooking your order..."
-            : paymentMethod === "Razorpay"
-            ? `PAY ₹${Number(totalPrice).toFixed(2)} VIA RAZORPAY ⚡`
-            : "LOCK IN ORDER (COD) 📦"}
-        </button>
-      </div>
     </section>
   );
 };

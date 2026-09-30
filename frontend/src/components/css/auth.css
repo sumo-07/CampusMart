@@ -190,7 +190,7 @@
   margin-bottom: 0.25rem;
 }
 
-.google-auth-wrapper > div {
+.google-auth-wrapper>div {
   margin: 0 auto !important;
   display: flex !important;
   justify-content: center !important;
@@ -398,9 +398,17 @@
   color: var(--neo-black);
 }
 
-.strength-text.weak { color: #D32F2F; }
-.strength-text.medium { color: #D97706; }
-.strength-text.strong { color: #059669; }
+.strength-text.weak {
+  color: #D32F2F;
+}
+
+.strength-text.medium {
+  color: #D97706;
+}
+
+.strength-text.strong {
+  color: #059669;
+}
 
 /* Success State Screen */
 .auth-success-card {
@@ -478,8 +486,13 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .step-indicator {
