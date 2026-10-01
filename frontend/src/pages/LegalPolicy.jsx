@@ -172,12 +172,12 @@ export const LegalPolicy = ({ initialPolicy = "terms" }) => {
                   </div>
                   <div className="legal-contact-item">
                     <label>Support Desk</label>
-                    <a href="mailto:support@cartsy.in">support@cartsy.in</a>
+                    <a href="mailto:support.cartsy07@gmail.com">support.cartsy07@gmail.com</a>
                   </div>
-                  <div className="legal-contact-item">
+                  {/* <div className="legal-contact-item">
                     <label>Helpline</label>
                     <a href="tel:+919876543210">+91 98765 43210</a>
-                  </div>
+                  </div> */}
                   <div className="legal-contact-item">
                     <label>Operating Hours</label>
                     <span>Mon - Sat (9:00 AM - 6:00 PM IST)</span>
@@ -262,7 +262,7 @@ export const LegalPolicy = ({ initialPolicy = "terms" }) => {
                   Your Rights & Grievance Redressal
                 </h2>
                 <p>
-                  You have the right to request access to, rectify, or delete your personal account data at any time by contacting our Grievance Officer at <a href="mailto:support@cartsy.in">support@cartsy.in</a>. All privacy requests are acknowledged within 24 hours.
+                  You have the right to request access to, rectify, or delete your personal account data at any time by contacting our Grievance Officer at <a href="mailto:support.cartsy07@gmail.com">support.cartsy07@gmail.com</a>. All privacy requests are acknowledged within 24 hours.
                 </p>
               </div>
             </div>
@@ -290,7 +290,7 @@ export const LegalPolicy = ({ initialPolicy = "terms" }) => {
                   <strong>Can I cancel my order?</strong> Yes! You can cancel your order before it has been processed and handed over to our courier partner.
                 </p>
                 <ul>
-                  <li><strong>Before Dispatch:</strong> Visit <Link to="/orders"><strong>Past Drops (Orders)</strong></Link> and click &quot;Cancel Order&quot;, or email <a href="mailto:support@cartsy.in">support@cartsy.in</a> with your Order ID. 100% full refund will be initiated immediately.</li>
+                  <li><strong>Before Dispatch:</strong> Visit <Link to="/orders"><strong>Past Drops (Orders)</strong></Link> and click &quot;Cancel Order&quot;, or email <a href="mailto:support.cartsy07@gmail.com">support.cartsy07@gmail.com</a> with your Order ID. 100% full refund will be initiated immediately.</li>
                   <li><strong>After Dispatch:</strong> Once an order is shipped with a tracking number assigned, it cannot be intercepted in transit. You may refuse delivery upon arrival or request a return after delivery.</li>
                 </ul>
               </div>
@@ -319,7 +319,7 @@ export const LegalPolicy = ({ initialPolicy = "terms" }) => {
                   How to Initiate a Return / Refund
                 </h2>
                 <ol>
-                  <li>Contact our support team within 7 days of receiving the package via our <Link to="/contact"><strong>Contact Page</strong></Link> or by emailing <a href="mailto:support@cartsy.in">support@cartsy.in</a>.</li>
+                  <li>Contact our support team within 7 days of receiving the package via our <Link to="/contact"><strong>Contact Page</strong></Link> or by emailing <a href="mailto:support.cartsy07@gmail.com">support.cartsy07@gmail.com</a>.</li>
                   <li>Provide your <strong>Order ID</strong> along with clear photos or an unboxing video showing the defect or damage.</li>
                   <li>Our support team will verify the claim and arrange for a courier reverse pickup or direct replacement within 24 to 48 business hours.</li>
                 </ol>
@@ -428,7 +428,7 @@ export const LegalPolicy = ({ initialPolicy = "terms" }) => {
                   Damaged or Tampered Parcels
                 </h2>
                 <p>
-                  If you notice that the outer parcel packaging is visibly torn, open, or damaged upon delivery, please <strong>do not accept the package</strong> and ask the courier to mark it as damaged. Alternatively, take unboxing photos and reach out to us at <a href="mailto:support@cartsy.in">support@cartsy.in</a> within 48 hours for an instant free replacement.
+                  If you notice that the outer parcel packaging is visibly torn, open, or damaged upon delivery, please <strong>do not accept the package</strong> and ask the courier to mark it as damaged. Alternatively, take unboxing photos and reach out to us at <a href="mailto:support.cartsy07@gmail.com">support.cartsy07@gmail.com</a> within 48 hours for an instant free replacement.
                 </p>
               </div>
             </div>

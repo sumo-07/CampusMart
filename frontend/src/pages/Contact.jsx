@@ -146,15 +146,14 @@ export const Contact = () => {
                 <span style={{ fontSize: "1.1rem" }}>✉️</span>
                 <div>
                   <strong style={{ color: "var(--neo-border)" }}>Support Email: </strong>
-                  <a href="mailto:support@cartsy.in" style={{ color: "var(--neo-pink-dark)", fontWeight: 700, textDecoration: "none" }}>support@cartsy.in</a>
+                  <a href="mailto:support.cartsy07@gmail.com" style={{ color: "var(--neo-pink-dark)", fontWeight: 700, textDecoration: "none" }}>support.cartsy07@gmail.com</a>
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.88rem" }}>
-                <span style={{ fontSize: "1.1rem" }}>📞</span>
+                <span style={{ fontSize: "1.1rem" }}>⚡</span>
                 <div>
-                  <strong style={{ color: "var(--neo-border)" }}>Helpline: </strong>
-                  <a href="tel:+919876543210" style={{ color: "var(--neo-border)", fontWeight: 700, textDecoration: "none" }}>+91 98765 43210</a>
-                  <span style={{ color: "var(--text-secondary)", fontSize: "0.8rem", marginLeft: "6px" }}>(Mon-Sat, 9AM-6PM IST)</span>
+                  <strong style={{ color: "var(--neo-border)" }}>Operating Hours: </strong>
+                  <span style={{ color: "var(--text-secondary)", fontSize: "0.88rem" }}>Mon - Sat (9:00 AM - 6:00 PM IST)</span>
                 </div>
               </div>
             </div>
