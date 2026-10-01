@@ -99,6 +99,7 @@
 }
 
 /* Dropdown Menu Popup */
+/* Dropdown Menu Popup */
 .neo-select-dropdown {
   position: absolute;
   top: calc(100% + 0.35rem);
@@ -110,13 +111,12 @@
   border: var(--border-thick);
   border-radius: var(--radius-md);
   box-shadow: 0.25rem 0.25rem 0 var(--neo-border);
-  padding: 0.35rem;
+  padding: 0;
   z-index: 1200;
   max-height: 16rem;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
   box-sizing: border-box;
   animation: neoSelectPop 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -137,29 +137,91 @@
   }
 }
 
-/* Custom Scrollbar for Dropdown Menu */
-.neo-select-dropdown {
+/* Pinned Header/Footer & Scroll Container */
+.neo-select-pinned-top {
+  flex-shrink: 0;
+  padding: 0.35rem;
+  border-bottom: 2px solid var(--neo-border);
+  background: #FFFDF0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  box-sizing: border-box;
+}
+
+.neo-select-options-scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.35rem;
+  box-sizing: border-box;
   scrollbar-width: thin;
   scrollbar-color: var(--neo-border) #FAF7F2;
 }
-.neo-select-dropdown::-webkit-scrollbar {
+
+.neo-select-pinned-bottom {
+  flex-shrink: 0;
+  padding: 0.35rem;
+  border-top: 2px solid var(--neo-border);
+  background: #FFFDF0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  box-sizing: border-box;
+}
+
+/* Custom Scrollbar for Dropdown Menu */
+.neo-select-dropdown,
+.neo-select-options-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--neo-border) #FAF7F2;
+}
+.neo-select-dropdown::-webkit-scrollbar,
+.neo-select-options-scroll::-webkit-scrollbar {
   width: 0.35rem;
 }
-.neo-select-dropdown::-webkit-scrollbar-button {
+.neo-select-dropdown::-webkit-scrollbar-button,
+.neo-select-options-scroll::-webkit-scrollbar-button {
   display: none;
   width: 0;
   height: 0;
 }
-.neo-select-dropdown::-webkit-scrollbar-track {
+.neo-select-dropdown::-webkit-scrollbar-track,
+.neo-select-options-scroll::-webkit-scrollbar-track {
   background: #FAF7F2;
   border-radius: var(--radius-pill);
 }
-.neo-select-dropdown::-webkit-scrollbar-thumb {
+.neo-select-dropdown::-webkit-scrollbar-thumb,
+.neo-select-options-scroll::-webkit-scrollbar-thumb {
   background: var(--neo-border) !important;
   border-radius: var(--radius-pill);
 }
-.neo-select-dropdown::-webkit-scrollbar-thumb:hover {
+.neo-select-dropdown::-webkit-scrollbar-thumb:hover,
+.neo-select-options-scroll::-webkit-scrollbar-thumb:hover {
   background: #383838 !important;
+}
+
+/* Special Action Option (e.g. Add New) */
+.neo-select-option.is-action {
+  background: #FFF0F5;
+  border: 1.5px solid var(--neo-border);
+  color: var(--neo-border);
+  font-weight: 800;
+  box-shadow: var(--shadow-hard-xs);
+}
+
+.neo-select-option.is-action:hover {
+  background: var(--neo-pink) !important;
+  color: #FFFFFF !important;
+  transform: translate(-0.06rem, -0.06rem);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.neo-select-option.is-action:active {
+  transform: translate(0.06rem, 0.06rem) scale(0.98) !important;
+  box-shadow: 0.06rem 0.06rem 0px var(--neo-border) !important;
 }
 
 /* Option Items */

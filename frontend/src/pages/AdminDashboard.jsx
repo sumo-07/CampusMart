@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import api from "../api/axiosConfig";
@@ -491,6 +492,73 @@ export const AdminDashboard = () => {
         setCurrentPage(1);
     }, [searchQuery, productSort]);
 
+    // Smart windowed pagination range matching store catalog
+    const getPaginationRange = (current, total, isMobile = false) => {
+        if (total <= 1) return [];
+
+        if (isMobile) {
+            if (total <= 4) {
+                return Array.from({ length: total }, (_, i) => i + 1);
+            }
+            if (current <= 2) {
+                return [1, 2, "...", total];
+            }
+            if (current >= total - 1) {
+                return [1, "...", total - 1, total];
+            }
+            return [1, "...", current, "...", total];
+        }
+
+        if (total <= 7) {
+            return Array.from({ length: total }, (_, i) => i + 1);
+        }
+
+        if (current <= 4) {
+            return [1, 2, 3, 4, 5, "...", total];
+        }
+
+        if (current >= total - 3) {
+            return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+        }
+
+        return [1, "...", current - 1, current, current + 1, "...", total];
+    };
+
+    const desktopPageRange = getPaginationRange(currentPage, totalPages, false);
+    const mobilePageRange = getPaginationRange(currentPage, totalPages, true);
+
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages && page !== currentPage) {
+            setCurrentPage(page);
+            const productsEl = document.querySelector(".admin-products");
+            if (productsEl) {
+                productsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+    };
+
+    // Modal popup event listeners: close on Escape & lock body scrolling
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape" && showAddForm) {
+                closeFormWithAnimation();
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [showAddForm]);
+
+    useEffect(() => {
+        if (showAddForm) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [showAddForm]);
+
     // Filter & Sort Orders
     const filteredOrders = orders.filter(order => {
         const isDraft = isAbandonedDraft(order);
@@ -593,7 +661,8 @@ export const AdminDashboard = () => {
                             </button>
                             <span className="breadcrumb-separator">/</span>
                             <span className="breadcrumb-current">
-                                {activeTab === "products" ? "Manage Products" : "View Orders"}
+                                <span className="tab-label-desktop">{activeTab === "products" ? "Manage Products" : "View Orders"}</span>
+                                <span className="tab-label-mobile">{activeTab === "products" ? "Products" : "Orders"}</span>
                             </span>
                         </div>
                     </div>
@@ -612,20 +681,22 @@ export const AdminDashboard = () => {
                             className={`tab-btn ${activeTab === "products" ? "active" : ""}`}
                             onClick={() => handleTabSelect("products")}
                         >
-                            Manage Products
+                            <span className="tab-label-desktop">Manage Products</span>
+                            <span className="tab-label-mobile">Products</span>
                         </button>
                         <button
                             className={`tab-btn ${activeTab === "orders" ? "active" : ""}`}
                             onClick={() => handleTabSelect("orders")}
                         >
-                            View Orders
+                            <span className="tab-label-desktop">View Orders</span>
+                            <span className="tab-label-mobile">Orders</span>
                         </button>
                     </div>
                 </div>
 
                 {activeTab === "overview" && (
                     <div className="admin-overview">
-                        <div className="metric-card">
+                        <div className="metric-card metric-card-revenue">
                             <h3>Total Revenue</h3>
                             <p>₹{totalSales.toFixed(2)}</p>
                             <span className="metric-subtext">Verified Paid & COD</span>
@@ -667,7 +738,7 @@ export const AdminDashboard = () => {
                             <span className="metric-subtext">Unpaid online checkouts</span>
                         </div>
                         <div
-                            className="metric-card clickable"
+                            className="metric-card metric-card-products clickable"
                             onClick={() => handleTabSelect("products")}
                             title="Manage product inventory"
                         >
@@ -680,14 +751,42 @@ export const AdminDashboard = () => {
 
                 {activeTab === "products" && (
                     <div className="admin-products">
-                        <div className="admin-toolbar-row">
-                            <div className="admin-toolbar-group">
-                                <h2>Manage Inventory</h2>
-                                <div className="admin-search-wrapper">
+                        <div className="admin-products-header">
+                            <div className="admin-products-title-group">
+                                <h2 className="admin-products-title">Manage Inventory</h2>
+                                <span className="admin-products-badge">
+                                    {sortedProducts.length} {sortedProducts.length === 1 ? 'Product' : 'Products'}
+                                </span>
+                            </div>
+
+                            <div className="admin-toolbar-actions">
+                                <button
+                                    type="button"
+                                    onClick={handleSyncCatalog}
+                                    disabled={isSeeding}
+                                    className="admin-btn-sync"
+                                    title="Fetch and sync products from DummyJSON"
+                                >
+                                    <span className={`sync-icon ${isSeeding ? "spinning" : ""}`}>🔄</span>
+                                    <span>{isSeeding ? "Syncing..." : "Sync Catalog"}</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={toggleAddForm}
+                                    className={`admin-btn-action ${showAddForm ? "cancel" : ""}`}
+                                >
+                                    {showAddForm ? "✕ Cancel" : "+ Add Product"}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="admin-products-toolbar">
+                            <div className="admin-products-filters-row">
+                                <div className="admin-search-wrapper products-search admin-products-search">
                                     <span className="search-icon">🔍</span>
                                     <input
                                         type="text"
-                                        placeholder="Search products by title, category, ID..."
+                                        placeholder="Search products (title, category, ID)..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         className="admin-search-input"
@@ -703,7 +802,8 @@ export const AdminDashboard = () => {
                                         </button>
                                     )}
                                 </div>
-                                <div className="admin-sort-wrapper">
+
+                                <div className="admin-filter-group">
                                     <span className="admin-control-label">Sort:</span>
                                     <NeoSelect
                                         id="product-sort-select"
@@ -720,6 +820,7 @@ export const AdminDashboard = () => {
                                         ]}
                                     />
                                 </div>
+
                                 {(productSort !== "default" || searchQuery) && (
                                     <button
                                         type="button"
@@ -734,355 +835,465 @@ export const AdminDashboard = () => {
                                     </button>
                                 )}
                             </div>
-                            <div className="admin-toolbar-actions">
-                                <button
-                                    type="button"
-                                    onClick={handleSyncCatalog}
-                                    disabled={isSeeding}
-                                    className="admin-btn-sync"
-                                    title="Fetch and sync products from DummyJSON"
-                                >
-                                    {isSeeding ? "Syncing..." : "🔄 Sync Catalog"}
-                                </button>
-                                <button onClick={toggleAddForm} className={`admin-btn-action ${showAddForm ? "cancel" : ""}`}>
-                                    {showAddForm ? "Cancel" : "+ Add New Product"}
-                                </button>
+
+                            <div className="admin-products-summary-bar">
+                                <span className="admin-products-count-text">
+                                    Showing <strong>{sortedProducts.length === 0 ? 0 : `${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, sortedProducts.length)}`}</strong> of <strong>{sortedProducts.length}</strong> items
+                                </span>
+                                {searchQuery && (
+                                    <span className="admin-search-active-pill">
+                                        Filtered: "{searchQuery}"
+                                    </span>
+                                )}
                             </div>
                         </div>
 
-                        {(showAddForm || isAnimatingOut) && (
-                            <div className={`admin-form-container ${isAnimatingOut ? 'anim-fade-out' : 'anim-fade-in'}`}>
-                                <h3>{editFormProduct ? "Edit Product" : "Add New Product"}</h3>
-                                <form onSubmit={handleSaveProduct} className="admin-form">
-                                    <input required type="text" placeholder="Title" value={newProduct.title} onChange={e => setNewProduct({ ...newProduct, title: e.target.value })} className="admin-form-input" />
-                                    <input
-                                        required
-                                        type="number"
-                                        min="0"
-                                        step="any"
-                                        placeholder="Price (₹)"
-                                        value={newProduct.price || ''}
-                                        onKeyDown={(e) => {
-                                            if (e.key === '-' || e.key === 'e') e.preventDefault();
-                                        }}
-                                        onChange={e => {
-                                            const val = e.target.value;
-                                            if (val === '') {
-                                                setNewProduct({ ...newProduct, price: '' });
-                                            } else {
-                                                const num = parseFloat(val);
-                                                setNewProduct({ ...newProduct, price: isNaN(num) ? '' : Math.max(0, num) });
-                                            }
-                                        }}
-                                        className="admin-form-input"
-                                    />
-                                    <input
-                                        required
-                                        type="number"
-                                        min="0"
-                                        step="1"
-                                        placeholder="Initial Stock"
-                                        value={newProduct.stock === 0 ? '0' : (newProduct.stock || '')}
-                                        onKeyDown={(e) => {
-                                            if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
-                                        }}
-                                        onChange={e => {
-                                            const val = e.target.value;
-                                            if (val === '') {
-                                                setNewProduct({ ...newProduct, stock: '' });
-                                            } else {
-                                                const num = parseInt(val, 10);
-                                                setNewProduct({ ...newProduct, stock: isNaN(num) ? '' : Math.max(0, num) });
-                                            }
-                                        }}
-                                        className="admin-form-input"
-                                    />
-                                    {!isCustomCategory ? (
-                                        <div className="admin-category-control">
-                                            <NeoSelect
-                                                value={allAvailableCategories.includes(newProduct.category) ? newProduct.category : (newProduct.category ? "__custom__" : "")}
-                                                onChange={(val) => {
-                                                    if (val === "__custom__") {
-                                                        setIsCustomCategory(true);
-                                                        setNewProduct({ ...newProduct, category: "" });
-                                                    } else {
-                                                        setNewProduct({ ...newProduct, category: val });
-                                                    }
-                                                }}
-                                                placeholder="-- Select Category --"
-                                                options={[
-                                                    ...allAvailableCategories.map((cat) => ({
-                                                        value: cat,
-                                                        label: cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, " ")
-                                                    })),
-                                                    { value: "__custom__", label: "➕ + Add New Category" }
-                                                ]}
-                                                fullWidth={true}
-                                            />
+                        {(showAddForm || isAnimatingOut) && createPortal(
+                            <div
+                                className={`admin-modal-overlay ${isAnimatingOut ? 'anim-fade-out' : 'anim-fade-in'}`}
+                                onClick={(e) => {
+                                    if (e.target === e.currentTarget) {
+                                        closeFormWithAnimation();
+                                    }
+                                }}
+                            >
+                                <div
+                                    className={`admin-modal-card ${isAnimatingOut ? 'anim-scale-out' : 'anim-scale-in'}`}
+                                    role="dialog"
+                                    aria-modal="true"
+                                >
+                                    <div className="admin-modal-header">
+                                        <div className="admin-modal-title-group">
+                                            <span className="admin-modal-title-icon">{editFormProduct ? "✏️" : "✨"}</span>
+                                            <h3 className="admin-modal-title">{editFormProduct ? "Edit Product" : "Add New Product"}</h3>
                                         </div>
-                                    ) : (
-                                        <div className="admin-category-custom-box">
-                                            <input
-                                                required
-                                                type="text"
-                                                placeholder="Type new category (e.g. electronics)..."
-                                                value={newProduct.category}
-                                                onChange={e => setNewProduct({ ...newProduct, category: e.target.value })}
-                                                className="admin-form-input admin-category-custom-input"
-                                                autoFocus
-                                            />
-                                            <button
-                                                type="button"
-                                                className="admin-btn-back-category"
-                                                onClick={() => {
-                                                    setIsCustomCategory(false);
-                                                    setNewProduct({ ...newProduct, category: allAvailableCategories[0] || "" });
-                                                }}
-                                                title="Return to category dropdown"
-                                            >
-                                                ✕ Back to list
-                                            </button>
-                                        </div>
-                                    )}
-
-                                    {/* Product Image Section */}
-                                    <div className="admin-form-image-section full-width">
-                                        <div className="admin-image-mode-row">
-                                            <label className="admin-form-label">Product Thumbnail Image</label>
-                                            <div className="admin-image-mode-tabs">
-                                                <button
-                                                    type="button"
-                                                    className={`admin-image-tab ${imageInputMode === "file" ? "active" : ""}`}
-                                                    onClick={() => setImageInputMode("file")}
-                                                >
-                                                    ☁️ Upload File
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className={`admin-image-tab ${imageInputMode === "url" ? "active" : ""}`}
-                                                    onClick={() => setImageInputMode("url")}
-                                                >
-                                                    🔗 Image URL
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <div className="admin-image-section-body">
-                                            {/* Left Column: Image Selector / Dropzone / URL Input */}
-                                            <div className="admin-image-input-col">
-                                                {imageInputMode === "file" ? (
-                                                    <div className="admin-file-upload-box">
-                                                        <input
-                                                            type="file"
-                                                            id="product-image-file"
-                                                            accept="image/png, image/jpeg, image/webp, image/gif"
-                                                            onChange={handleFileChange}
-                                                            style={{ display: "none" }}
-                                                        />
-                                                        <label htmlFor="product-image-file" className={`admin-file-dropzone ${imageFile ? 'has-file' : ''}`}>
-                                                            <span className="upload-icon">{imageFile ? '✅' : '📤'}</span>
-                                                            <span className="upload-text">
-                                                                {imageFile ? imageFile.name : (editFormProduct ? "Choose new image to replace current thumbnail" : "Click to select or drop image here")}
-                                                            </span>
-                                                            <span className="upload-hint">PNG, JPG, WebP, or GIF (Max 5MB)</span>
-                                                        </label>
-                                                    </div>
-                                                ) : (
-                                                    <div className="admin-url-upload-box">
-                                                        <input
-                                                            type="url"
-                                                            placeholder="Paste image URL (e.g. https://...)"
-                                                            value={newProduct.thumbnail}
-                                                            onChange={e => {
-                                                                setNewProduct({ ...newProduct, thumbnail: e.target.value });
-                                                                setImagePreview(e.target.value);
-                                                            }}
-                                                            className="admin-form-input"
-                                                        />
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Right Column: Switch Back to Uploaded Image Banner OR Side Preview */}
-                                            <div className="admin-image-side-col">
-                                                {newProduct.uploadedThumbnail && newProduct.thumbnail !== newProduct.uploadedThumbnail ? (
-                                                    <div className="admin-saved-upload-banner">
-                                                        <div className="admin-saved-upload-left">
-                                                            <img
-                                                                src={newProduct.uploadedThumbnail}
-                                                                alt="Preserved uploaded"
-                                                                className="admin-saved-upload-preview-thumb saved-upload-preview-thumb"
-                                                            />
-                                                            <div className="admin-saved-upload-details">
-                                                                <div className="admin-saved-upload-badge">
-                                                                    <span>☁️ Preserved Upload</span>
-                                                                </div>
-                                                                <p className="admin-saved-upload-note">
-                                                                    Your uploaded image is safely saved in Cloudinary.
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            className="admin-btn-restore-upload"
-                                                            onClick={() => {
-                                                                setNewProduct({
-                                                                    ...newProduct,
-                                                                    thumbnail: newProduct.uploadedThumbnail,
-                                                                    thumbnailPublicId: newProduct.uploadedThumbnailPublicId,
-                                                                });
-                                                                setImagePreview(newProduct.uploadedThumbnail);
-                                                                setImageFile(null);
-                                                                setImageInputMode("file");
-                                                            }}
-                                                            title="Switch product thumbnail back to the preserved uploaded image"
-                                                        >
-                                                            ↩️ Switch Back to Uploaded Image
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    imagePreview ? (
-                                                        <div className="admin-image-preview-card side-preview">
-                                                            <img
-                                                                src={imagePreview}
-                                                                alt="Thumbnail Preview"
-                                                                className="preview-img"
-                                                                onError={(e) => { e.target.style.display = "none"; }}
-                                                                onLoad={(e) => { e.target.style.display = "block"; }}
-                                                            />
-                                                            <div className="preview-meta">
-                                                                <span className="preview-status">
-                                                                    {imageFile ? "New file ready for upload" : "Active product thumbnail"}
-                                                                </span>
-                                                                {imageFile && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={clearSelectedFile}
-                                                                        className="admin-btn-clear-file"
-                                                                    >
-                                                                        ✕ Remove Selected File
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="admin-image-empty-placeholder">
-                                                            <span className="placeholder-icon">🖼️</span>
-                                                            <div className="placeholder-text">
-                                                                <span className="placeholder-title">Live Preview</span>
-                                                                <span className="placeholder-hint">Select a file or enter an image URL to preview</span>
-                                                            </div>
-                                                        </div>
-                                                    )
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Bottom Preview (shown if Preserved Banner occupies the right column and active preview is also present) */}
-                                        {newProduct.uploadedThumbnail && newProduct.thumbnail !== newProduct.uploadedThumbnail && imagePreview && (
-                                            <div className="admin-image-preview-card bottom-preview">
-                                                <img
-                                                    src={imagePreview}
-                                                    alt="Thumbnail Preview"
-                                                    className="preview-img"
-                                                    onError={(e) => { e.target.style.display = "none"; }}
-                                                    onLoad={(e) => { e.target.style.display = "block"; }}
-                                                />
-                                                <div className="preview-meta">
-                                                    <span className="preview-status">
-                                                        {imageFile ? "New file staged for upload" : "Current active thumbnail (external URL / new edit)"}
-                                                    </span>
-                                                    {imageFile && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={clearSelectedFile}
-                                                            className="admin-btn-clear-file"
-                                                        >
-                                                            ✕ Remove Selected File
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
+                                        <button
+                                            type="button"
+                                            className="admin-modal-close-btn"
+                                            onClick={closeFormWithAnimation}
+                                            aria-label="Close modal"
+                                            title="Close"
+                                        >
+                                            ✕
+                                        </button>
                                     </div>
 
-                                    <textarea required placeholder="Description" rows="3" value={newProduct.description} onChange={e => setNewProduct({ ...newProduct, description: e.target.value })} className="admin-form-textarea full-width"></textarea>
-                                    <button type="submit" disabled={isUploadingImage} className="admin-form-submit-btn">
-                                        {isUploadingImage
-                                            ? "Uploading to Cloudinary..."
-                                            : (editFormProduct ? "Save Changes" : "Create Product")}
-                                    </button>
-                                </form>
-                            </div>
+                                    <div className="admin-modal-body">
+                                        <form id="admin-product-form" onSubmit={handleSaveProduct} className="admin-form">
+                                            <input required type="text" placeholder="Title" value={newProduct.title} onChange={e => setNewProduct({ ...newProduct, title: e.target.value })} className="admin-form-input full-width" />
+                                            <div className="admin-form-row-duo">
+                                                <input
+                                                    required
+                                                    type="number"
+                                                    min="0"
+                                                    step="any"
+                                                    placeholder="Price (₹)"
+                                                    value={newProduct.price || ''}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === '-' || e.key === 'e') e.preventDefault();
+                                                    }}
+                                                    onChange={e => {
+                                                        const val = e.target.value;
+                                                        if (val === '') {
+                                                            setNewProduct({ ...newProduct, price: '' });
+                                                        } else {
+                                                            const num = parseFloat(val);
+                                                            setNewProduct({ ...newProduct, price: isNaN(num) ? '' : Math.max(0, num) });
+                                                        }
+                                                    }}
+                                                    className="admin-form-input"
+                                                />
+                                                <input
+                                                    required
+                                                    type="number"
+                                                    min="0"
+                                                    step="1"
+                                                    placeholder="Stock"
+                                                    value={newProduct.stock === 0 ? '0' : (newProduct.stock || '')}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
+                                                    }}
+                                                    onChange={e => {
+                                                        const val = e.target.value;
+                                                        if (val === '') {
+                                                            setNewProduct({ ...newProduct, stock: '' });
+                                                        } else {
+                                                            const num = parseInt(val, 10);
+                                                            setNewProduct({ ...newProduct, stock: isNaN(num) ? '' : Math.max(0, num) });
+                                                        }
+                                                    }}
+                                                    className="admin-form-input"
+                                                />
+                                            </div>
+                                            {!isCustomCategory ? (
+                                                <div className="admin-category-control">
+                                                    <NeoSelect
+                                                        value={allAvailableCategories.includes(newProduct.category) ? newProduct.category : (newProduct.category ? "__custom__" : "")}
+                                                        onChange={(val) => {
+                                                            if (val === "__custom__") {
+                                                                setIsCustomCategory(true);
+                                                                setNewProduct({ ...newProduct, category: "" });
+                                                            } else {
+                                                                setNewProduct({ ...newProduct, category: val });
+                                                            }
+                                                        }}
+                                                        placeholder="-- Select Category --"
+                                                        options={[
+                                                            { value: "__custom__", label: "➕ + Add New Category", isAction: true, sticky: "top" },
+                                                            ...allAvailableCategories.map((cat) => ({
+                                                                value: cat,
+                                                                label: cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, " ")
+                                                            }))
+                                                        ]}
+                                                        fullWidth={true}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="admin-category-custom-box">
+                                                    <input
+                                                        required
+                                                        type="text"
+                                                        placeholder="Type new category (e.g. electronics)..."
+                                                        value={newProduct.category}
+                                                        onChange={e => setNewProduct({ ...newProduct, category: e.target.value })}
+                                                        className="admin-form-input admin-category-custom-input"
+                                                        autoFocus
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="admin-btn-back-category"
+                                                        onClick={() => {
+                                                            setIsCustomCategory(false);
+                                                            setNewProduct({ ...newProduct, category: allAvailableCategories[0] || "" });
+                                                        }}
+                                                        title="Return to category dropdown"
+                                                    >
+                                                        ✕ Back to list
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* Product Image Section */}
+                                            <div className="admin-form-image-section full-width">
+                                                <div className="admin-image-mode-row">
+                                                    <label className="admin-form-label">Product Thumbnail Image</label>
+                                                    <div className="admin-image-mode-tabs">
+                                                        <button
+                                                            type="button"
+                                                            className={`admin-image-tab ${imageInputMode === "file" ? "active" : ""}`}
+                                                            onClick={() => setImageInputMode("file")}
+                                                        >
+                                                            ☁️ Upload File
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className={`admin-image-tab ${imageInputMode === "url" ? "active" : ""}`}
+                                                            onClick={() => setImageInputMode("url")}
+                                                        >
+                                                            🔗 Image URL
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="admin-image-section-body">
+                                                    {/* Left Column: Image Selector / Dropzone / URL Input */}
+                                                    <div className="admin-image-input-col">
+                                                        {imageInputMode === "file" ? (
+                                                            <div className="admin-file-upload-box">
+                                                                <input
+                                                                    type="file"
+                                                                    id="product-image-file"
+                                                                    accept="image/png, image/jpeg, image/webp, image/gif"
+                                                                    onChange={handleFileChange}
+                                                                    style={{ display: "none" }}
+                                                                />
+                                                                <label htmlFor="product-image-file" className={`admin-file-dropzone ${imageFile ? 'has-file' : ''}`}>
+                                                                    <span className="upload-icon">{imageFile ? '✅' : '📤'}</span>
+                                                                    <span className="upload-text">
+                                                                        {imageFile ? imageFile.name : (editFormProduct ? "Replace thumbnail" : "Select or drop image")}
+                                                                    </span>
+                                                                    <span className="upload-hint">PNG, JPG, WebP, or GIF (Max 5MB)</span>
+                                                                </label>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="admin-url-upload-box">
+                                                                <input
+                                                                    type="url"
+                                                                    placeholder="Paste image URL (e.g. https://...)"
+                                                                    value={newProduct.thumbnail}
+                                                                    onChange={e => {
+                                                                        setNewProduct({ ...newProduct, thumbnail: e.target.value });
+                                                                        setImagePreview(e.target.value);
+                                                                    }}
+                                                                    className="admin-form-input"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Right Column: Switch Back to Uploaded Image Banner OR Side Preview */}
+                                                    <div className="admin-image-side-col">
+                                                        {newProduct.uploadedThumbnail && newProduct.thumbnail !== newProduct.uploadedThumbnail ? (
+                                                            <div className="admin-saved-upload-banner">
+                                                                <div className="admin-saved-upload-left">
+                                                                    <img
+                                                                        src={newProduct.uploadedThumbnail}
+                                                                        alt="Preserved uploaded"
+                                                                        className="admin-saved-upload-preview-thumb saved-upload-preview-thumb"
+                                                                    />
+                                                                    <div className="admin-saved-upload-details">
+                                                                        <span className="admin-saved-upload-badge">☁️ Cloudinary Upload</span>
+                                                                    </div>
+                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    className="admin-btn-restore-upload"
+                                                                    onClick={() => {
+                                                                        setNewProduct({
+                                                                            ...newProduct,
+                                                                            thumbnail: newProduct.uploadedThumbnail,
+                                                                            thumbnailPublicId: newProduct.uploadedThumbnailPublicId,
+                                                                        });
+                                                                        setImagePreview(newProduct.uploadedThumbnail);
+                                                                        setImageFile(null);
+                                                                        setImageInputMode("file");
+                                                                    }}
+                                                                    title="Restore Cloudinary upload"
+                                                                >
+                                                                    ↩️ Restore
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            imagePreview ? (
+                                                                <div className="admin-image-preview-card side-preview">
+                                                                    <img
+                                                                        src={imagePreview}
+                                                                        alt="Thumbnail Preview"
+                                                                        className="preview-img"
+                                                                        onError={(e) => { e.target.style.display = "none"; }}
+                                                                        onLoad={(e) => { e.target.style.display = "block"; }}
+                                                                    />
+                                                                    <div className="preview-meta">
+                                                                        <span className="preview-status">
+                                                                            {imageFile ? "Ready to upload" : "Active thumbnail"}
+                                                                        </span>
+                                                                        {imageFile && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={clearSelectedFile}
+                                                                                className="admin-btn-clear-file"
+                                                                            >
+                                                                                ✕ Remove
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="admin-image-empty-placeholder">
+                                                                    <span className="placeholder-icon">🖼️</span>
+                                                                    <div className="placeholder-text">
+                                                                        <span className="placeholder-title">Live Preview</span>
+                                                                        <span className="placeholder-hint">File or URL</span>
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <textarea required placeholder="Description" rows="2" value={newProduct.description} onChange={e => setNewProduct({ ...newProduct, description: e.target.value })} className="admin-form-textarea full-width"></textarea>
+                                        </form>
+                                    </div>
+
+                                    <div className="admin-modal-footer">
+                                        <button
+                                            type="button"
+                                            className="admin-btn-modal-cancel"
+                                            onClick={closeFormWithAnimation}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            form="admin-product-form"
+                                            disabled={isUploadingImage}
+                                            className="admin-form-submit-btn"
+                                        >
+                                            {isUploadingImage
+                                                ? "Uploading to Cloudinary..."
+                                                : (editFormProduct ? "Save Changes" : "Create Product")}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>,
+                            document.body
                         )}
 
-                        <div className="admin-table-mobile-hint">
-                            <span>👈 Scroll horizontally to view all columns 👉</span>
-                        </div>
-                        <div className="products-table-wrapper">
-                            <div className="products-table-inner">
-                                <div className="products-table-header-wrap">
-                                    <table className="products-table products-table-head">
-                                        <colgroup>
-                                            <col style={{ width: '90px' }} />
-                                            <col style={{ width: '38%' }} />
-                                            <col style={{ width: '18%' }} />
-                                            <col style={{ width: '18%' }} />
-                                            <col style={{ width: '140px' }} />
-                                        </colgroup>
-                                        <thead>
-                                            <tr>
-                                                <th>Image</th>
-                                                <th className="sortable-th" onClick={() => handleProductSortToggle("title")} title="Sort by Title">
-                                                    <div className="th-content">
-                                                        <span>Title</span>
-                                                        {getSortIcon(productSort, "title-asc", "title-desc")}
-                                                    </div>
-                                                </th>
-                                                <th className="sortable-th" onClick={() => handleProductSortToggle("price")} title="Sort by Price">
-                                                    <div className="th-content">
-                                                        <span>Price</span>
-                                                        {getSortIcon(productSort, "price-asc", "price-desc")}
-                                                    </div>
-                                                </th>
-                                                <th className="sortable-th" onClick={() => handleProductSortToggle("stock")} title="Sort by Stock">
-                                                    <div className="th-content">
-                                                        <span>Stock</span>
-                                                        {getSortIcon(productSort, "stock-asc", "stock-desc")}
-                                                    </div>
-                                                </th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                    </table>
+                        {/* Desktop Table View (Viewports > 768px) */}
+                        <div className="admin-products-desktop-view">
+                            <div className="admin-table-mobile-hint">
+                                <span>👈 Scroll horizontally to view all columns 👉</span>
+                            </div>
+                            <div className="products-table-wrapper">
+                                <div className="products-table-inner">
+                                    <div className="products-table-header-wrap">
+                                        <table className="products-table products-table-head">
+                                            <colgroup>
+                                                <col style={{ width: '90px' }} />
+                                                <col style={{ width: '38%' }} />
+                                                <col style={{ width: '18%' }} />
+                                                <col style={{ width: '18%' }} />
+                                                <col style={{ width: '140px' }} />
+                                            </colgroup>
+                                            <thead>
+                                                <tr>
+                                                    <th>Image</th>
+                                                    <th className="sortable-th" onClick={() => handleProductSortToggle("title")} title="Sort by Title">
+                                                        <div className="th-content">
+                                                            <span>Title</span>
+                                                            {getSortIcon(productSort, "title-asc", "title-desc")}
+                                                        </div>
+                                                    </th>
+                                                    <th className="sortable-th" onClick={() => handleProductSortToggle("price")} title="Sort by Price">
+                                                        <div className="th-content">
+                                                            <span>Price</span>
+                                                            {getSortIcon(productSort, "price-asc", "price-desc")}
+                                                        </div>
+                                                    </th>
+                                                    <th className="sortable-th" onClick={() => handleProductSortToggle("stock")} title="Sort by Stock">
+                                                        <div className="th-content">
+                                                            <span>Stock</span>
+                                                            {getSortIcon(productSort, "stock-asc", "stock-desc")}
+                                                        </div>
+                                                    </th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                    <div className="products-table-scroll">
+                                        <table className="products-table products-table-body">
+                                            <colgroup>
+                                                <col style={{ width: '90px' }} />
+                                                <col style={{ width: '38%' }} />
+                                                <col style={{ width: '18%' }} />
+                                                <col style={{ width: '18%' }} />
+                                                <col style={{ width: '140px' }} />
+                                            </colgroup>
+                                            <tbody>
+                                                {paginatedProducts.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan="5" style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
+                                                            No products found matching your search or filters.
+                                                        </td>
+                                                    </tr>
+                                                ) : (
+                                                    paginatedProducts.map(product => (
+                                                        <tr key={product._id}>
+                                                            <td>
+                                                                <img src={product.thumbnail} alt={product.title} width="50" />
+                                                            </td>
+                                                            <td>{product.title}</td>
+                                                            <td>₹{product.price}</td>
+                                                            <td>
+                                                                {editingProduct === product._id ? (
+                                                                    <div className="stock-edit-box">
+                                                                        <input
+                                                                            type="number"
+                                                                            min="0"
+                                                                            step="1"
+                                                                            className="stock-inline-input"
+                                                                            defaultValue={product.stock}
+                                                                            autoFocus
+                                                                            onKeyDown={(e) => {
+                                                                                if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
+                                                                                if (e.key === "Enter") {
+                                                                                    handleStockUpdate(product._id, e.target.value);
+                                                                                } else if (e.key === "Escape") {
+                                                                                    setEditingProduct(null);
+                                                                                }
+                                                                            }}
+                                                                            onBlur={(e) => handleStockUpdate(product._id, e.target.value)}
+                                                                        />
+                                                                        <button
+                                                                            type="button"
+                                                                            className="stock-save-btn"
+                                                                            onMouseDown={(e) => {
+                                                                                e.preventDefault();
+                                                                                const inputEl = e.currentTarget.parentElement.querySelector("input");
+                                                                                if (inputEl) handleStockUpdate(product._id, inputEl.value);
+                                                                            }}
+                                                                            title="Save stock"
+                                                                        >
+                                                                            ✓
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div
+                                                                        className="stock-display-pill"
+                                                                        onClick={() => setEditingProduct(product._id)}
+                                                                        title="Click to edit stock"
+                                                                    >
+                                                                        <span className="stock-qty">{product.stock}</span>
+                                                                        <span className="stock-edit-hint">(click to edit)</span>
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                                    <button onClick={() => startEditProduct(product)} className="btn-edit">Edit</button>
+                                                                    <button onClick={() => handleDeleteProduct(product._id)} className="btn-delete">Delete</button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                                <div className="products-table-scroll">
-                                    <table className="products-table products-table-body">
-                                        <colgroup>
-                                            <col style={{ width: '90px' }} />
-                                            <col style={{ width: '38%' }} />
-                                            <col style={{ width: '18%' }} />
-                                            <col style={{ width: '18%' }} />
-                                            <col style={{ width: '140px' }} />
-                                        </colgroup>
-                                        <tbody>
-                                    {paginatedProducts.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="5" style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
-                                                No products found matching your search or filters.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        paginatedProducts.map(product => (
-                                            <tr key={product._id}>
-                                                <td>
-                                                    <img src={product.thumbnail} alt={product.title} width="50" />
-                                                </td>
-                                                <td>{product.title}</td>
-                                                <td>₹{product.price}</td>
-                                                <td>
+                            </div>
+                        </div>
+
+                        {/* Mobile Cards View (Viewports <= 768px) */}
+                        <div className="admin-products-mobile-view">
+                            {paginatedProducts.length === 0 ? (
+                                <div className="admin-products-empty-card">
+                                    <p>No products found matching your search or filters.</p>
+                                </div>
+                            ) : (
+                                <div className="admin-products-cards-grid">
+                                    {paginatedProducts.map(product => (
+                                        <div key={product._id} className="admin-product-card">
+                                            <div className="admin-product-card-top">
+                                                <div className="admin-product-card-thumb-wrap">
+                                                    <img
+                                                        src={product.thumbnail}
+                                                        alt={product.title}
+                                                        className="admin-product-card-thumb"
+                                                        loading="lazy"
+                                                        onError={(e) => { e.target.style.display = "none"; }}
+                                                    />
+                                                </div>
+                                                <div className="admin-product-card-info">
+                                                    <div className="admin-product-card-meta-row">
+                                                        <span className="admin-product-category-tag">
+                                                            {product.category || "General"}
+                                                        </span>
+                                                        <span className="admin-product-card-price">
+                                                            ₹{product.price}
+                                                        </span>
+                                                    </div>
+                                                    <h4 className="admin-product-card-title">{product.title}</h4>
+                                                </div>
+                                            </div>
+
+                                            <div className="admin-product-card-bottom">
+                                                <div className="admin-product-stock-container">
                                                     {editingProduct === product._id ? (
-                                                        <div className="stock-edit-box">
+                                                        <div className="stock-edit-box mobile-stock-box">
+                                                            <span className="stock-edit-label">Stock:</span>
                                                             <input
                                                                 type="number"
                                                                 min="0"
@@ -1115,55 +1326,113 @@ export const AdminDashboard = () => {
                                                         </div>
                                                     ) : (
                                                         <div
-                                                            className="stock-display-pill"
+                                                            className={`mobile-stock-pill ${product.stock <= 5 ? "low-stock" : ""}`}
                                                             onClick={() => setEditingProduct(product._id)}
-                                                            title="Click to edit stock"
+                                                            title="Tap to edit stock"
                                                         >
+                                                            <span className="stock-label-prefix">Stock:</span>
                                                             <span className="stock-qty">{product.stock}</span>
-                                                            <span className="stock-edit-hint">(click to edit)</span>
+                                                            <span className="stock-edit-pencil">✏️</span>
                                                         </div>
                                                     )}
-                                                </td>
-                                                <td>
-                                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                                        <button onClick={() => startEditProduct(product)} className="btn-edit">Edit</button>
-                                                        <button onClick={() => handleDeleteProduct(product._id)} className="btn-delete">Delete</button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                                                </div>
+
+                                                <div className="admin-product-card-actions">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => startEditProduct(product)}
+                                                        className="btn-edit admin-card-btn"
+                                                        title="Edit product"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteProduct(product._id)}
+                                                        className="btn-delete admin-card-btn"
+                                                        title="Delete product"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    </div>
-                </div>
 
                         {totalPages > 1 && (
-                            <div className="pagination">
-                                <button
-                                    className="pagination-btn"
-                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                    disabled={currentPage === 1}
-                                >
-                                    Prev
-                                </button>
-                                {Array.from({ length: totalPages }, (_, i) => (
+                            <div className="pagination-container">
+                                <nav className="pagination" aria-label="Products Pagination">
                                     <button
-                                        key={i}
-                                        className={`pagination-btn ${currentPage === i + 1 ? "active" : ""}`}
-                                        onClick={() => setCurrentPage(i + 1)}
+                                        type="button"
+                                        className="pagination-btn nav"
+                                        disabled={currentPage === 1}
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        aria-label="Go to previous page"
                                     >
-                                        {i + 1}
+                                        ← Prev
                                     </button>
-                                ))}
-                                <button
-                                    className="pagination-btn"
-                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                    disabled={currentPage === totalPages}
-                                >
-                                    Next
-                                </button>
+
+                                    {/* Desktop range (up to 7 items with ellipsis) */}
+                                    <div className="pagination-numbers pagination-numbers-desktop">
+                                        {desktopPageRange.map((item, idx) =>
+                                            item === "..." ? (
+                                                <span key={`desk-ellipsis-${idx}`} className="pagination-ellipsis" aria-hidden="true">
+                                                    …
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    key={`desk-page-${item}`}
+                                                    type="button"
+                                                    className={`pagination-btn ${currentPage === item ? "active" : ""}`}
+                                                    onClick={() => handlePageChange(item)}
+                                                    aria-label={`Go to page ${item}`}
+                                                    aria-current={currentPage === item ? "page" : undefined}
+                                                >
+                                                    {item}
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+
+                                    {/* Mobile range (compact window with ellipsis) */}
+                                    <div className="pagination-numbers pagination-numbers-mobile">
+                                        {mobilePageRange.map((item, idx) =>
+                                            item === "..." ? (
+                                                <span key={`mob-ellipsis-${idx}`} className="pagination-ellipsis" aria-hidden="true">
+                                                    …
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    key={`mob-page-${item}`}
+                                                    type="button"
+                                                    className={`pagination-btn ${currentPage === item ? "active" : ""}`}
+                                                    onClick={() => handlePageChange(item)}
+                                                    aria-label={`Go to page ${item}`}
+                                                    aria-current={currentPage === item ? "page" : undefined}
+                                                >
+                                                    {item}
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className="pagination-btn nav"
+                                        disabled={currentPage === totalPages}
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        aria-label="Go to next page"
+                                    >
+                                        Next →
+                                    </button>
+                                </nav>
+
+                                <div className="pagination-info">
+                                    Showing <strong>{sortedProducts.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}</strong>–<strong>{Math.min(currentPage * itemsPerPage, sortedProducts.length)}</strong> of <strong>{sortedProducts.length}</strong> items • Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+                                </div>
                             </div>
                         )}
                     </div>

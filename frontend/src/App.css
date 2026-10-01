@@ -413,6 +413,8 @@ a.nav-auth-btn:active {
   padding: 5rem 0 2rem 0;
   position: relative;
   z-index: 10;
+  margin-top: auto !important;
+  width: 100%;
 }
 
 .footer-container {

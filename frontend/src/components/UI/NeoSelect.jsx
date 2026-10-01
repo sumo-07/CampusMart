@@ -17,19 +17,29 @@ export const NeoSelect = ({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
-  // Normalize options to [{ value, label }] format
+  // Normalize options to [{ value, label, isAction, sticky, icon, className }] format
   const normalizedOptions = options.map((opt) => {
     if (typeof opt === "object" && opt !== null) {
       return {
         value: opt.value,
         label: opt.label !== undefined ? opt.label : String(opt.value),
         icon: opt.icon,
+        isAction: opt.isAction,
+        sticky: opt.sticky || (opt.isAction ? "top" : undefined),
+        className: opt.className,
       };
     }
     return { value: opt, label: String(opt) };
   });
 
   const selectedOption = normalizedOptions.find((opt) => String(opt.value) === String(value));
+
+  // Partition options for pinned sections
+  const topStickyOptions = normalizedOptions.filter((opt) => opt.sticky === "top");
+  const bottomStickyOptions = normalizedOptions.filter((opt) => opt.sticky === "bottom");
+  const scrollableOptions = normalizedOptions.filter(
+    (opt) => opt.sticky !== "top" && opt.sticky !== "bottom"
+  );
 
   // Close on outside click
   useEffect(() => {
@@ -68,6 +78,26 @@ export const NeoSelect = ({
     setIsOpen(false);
   };
 
+  const renderOption = (opt) => {
+    const isSelected = selectedOption && String(selectedOption.value) === String(opt.value);
+    return (
+      <button
+        key={String(opt.value)}
+        type="button"
+        role="option"
+        aria-selected={isSelected}
+        onClick={() => handleSelect(opt.value)}
+        className={`neo-select-option ${isSelected ? "selected" : ""} ${opt.isAction ? "is-action" : ""} ${opt.sticky ? `sticky-${opt.sticky}` : ""} ${opt.className || ""}`}
+      >
+        <span className="neo-select-option-label">
+          {opt.icon && <span>{opt.icon}</span>}
+          <span>{opt.label}</span>
+        </span>
+        {isSelected && <span className="neo-select-check">✓</span>}
+      </button>
+    );
+  };
+
   return (
     <div
       ref={containerRef}
@@ -98,25 +128,21 @@ export const NeoSelect = ({
 
       {isOpen && (
         <div className="neo-select-dropdown" role="listbox">
-          {normalizedOptions.map((opt) => {
-            const isSelected = selectedOption && String(selectedOption.value) === String(opt.value);
-            return (
-              <button
-                key={String(opt.value)}
-                type="button"
-                role="option"
-                aria-selected={isSelected}
-                onClick={() => handleSelect(opt.value)}
-                className={`neo-select-option ${isSelected ? "selected" : ""}`}
-              >
-                <span className="neo-select-option-label">
-                  {opt.icon && <span>{opt.icon}</span>}
-                  <span>{opt.label}</span>
-                </span>
-                {isSelected && <span className="neo-select-check">✓</span>}
-              </button>
-            );
-          })}
+          {topStickyOptions.length > 0 && (
+            <div className="neo-select-pinned-top">
+              {topStickyOptions.map(renderOption)}
+            </div>
+          )}
+
+          <div className="neo-select-options-scroll">
+            {scrollableOptions.map(renderOption)}
+          </div>
+
+          {bottomStickyOptions.length > 0 && (
+            <div className="neo-select-pinned-bottom">
+              {bottomStickyOptions.map(renderOption)}
+            </div>
+          )}
         </div>
       )}
     </div>
