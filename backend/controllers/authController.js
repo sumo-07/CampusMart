@@ -5,10 +5,11 @@ const { sendPasswordResetEmail, sendPasswordResetSuccessEmail, sendWelcomeEmail 
 const { OAuth2Client } = require("google-auth-library");
 
 const sendTokenCookie = (res, token) => {
+    const isProduction = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
 };
@@ -230,9 +231,12 @@ const deleteUserAddress = async (req, res) => {
 // @route   POST /api/auth/logout
 // @access  Public
 const logoutUser = (req, res) => {
+    const isProduction = process.env.NODE_ENV === "production";
     res.cookie("token", "", {
         httpOnly: true,
         expires: new Date(0),
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
     });
     res.status(200).json({ message: "Logged out successfully" });
 };

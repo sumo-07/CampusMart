@@ -12,18 +12,30 @@ const contactRoutes = require("./routes/contactRoutes");
 
 const app = express();
 
-const allowedOrigins = [
+// Trust reverse proxy for HTTPS cookie transmission on Render/Vercel
+app.set("trust proxy", 1);
+
+const rawOrigins = [
     process.env.URL,
     process.env.CLIENT_URL,
-].filter(Boolean).map((url) => url.replace(/\/$/, ""));
+    "http://localhost:5173",
+].filter(Boolean);
+
+const allowedOrigins = rawOrigins
+    .flatMap((entry) => entry.split(","))
+    .map((url) => url.trim().replace(/\/$/, ""))
+    .filter(Boolean);
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (e.g. mobile apps, curl, Postman)
+        // Allow requests with no origin (e.g. mobile apps, curl, Postman, server-to-server)
         if (!origin) return callback(null, true);
 
         const cleanOrigin = origin.replace(/\/$/, "");
-        if (allowedOrigins.includes(cleanOrigin)) {
+        const isAllowed = allowedOrigins.includes(cleanOrigin) ||
+            cleanOrigin.endsWith(".vercel.app");
+
+        if (isAllowed) {
             return callback(null, true);
         }
         return callback(new Error(`CORS blocked for origin: ${origin}`));
@@ -38,6 +50,12 @@ app.use(express.json({
     },
 }));
 app.use(cookieParser());
+
+// Health check endpoint for cloud platforms (e.g. Render)
+app.get("/health", (req, res) => {
+    res.status(200).json({ status: "OK", timestamp: new Date() });
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
