@@ -89,6 +89,7 @@ export const AdminDashboard = () => {
     const [orderSort, setOrderSort] = useState("date-desc");
     const [orderStatusFilter, setOrderStatusFilter] = useState("all");
     const [orderSearchQuery, setOrderSearchQuery] = useState("");
+    const [isOrderFilterMenuOpen, setIsOrderFilterMenuOpen] = useState(false);
 
     const [imageInputMode, setImageInputMode] = useState("file"); // "file" | "url"
     const [imageFile, setImageFile] = useState(null);
@@ -153,6 +154,7 @@ export const AdminDashboard = () => {
         }
     };
     const [currentPage, setCurrentPage] = useState(1);
+    const [orderCurrentPage, setOrderCurrentPage] = useState(1);
     const [newProduct, setNewProduct] = useState({
         title: '',
         price: 0,
@@ -618,6 +620,33 @@ export const AdminDashboard = () => {
                 return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
         }
     });
+
+    const ordersPerPage = 10;
+    const orderTotalPages = Math.ceil(sortedOrders.length / ordersPerPage);
+    const paginatedOrders = sortedOrders.slice((orderCurrentPage - 1) * ordersPerPage, orderCurrentPage * ordersPerPage);
+
+    const activeOrderFiltersCount =
+        (orderStatusFilter !== "all" ? 1 : 0) +
+        (orderSearchQuery.trim() !== "" ? 1 : 0) +
+        (orderSort !== "date-desc" ? 1 : 0);
+
+    // Reset order page on search, filter, or sort change
+    useEffect(() => {
+        setOrderCurrentPage(1);
+    }, [orderSearchQuery, orderStatusFilter, orderSort]);
+
+    const desktopOrderPageRange = getPaginationRange(orderCurrentPage, orderTotalPages, false);
+    const mobileOrderPageRange = getPaginationRange(orderCurrentPage, orderTotalPages, true);
+
+    const handleOrderPageChange = (page) => {
+        if (page >= 1 && page <= orderTotalPages && page !== orderCurrentPage) {
+            setOrderCurrentPage(page);
+            const ordersEl = document.querySelector(".admin-orders");
+            if (ordersEl) {
+                ordersEl.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+    };
 
     const handleProductSortToggle = (field) => {
         if (field === "title") {
@@ -1460,199 +1489,402 @@ export const AdminDashboard = () => {
                             </button>
                         </div>
 
-                        <div className="admin-orders-toolbar">
-                            <div className="admin-orders-filters-row">
-                                <div className="admin-search-wrapper orders-search">
-                                    <span className="search-icon">🔍</span>
-                                    <input
-                                        type="text"
-                                        placeholder="Search orders (ID, customer, email, phone)..."
-                                        value={orderSearchQuery}
-                                        onChange={(e) => setOrderSearchQuery(e.target.value)}
-                                        className="admin-search-input"
-                                    />
-                                    {orderSearchQuery && (
-                                        <button
-                                            type="button"
-                                            className="clear-search-btn"
-                                            onClick={() => setOrderSearchQuery("")}
-                                            title="Clear search"
-                                        >
-                                            ✕
-                                        </button>
+                        <div className={`admin-orders-toolbar ${isOrderFilterMenuOpen ? "menu-open" : "menu-collapsed"}`}>
+                            {/* Summary & Mobile/Tablet Menu Toggle Header */}
+                            <div className="admin-orders-toolbar-top">
+                                <div className="admin-orders-count-badge">
+                                    <span className="badge-icon">📦</span>
+                                    <span className="badge-total">
+                                        <strong>{sortedOrders.length}</strong> {orderStatusFilter === "Abandoned" ? "Drafts" : "Orders"}
+                                    </span>
+                                    <span className="badge-dot">•</span>
+                                    <span className="badge-range">
+                                        {sortedOrders.length === 0 ? "0" : `${(orderCurrentPage - 1) * ordersPerPage + 1}–${Math.min(orderCurrentPage * ordersPerPage, sortedOrders.length)}`}
+                                    </span>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className={`admin-orders-menu-toggle-btn ${isOrderFilterMenuOpen ? "active" : ""} ${activeOrderFiltersCount > 0 ? "has-active-filters" : ""}`}
+                                    onClick={() => setIsOrderFilterMenuOpen(prev => !prev)}
+                                    aria-expanded={isOrderFilterMenuOpen}
+                                    title={isOrderFilterMenuOpen ? "Close filters menu" : "Open filters & search menu"}
+                                >
+                                    <span className="menu-toggle-icon">⚡</span>
+                                    <span className="menu-toggle-text">{isOrderFilterMenuOpen ? "Hide Filters" : "Filter & Search"}</span>
+                                    {activeOrderFiltersCount > 0 && (
+                                        <span className="menu-toggle-badge">{activeOrderFiltersCount}</span>
                                     )}
-                                </div>
+                                    <span className="menu-toggle-arrow">{isOrderFilterMenuOpen ? "▲" : "▼"}</span>
+                                </button>
+                            </div>
 
-                                <div className="admin-filter-group">
-                                    <span className="admin-control-label">Status:</span>
-                                    <NeoSelect
-                                        id="order-status-select"
-                                        value={orderStatusFilter}
-                                        onChange={setOrderStatusFilter}
-                                        options={[
-                                            { value: "all", label: `📦 Confirmed Orders (${confirmedOrders.length})` },
-                                            { value: "Pending", label: `⏳ Pending Fulfillment (${pendingOrders})` },
-                                            { value: "Processing", label: `⚙️ Processing (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Processing').length})` },
-                                            { value: "Shipped", label: `🚚 Shipped (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Shipped').length})` },
-                                            { value: "Delivered", label: `✅ Delivered (${deliveredOrders})` },
-                                            { value: "Cancelled", label: `❌ Cancelled (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Cancelled').length})` },
-                                            { value: "Abandoned", label: `🛒 Abandoned Drafts (${abandonedOrders.length})` },
-                                            { value: "all-with-drafts", label: `📋 All Records (inc. Drafts) (${orders.length})` }
-                                        ]}
-                                    />
-                                </div>
-
-                                <div className="admin-filter-group">
-                                    <span className="admin-control-label">Sort:</span>
-                                    <NeoSelect
-                                        id="order-sort-select"
-                                        value={orderSort}
-                                        onChange={setOrderSort}
-                                        options={[
-                                            { value: "date-desc", label: "📅 Date: Newest First" },
-                                            { value: "date-asc", label: "📅 Date: Oldest First" },
-                                            { value: "amount-desc", label: "💰 Total: High to Low" },
-                                            { value: "amount-asc", label: "💰 Total: Low to High" }
-                                        ]}
-                                    />
-                                </div>
-
-                                {(orderStatusFilter !== "all" || orderSearchQuery || orderSort !== "date-desc") && (
+                            {/* Structured Abandoned Drafts Alert Strip (full width, cleanly separated) */}
+                            {orderStatusFilter === "all" && abandonedOrders.length > 0 && (
+                                <div className="admin-drafts-alert-strip">
+                                    <div className="drafts-alert-left">
+                                        <span className="drafts-alert-icon">🛒</span>
+                                        <span className="drafts-alert-text">
+                                            <strong>{abandonedOrders.length}</strong> unpaid draft{abandonedOrders.length > 1 ? 's' : ''} segregated
+                                        </span>
+                                    </div>
                                     <button
                                         type="button"
-                                        className="admin-btn-reset-filters"
+                                        onClick={() => setOrderStatusFilter("Abandoned")}
+                                        className="drafts-alert-link-btn"
+                                        title="View abandoned checkouts"
+                                    >
+                                        View Drafts →
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Active filter chips (visible when menu is collapsed so admin sees active filters) */}
+                            {activeOrderFiltersCount > 0 && !isOrderFilterMenuOpen && (
+                                <div className="admin-orders-active-chips-row">
+                                    <span className="active-chips-label">Active:</span>
+                                    {orderStatusFilter !== "all" && (
+                                        <span className="admin-filter-pill-tag">
+                                            {orderStatusFilter === "Abandoned" ? "🛒 Abandoned" : `📦 ${orderStatusFilter}`}
+                                            <button
+                                                type="button"
+                                                className="pill-clear-btn"
+                                                onClick={() => setOrderStatusFilter("all")}
+                                                title="Clear status filter"
+                                            >
+                                                ✕
+                                            </button>
+                                        </span>
+                                    )}
+                                    {orderSearchQuery.trim() && (
+                                        <span className="admin-filter-pill-tag">
+                                            🔍 "{orderSearchQuery.slice(0, 12)}{orderSearchQuery.length > 12 ? '…' : ''}"
+                                            <button
+                                                type="button"
+                                                className="pill-clear-btn"
+                                                onClick={() => setOrderSearchQuery("")}
+                                                title="Clear search"
+                                            >
+                                                ✕
+                                            </button>
+                                        </span>
+                                    )}
+                                    {orderSort !== "date-desc" && (
+                                        <span className="admin-filter-pill-tag">
+                                            {orderSort === "date-asc" ? "📅 Oldest" : orderSort === "amount-desc" ? "💰 High-Low" : "💰 Low-High"}
+                                            <button
+                                                type="button"
+                                                className="pill-clear-btn"
+                                                onClick={() => setOrderSort("date-desc")}
+                                                title="Reset sort"
+                                            >
+                                                ✕
+                                            </button>
+                                        </span>
+                                    )}
+                                    <button
+                                        type="button"
+                                        className="admin-clear-all-pill-btn"
                                         onClick={() => {
                                             setOrderStatusFilter("all");
                                             setOrderSearchQuery("");
                                             setOrderSort("date-desc");
                                         }}
-                                        title="Reset filters & sort"
+                                        title="Clear all filters"
                                     >
-                                        Reset
+                                        <span className="clear-all-icon">✕</span> Clear All
                                     </button>
-                                )}
-                            </div>
-
-                            <div className="admin-orders-summary-bar">
-                                <span className="admin-orders-count-text">
-                                    Showing <strong>{sortedOrders.length}</strong> {orderStatusFilter === "Abandoned" ? "abandoned checkout(s)" : "order(s)"}
-                                </span>
-                                {orderStatusFilter === "all" && abandonedOrders.length > 0 && (
-                                    <span className="admin-drafts-notice">
-                                        ({abandonedOrders.length} unpaid draft{abandonedOrders.length > 1 ? 's' : ''} segregated in <button type="button" onClick={() => setOrderStatusFilter("Abandoned")} className="admin-drafts-link">Abandoned Drafts</button>)
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="admin-table-mobile-hint">
-                            <span>👈 Scroll horizontally to view all columns 👉</span>
-                        </div>
-                        <div className="products-table-wrapper">
-                            <div className="products-table-inner">
-                                <div className="products-table-header-wrap">
-                                    <table className="products-table products-table-head">
-                                        <colgroup>
-                                            <col style={{ width: '11%' }} />
-                                            <col style={{ width: '17%' }} />
-                                            <col style={{ width: '9%' }} />
-                                            <col style={{ width: '8%' }} />
-                                            <col style={{ width: '10%' }} />
-                                            <col style={{ width: '11%' }} />
-                                            <col style={{ width: '18%' }} />
-                                            <col style={{ width: '16%' }} />
-                                        </colgroup>
-                                        <thead>
-                                            <tr>
-                                                <th>Order ID</th>
-                                                <th>Customer</th>
-                                                <th className="sortable-th" onClick={() => handleOrderSortToggle("date")} title="Sort by Date">
-                                                    <div className="th-content">
-                                                        <span>Date</span>
-                                                        {getSortIcon(orderSort, "date-asc", "date-desc")}
-                                                    </div>
-                                                </th>
-                                                <th className="sortable-th" onClick={() => handleOrderSortToggle("amount")} title="Sort by Total Amount">
-                                                    <div className="th-content">
-                                                        <span>Total</span>
-                                                        {getSortIcon(orderSort, "amount-asc", "amount-desc")}
-                                                    </div>
-                                                </th>
-                                                <th>Payment</th>
-                                                <th>Status</th>
-                                                <th>Items Ordered</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                    </table>
                                 </div>
-                                <div className="products-table-scroll">
-                                    <table className="products-table products-table-body">
-                                        <colgroup>
-                                            <col style={{ width: '11%' }} />
-                                            <col style={{ width: '17%' }} />
-                                            <col style={{ width: '9%' }} />
-                                            <col style={{ width: '8%' }} />
-                                            <col style={{ width: '10%' }} />
-                                            <col style={{ width: '11%' }} />
-                                            <col style={{ width: '18%' }} />
-                                            <col style={{ width: '16%' }} />
-                                        </colgroup>
-                                        <tbody>
-                                    {sortedOrders.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="8" style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
-                                                No customer orders found matching your search or filters.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        sortedOrders.map(order => (
-                                            <tr key={order._id}>
-                                                <td>
-                                                    <Link
-                                                        to={`/admin/orders/${order._id}`}
-                                                        className="admin-order-id-link"
-                                                        title="View full order details"
-                                                    >
-                                                        #{order._id.substring(order._id.length - 8)}
-                                                    </Link>
+                            )}
+
+                            {/* Collapsible Menu Body containing Search, Status, Sort, Reset */}
+                            <div className={`admin-orders-menu-body ${isOrderFilterMenuOpen ? "open" : "collapsed"}`}>
+                                <div className="admin-orders-filters-row">
+                                    <div className="admin-search-wrapper orders-search">
+                                        <span className="search-icon">🔍</span>
+                                        <input
+                                            type="text"
+                                            placeholder="Search orders (ID, customer, email, phone)..."
+                                            value={orderSearchQuery}
+                                            onChange={(e) => setOrderSearchQuery(e.target.value)}
+                                            className="admin-search-input"
+                                        />
+                                        {orderSearchQuery && (
+                                            <button
+                                                type="button"
+                                                className="clear-search-btn"
+                                                onClick={() => setOrderSearchQuery("")}
+                                                title="Clear search"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div className="admin-filter-group">
+                                        <span className="admin-control-label">Status:</span>
+                                        <NeoSelect
+                                            id="order-status-select"
+                                            size="sm"
+                                            value={orderStatusFilter}
+                                            onChange={setOrderStatusFilter}
+                                            options={[
+                                                { value: "all", label: `📦 Confirmed Orders (${confirmedOrders.length})` },
+                                                { value: "Pending", label: `⏳ Pending Fulfillment (${pendingOrders})` },
+                                                { value: "Processing", label: `⚙️ Processing (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Processing').length})` },
+                                                { value: "Shipped", label: `🚚 Shipped (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Shipped').length})` },
+                                                { value: "Delivered", label: `✅ Delivered (${deliveredOrders})` },
+                                                { value: "Cancelled", label: `❌ Cancelled (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Cancelled').length})` },
+                                                { value: "Abandoned", label: `🛒 Abandoned Drafts (${abandonedOrders.length})` },
+                                                { value: "all-with-drafts", label: `📋 All Records (inc. Drafts) (${orders.length})` }
+                                            ]}
+                                        />
+                                    </div>
+
+                                    <div className="admin-filter-group">
+                                        <span className="admin-control-label">Sort:</span>
+                                        <NeoSelect
+                                            id="order-sort-select"
+                                            size="sm"
+                                            value={orderSort}
+                                            onChange={setOrderSort}
+                                            options={[
+                                                { value: "date-desc", label: "📅 Date: Newest First" },
+                                                { value: "date-asc", label: "📅 Date: Oldest First" },
+                                                { value: "amount-desc", label: "💰 Total: High to Low" },
+                                                { value: "amount-asc", label: "💰 Total: Low to High" }
+                                            ]}
+                                        />
+                                    </div>
+
+                                    {activeOrderFiltersCount > 0 && (
+                                        <button
+                                            type="button"
+                                            className="admin-btn-reset-filters"
+                                            onClick={() => {
+                                                setOrderStatusFilter("all");
+                                                setOrderSearchQuery("");
+                                                setOrderSort("date-desc");
+                                            }}
+                                            title="Reset filters & sort"
+                                        >
+                                            Reset Filters
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Desktop View: Full Data Table (Screens > 1100px) */}
+                        <div className="admin-orders-desktop-view">
+                            <div className="admin-table-mobile-hint">
+                                <span>👈 Scroll horizontally to view all columns 👉</span>
+                            </div>
+                            <div className="products-table-wrapper">
+                                <div className="products-table-inner">
+                                    <div className="products-table-header-wrap">
+                                        <table className="products-table products-table-head">
+                                            <colgroup>
+                                                <col style={{ width: '11%' }} />
+                                                <col style={{ width: '17%' }} />
+                                                <col style={{ width: '9%' }} />
+                                                <col style={{ width: '8%' }} />
+                                                <col style={{ width: '10%' }} />
+                                                <col style={{ width: '11%' }} />
+                                                <col style={{ width: '18%' }} />
+                                                <col style={{ width: '16%' }} />
+                                            </colgroup>
+                                            <thead>
+                                                <tr>
+                                                    <th>Order ID</th>
+                                                    <th>Customer</th>
+                                                    <th className="sortable-th" onClick={() => handleOrderSortToggle("date")} title="Sort by Date">
+                                                        <div className="th-content">
+                                                            <span>Date</span>
+                                                            {getSortIcon(orderSort, "date-asc", "date-desc")}
+                                                        </div>
+                                                    </th>
+                                                    <th className="sortable-th" onClick={() => handleOrderSortToggle("amount")} title="Sort by Total Amount">
+                                                        <div className="th-content">
+                                                            <span>Total</span>
+                                                            {getSortIcon(orderSort, "amount-asc", "amount-desc")}
+                                                        </div>
+                                                    </th>
+                                                    <th>Payment</th>
+                                                    <th>Status</th>
+                                                    <th>Items Ordered</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                    <div className="products-table-scroll">
+                                        <table className="products-table products-table-body">
+                                            <colgroup>
+                                                <col style={{ width: '11%' }} />
+                                                <col style={{ width: '17%' }} />
+                                                <col style={{ width: '9%' }} />
+                                                <col style={{ width: '8%' }} />
+                                                <col style={{ width: '10%' }} />
+                                                <col style={{ width: '11%' }} />
+                                                <col style={{ width: '18%' }} />
+                                                <col style={{ width: '16%' }} />
+                                            </colgroup>
+                                            <tbody>
+                                        {paginatedOrders.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="8" style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
+                                                    No customer orders found matching your search or filters.
                                                 </td>
-                                                <td>
-                                                    <div className="admin-order-customer-name">
-                                                        {(order.user && typeof order.user === 'object' && order.user.name)
-                                                            ? order.user.name
-                                                            : (order.shippingAddress?.fullName || (order.user ? "Customer" : "Guest"))}
-                                                    </div>
-                                                    {((order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone) && (
-                                                        <small className="admin-order-customer-contact">
-                                                            {(order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone}
-                                                        </small>
-                                                    )}
-                                                </td>
-                                                <td className="admin-order-date">{new Date(order.createdAt).toLocaleDateString()}</td>
-                                                <td><strong className="admin-order-total-amount">₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</strong></td>
-                                                <td>
-                                                    <div className="admin-payment-cell">
-                                                        <span className="admin-payment-method">
-                                                            {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
+                                            </tr>
+                                        ) : (
+                                            paginatedOrders.map(order => (
+                                                <tr key={order._id}>
+                                                    <td>
+                                                        <Link
+                                                            to={`/admin/orders/${order._id}`}
+                                                            className="admin-order-id-link"
+                                                            title="View full order details"
+                                                        >
+                                                            #{order._id.substring(order._id.length - 8)}
+                                                        </Link>
+                                                    </td>
+                                                    <td>
+                                                        <div className="admin-order-customer-name">
+                                                            {(order.user && typeof order.user === 'object' && order.user.name)
+                                                                ? order.user.name
+                                                                : (order.shippingAddress?.fullName || (order.user ? "Customer" : "Guest"))}
+                                                        </div>
+                                                        {((order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone) && (
+                                                            <small className="admin-order-customer-contact">
+                                                                {(order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone}
+                                                            </small>
+                                                        )}
+                                                    </td>
+                                                    <td className="admin-order-date">{new Date(order.createdAt).toLocaleDateString()}</td>
+                                                    <td><strong className="admin-order-total-amount">₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</strong></td>
+                                                    <td>
+                                                        <div className="admin-payment-cell">
+                                                            <span className="admin-payment-method">
+                                                                {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
+                                                            </span>
+                                                            <span className={`admin-payment-pill ${
+                                                                isAbandonedDraft(order)
+                                                                    ? "draft"
+                                                                    : (order.orderStatus === "Cancelled")
+                                                                        ? "cancelled"
+                                                                        : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "paid" : "pending")
+                                                            }`}>
+                                                                {isAbandonedDraft(order)
+                                                                    ? "Unpaid Draft"
+                                                                    : (order.orderStatus === "Cancelled")
+                                                                        ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "Refunded" : "Cancelled")
+                                                                        : (order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending"))}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {isAbandonedDraft(order) ? (
+                                                            <span className="status-badge draft" title="Unpaid online checkout draft - not confirmed for fulfillment">
+                                                                🛒 Abandoned Draft
+                                                            </span>
+                                                        ) : (
+                                                            <span className={`status-badge ${(order.orderStatus || "Pending").toLowerCase()}`}>
+                                                                {order.orderStatus || "Pending"}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        <ul className="admin-order-items-list">
+                                                            {order.orderItems.map((item, idx) => (
+                                                                <li
+                                                                    key={idx}
+                                                                    className="admin-order-item-row"
+                                                                    title={`${item.title} (Qty: ${item.quantity})`}
+                                                                >
+                                                                    <img
+                                                                        src={item.thumbnail}
+                                                                        alt={item.title}
+                                                                        width="32"
+                                                                        height="32"
+                                                                    />
+                                                                    <span className="admin-order-item-text">
+                                                                        {item.title}{' '}
+                                                                        <span className="admin-order-item-qty">
+                                                                            (x{item.quantity})
+                                                                        </span>
+                                                                    </span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </td>
+                                                    <td>
+                                                        <div className="admin-order-actions-stack">
+                                                            <Link
+                                                                to={`/admin/orders/${order._id}`}
+                                                                className="admin-btn-view-order"
+                                                            >
+                                                                👁️ Details
+                                                            </Link>
+                                                            <NeoSelect
+                                                                size="sm"
+                                                                fullWidth={true}
+                                                                alignRight={true}
+                                                                openUpward={true}
+                                                                value={order.orderStatus || "Pending"}
+                                                                onChange={(val) => handleInitiateStatusChange(order._id, val, order.orderStatus || "Pending")}
+                                                                options={[
+                                                                    { value: "Pending", label: "Pending" },
+                                                                    { value: "Processing", label: "Processing" },
+                                                                    { value: "Shipped", label: "Shipped" },
+                                                                    { value: "Delivered", label: "Delivered" },
+                                                                    { value: "Cancelled", label: "Cancelled" }
+                                                                ]}
+                                                            />
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Mobile & Tablet View: Clean Cards Grid (Screens <= 1100px) */}
+                        <div className="admin-orders-mobile-view">
+                            {paginatedOrders.length === 0 ? (
+                                <div className="admin-orders-empty-card">
+                                    <p>No customer orders found matching your search or filters.</p>
+                                </div>
+                            ) : (
+                                <div className="admin-orders-cards-grid">
+                                    {paginatedOrders.map(order => {
+                                        const isDraft = isAbandonedDraft(order);
+                                        const customerName = (order.user && typeof order.user === 'object' && order.user.name)
+                                            ? order.user.name
+                                            : (order.shippingAddress?.fullName || (order.user ? "Customer" : "Guest"));
+                                        const customerContact = ((order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone) || "";
+
+                                        return (
+                                            <div key={order._id} className="admin-order-card">
+                                                <div className="admin-order-card-header">
+                                                    <div className="admin-order-card-id-wrap">
+                                                        <Link
+                                                            to={`/admin/orders/${order._id}`}
+                                                            className="admin-order-id-link"
+                                                            title="View full order details"
+                                                        >
+                                                            #{order._id.substring(order._id.length - 8)}
+                                                        </Link>
+                                                        <span className="admin-order-card-date">
+                                                            {new Date(order.createdAt).toLocaleDateString()}
                                                         </span>
-                                                        <span className={`admin-payment-pill ${
-                                                            isAbandonedDraft(order)
-                                                                ? "draft"
-                                                                : (order.orderStatus === "Cancelled")
-                                                                    ? "cancelled"
-                                                                    : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "paid" : "pending")
-                                                        }`}>
-                                                            {isAbandonedDraft(order)
-                                                                ? "Unpaid Draft"
-                                                                : (order.orderStatus === "Cancelled")
-                                                                    ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "Refunded" : "Cancelled")
-                                                                    : (order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending"))}
-                                                        </span>
                                                     </div>
-                                                </td>
-                                                <td>
-                                                    {isAbandonedDraft(order) ? (
+
+                                                    {isDraft ? (
                                                         <span className="status-badge draft" title="Unpaid online checkout draft - not confirmed for fulfillment">
                                                             🛒 Abandoned Draft
                                                         </span>
@@ -1661,43 +1893,91 @@ export const AdminDashboard = () => {
                                                             {order.orderStatus || "Pending"}
                                                         </span>
                                                     )}
-                                                </td>
-                                                <td>
-                                                    <ul className="admin-order-items-list">
-                                                        {order.orderItems.map((item, idx) => (
-                                                            <li
-                                                                key={idx}
-                                                                className="admin-order-item-row"
-                                                                title={`${item.title} (Qty: ${item.quantity})`}
-                                                            >
-                                                                <img
-                                                                    src={item.thumbnail}
-                                                                    alt={item.title}
-                                                                    width="32"
-                                                                    height="32"
-                                                                />
-                                                                <span className="admin-order-item-text">
-                                                                    {item.title}{' '}
-                                                                    <span className="admin-order-item-qty">
-                                                                        (x{item.quantity})
-                                                                    </span>
-                                                                </span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </td>
-                                                <td>
-                                                    <div className="admin-order-actions-stack">
-                                                        <Link
-                                                            to={`/admin/orders/${order._id}`}
-                                                            className="admin-btn-view-order"
-                                                        >
-                                                            👁️ Details
-                                                        </Link>
+                                                </div>
+
+                                                <div className="admin-order-card-body">
+                                                    <div className="admin-order-card-customer">
+                                                        <div className="admin-order-card-customer-name">
+                                                            👤 {customerName}
+                                                        </div>
+                                                        {customerContact && (
+                                                            <div className="admin-order-card-customer-contact">
+                                                                {customerContact}
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="admin-order-card-payment-row">
+                                                        <div className="admin-order-card-amount-wrap">
+                                                            <span className="admin-order-card-amount-label">Total Amount</span>
+                                                            <span className="admin-order-card-total-amount">
+                                                                ₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="admin-payment-cell">
+                                                            <span className="admin-payment-method">
+                                                                {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
+                                                            </span>
+                                                            <span className={`admin-payment-pill ${
+                                                                isDraft
+                                                                    ? "draft"
+                                                                    : (order.orderStatus === "Cancelled")
+                                                                        ? "cancelled"
+                                                                        : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "paid" : "pending")
+                                                            }`}>
+                                                                {isDraft
+                                                                    ? "Unpaid Draft"
+                                                                    : (order.orderStatus === "Cancelled")
+                                                                        ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "Refunded" : "Cancelled")
+                                                                        : (order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending"))}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {order.orderItems && order.orderItems.length > 0 && (
+                                                        <div className="admin-order-card-items-wrap">
+                                                            <span className="admin-order-card-items-heading">
+                                                                Items Ordered ({order.orderItems.length})
+                                                            </span>
+                                                            <div className="admin-order-card-items-list">
+                                                                {order.orderItems.map((item, idx) => (
+                                                                    <div key={idx} className="admin-order-card-item-row" title={`${item.title} (Qty: ${item.quantity})`}>
+                                                                        {item.thumbnail ? (
+                                                                            <img
+                                                                                src={item.thumbnail}
+                                                                                alt={item.title}
+                                                                                className="admin-order-card-item-thumb"
+                                                                                loading="lazy"
+                                                                                onError={(e) => { e.target.style.display = "none"; }}
+                                                                            />
+                                                                        ) : (
+                                                                            <div className="admin-order-card-item-thumb admin-order-item-placeholder">📦</div>
+                                                                        )}
+                                                                        <div className="admin-order-card-item-details">
+                                                                            <span className="admin-order-card-item-title">{item.title}</span>
+                                                                            <span className="admin-order-card-item-qty">x{item.quantity}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="admin-order-card-actions">
+                                                    <Link
+                                                        to={`/admin/orders/${order._id}`}
+                                                        className="admin-btn-view-order"
+                                                    >
+                                                        👁️ Details
+                                                    </Link>
+                                                    <div className="admin-order-card-status-select">
                                                         <NeoSelect
                                                             size="sm"
                                                             fullWidth={true}
                                                             alignRight={true}
+                                                            openUpward={true}
                                                             value={order.orderStatus || "Pending"}
                                                             onChange={(val) => handleInitiateStatusChange(order._id, val, order.orderStatus || "Pending")}
                                                             options={[
@@ -1709,15 +1989,88 @@ export const AdminDashboard = () => {
                                                             ]}
                                                         />
                                                     </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
-                    </div>
-                </div>
+
+                        {/* Orders Windowed Pagination */}
+                        {orderTotalPages > 1 && (
+                            <div className="pagination-container">
+                                <nav className="pagination" aria-label="Orders Pagination">
+                                    <button
+                                        type="button"
+                                        className="pagination-btn nav"
+                                        disabled={orderCurrentPage === 1}
+                                        onClick={() => handleOrderPageChange(orderCurrentPage - 1)}
+                                        aria-label="Go to previous page"
+                                    >
+                                        ← Prev
+                                    </button>
+
+                                    {/* Desktop range (up to 7 items with ellipsis) */}
+                                    <div className="pagination-numbers pagination-numbers-desktop">
+                                        {desktopOrderPageRange.map((item, idx) =>
+                                            item === "..." ? (
+                                                <span key={`desk-order-ellipsis-${idx}`} className="pagination-ellipsis" aria-hidden="true">
+                                                    …
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    key={`desk-order-page-${item}`}
+                                                    type="button"
+                                                    className={`pagination-btn ${orderCurrentPage === item ? "active" : ""}`}
+                                                    onClick={() => handleOrderPageChange(item)}
+                                                    aria-label={`Go to page ${item}`}
+                                                    aria-current={orderCurrentPage === item ? "page" : undefined}
+                                                >
+                                                    {item}
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+
+                                    {/* Mobile range (compact window with ellipsis) */}
+                                    <div className="pagination-numbers pagination-numbers-mobile">
+                                        {mobileOrderPageRange.map((item, idx) =>
+                                            item === "..." ? (
+                                                <span key={`mob-order-ellipsis-${idx}`} className="pagination-ellipsis" aria-hidden="true">
+                                                    …
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    key={`mob-order-page-${item}`}
+                                                    type="button"
+                                                    className={`pagination-btn ${orderCurrentPage === item ? "active" : ""}`}
+                                                    onClick={() => handleOrderPageChange(item)}
+                                                    aria-label={`Go to page ${item}`}
+                                                    aria-current={orderCurrentPage === item ? "page" : undefined}
+                                                >
+                                                    {item}
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className="pagination-btn nav"
+                                        disabled={orderCurrentPage === orderTotalPages}
+                                        onClick={() => handleOrderPageChange(orderCurrentPage + 1)}
+                                        aria-label="Go to next page"
+                                    >
+                                        Next →
+                                    </button>
+                                </nav>
+
+                                <div className="pagination-info">
+                                    Showing <strong>{sortedOrders.length === 0 ? 0 : (orderCurrentPage - 1) * ordersPerPage + 1}</strong>–<strong>{Math.min(orderCurrentPage * ordersPerPage, sortedOrders.length)}</strong> of <strong>{sortedOrders.length}</strong> orders • Page <strong>{orderCurrentPage}</strong> of <strong>{orderTotalPages}</strong>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

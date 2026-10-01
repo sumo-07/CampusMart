@@ -121,15 +121,46 @@
   animation: neoSelectPop 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+.neo-select-container.is-open {
+  z-index: 1300 !important;
+}
+
 .neo-select-container.align-right .neo-select-dropdown {
   left: auto;
   right: 0;
+}
+
+/* Upward Dropdown Popup */
+.neo-select-container.open-upward .neo-select-dropdown {
+  top: auto;
+  bottom: calc(100% + 0.35rem);
+  box-shadow: 0.25rem -0.25rem 0 var(--neo-border);
+  animation: neoSelectPopUpward 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.neo-select-container.open-upward .neo-select-arrow {
+  transform: rotate(180deg);
+}
+
+.neo-select-container.open-upward .neo-select-arrow.open {
+  transform: rotate(0deg);
 }
 
 @keyframes neoSelectPop {
   from {
     opacity: 0;
     transform: translateY(-0.35rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes neoSelectPopUpward {
+  from {
+    opacity: 0;
+    transform: translateY(0.35rem) scale(0.98);
   }
   to {
     opacity: 1;

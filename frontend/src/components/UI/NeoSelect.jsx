@@ -12,6 +12,7 @@ export const NeoSelect = ({
   size = "md", // "sm" | "md" | "lg"
   fullWidth = false,
   alignRight = false,
+  openUpward = false,
   id,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -103,7 +104,7 @@ export const NeoSelect = ({
       ref={containerRef}
       id={id}
       style={style}
-      className={`neo-select-container size-${size} ${fullWidth ? "full-width" : ""} ${alignRight ? "align-right" : ""} ${className}`}
+      className={`neo-select-container size-${size} ${fullWidth ? "full-width" : ""} ${alignRight ? "align-right" : ""} ${openUpward ? "open-upward" : ""} ${isOpen ? "is-open" : ""} ${className}`}
     >
       <button
         type="button"
