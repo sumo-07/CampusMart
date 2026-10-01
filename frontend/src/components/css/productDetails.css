@@ -418,10 +418,10 @@
 /* Admin Preview Mode Notice in Product Details */
 .pd-admin-badge-notice {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
   width: 100%;
-  flex-wrap: wrap;
 }
 
 .pd-admin-mode-pill {
@@ -432,25 +432,46 @@
   color: var(--neo-border);
   border: var(--border-medium);
   border-radius: var(--radius-pill);
-  padding: 8px 16px;
+  padding: 6px 14px;
   font-family: var(--font-header);
-  font-size: 0.85rem;
-  font-weight: 900;
+  font-size: 0.82rem;
+  font-weight: 800;
   box-shadow: var(--shadow-hard-xs);
   letter-spacing: 0.4px;
+  text-transform: uppercase;
 }
 
 .pd-admin-edit-btn {
+  width: 100%;
   background: var(--neo-green);
   color: var(--neo-border);
-  flex: 1;
-  min-width: 180px;
+  font-family: var(--font-header);
+  font-size: 0.95rem;
+  font-weight: 900;
+  padding: 0.9rem 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: var(--border-thick);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-hard);
+  cursor: pointer;
+  transition: var(--transition-tactile);
 }
 
 .pd-admin-edit-btn:hover {
   background: #00e08f;
   transform: translate(-2px, -2px);
   box-shadow: var(--shadow-hard-lg);
+}
+
+.pd-admin-edit-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-hard-sm);
 }
 
 /* Quantity Control */
@@ -831,6 +852,18 @@
 
   .pd-actions>.disabled {
     grid-column: 1 / -1;
+  }
+
+  .pd-admin-badge-notice {
+    grid-column: 1 / -1;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .pd-admin-edit-btn {
+    font-size: 0.78rem;
+    padding: 0.65rem 0.6rem;
+    white-space: nowrap;
   }
 
   .pd-cart-qty-control {
