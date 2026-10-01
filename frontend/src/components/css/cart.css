@@ -80,6 +80,42 @@
   padding: 0;
 }
 
+/* Scrollbar for laptop and desktop screens */
+@media (min-width: 993px) {
+  .cart-items-list {
+    max-height: clamp(460px, 60vh, 580px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 0.65rem;
+    padding-left: 0.15rem;
+    padding-top: 0.15rem;
+    padding-bottom: 0.35rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--neo-yellow) #F3F4F6;
+  }
+
+  .cart-items-list::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .cart-items-list::-webkit-scrollbar-track {
+    background: #F3F4F6;
+    border: 1.5px solid var(--neo-border);
+    border-radius: var(--radius-pill);
+  }
+
+  .cart-items-list::-webkit-scrollbar-thumb {
+    background: var(--neo-yellow);
+    border: 1.5px solid var(--neo-border);
+    border-radius: var(--radius-pill);
+    box-shadow: 1px 1px 0px var(--neo-border);
+  }
+
+  .cart-items-list::-webkit-scrollbar-thumb:hover {
+    background: #FFEA1A;
+  }
+}
+
 /* Individual Cart Item */
 .cart-item {
   display: flex;

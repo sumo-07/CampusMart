@@ -336,9 +336,22 @@ export const Checkout = () => {
             <div className="checkout-items-list">
               {cartItems.map((item) => (
                 <div key={item.productId} className="checkout-item">
-                  <div className="checkout-item-title-box">
-                    <p className="item-name">{item.title}</p>
-                    <span className="item-calc">{item.quantity} × ₹{Number(item.price).toFixed(2)}</span>
+                  <div className="checkout-item-left">
+                    <div className="checkout-item-img-wrap">
+                      <img
+                        src={item.thumbnail || item.image || (Array.isArray(item.images) && item.images[0]) || "/logo.jpg"}
+                        alt={item.title || "Product"}
+                        className="checkout-item-img"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "/logo.jpg";
+                        }}
+                      />
+                    </div>
+                    <div className="checkout-item-title-box">
+                      <p className="item-name">{item.title}</p>
+                      <span className="item-calc">{item.quantity} × ₹{Number(item.price).toFixed(2)}</span>
+                    </div>
                   </div>
                   <p className="item-final-price">₹{(Number(item.price) * item.quantity).toFixed(2)}</p>
                 </div>
