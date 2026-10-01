@@ -8,7 +8,7 @@ const {
 
 async function runTest() {
     console.log("=================================================");
-    console.log("   CampusMart Password Reset Email Diagnostic    ");
+    console.log("     Cartsy Password Reset Email Diagnostic      ");
     console.log("=================================================");
     console.log("EMAIL_SERVICE:", process.env.EMAIL_SERVICE || "gmail");
     console.log("EMAIL_USER:   ", process.env.EMAIL_USER ? process.env.EMAIL_USER.replace(/(.{3})(.*)(@.*)/, "$1***$3") : "NOT SET");
@@ -32,7 +32,7 @@ async function runTest() {
 
     const transporter = getTransporter();
 
-    const mockCustomerName = "CampusMart Student";
+    const mockCustomerName = "Cartsy Shopper";
     const mockOtp = "482910";
     const mockToken = "a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890";
     const clientUrl = (process.env.URL || process.env.CLIENT_URL || "http://localhost:5173").trim();
@@ -54,10 +54,10 @@ async function runTest() {
     });
 
     try {
-        let fromAddress = `"CampusMart" <${process.env.EMAIL_USER}>`;
+        let fromAddress = `"Cartsy" <${process.env.EMAIL_USER}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
-            const displayName = nameMatch ? nameMatch[1].trim() : "CampusMart";
+            const displayName = nameMatch ? nameMatch[1].trim() : "Cartsy";
             fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
         }
 
@@ -66,7 +66,7 @@ async function runTest() {
             from: fromAddress,
             replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER,
             to: targetEmail,
-            subject: "CampusMart Password Reset - Verification Code & Link (Test)",
+            subject: "Cartsy Password Reset - Verification Code & Link (Test)",
             text,
             html,
             headers: {

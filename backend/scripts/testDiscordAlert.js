@@ -4,7 +4,7 @@ const { buildStockAlertEmbed } = require("../utils/discordService");
 
 async function runTest() {
     console.log("=================================================");
-    console.log("    CampusMart Discord Webhook Alert Diagnostic  ");
+    console.log("      Cartsy Discord Webhook Alert Diagnostic    ");
     console.log("=================================================");
 
     const webhookUrl = (
@@ -39,10 +39,10 @@ async function runTest() {
 
     const mockOutOfStockProduct = {
         _id: "65fab9876543210fedcba202",
-        title: "Casio Scientific Calculator FX-991CW",
+        title: "Retro Wireless Mechanical Keyboard",
         price: 1250.00,
         stock: 0,
-        brand: "Casio",
+        brand: "Cartsy",
         category: "electronics",
         thumbnail: "https://images.unsplash.com/photo-1587145820266-a5951ee6f620?w=500&auto=format&fit=crop&q=60",
     };
@@ -55,7 +55,7 @@ async function runTest() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                username: "CampusMart Inventory Alert",
+                username: "Cartsy Inventory Alert",
                 embeds: [lowStockEmbed],
             }),
         });
@@ -73,7 +73,7 @@ async function runTest() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                username: "CampusMart Inventory Alert",
+                username: "Cartsy Inventory Alert",
                 embeds: [outOfStockEmbed],
             }),
         });

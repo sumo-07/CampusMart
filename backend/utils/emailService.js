@@ -113,9 +113,9 @@ const generateOrderReceiptHtml = (order, customerName, clientUrl) => {
     const isOnline = order.paymentMethod === "Razorpay";
     const paymentLabel = isOnline ? "Razorpay (Online Paid)" : "Cash on Delivery (Pay on Arrival)";
     const statusBadgeText = isOnline ? "PAYMENT SUCCESSFUL" : "ORDER CONFIRMED";
-    const statusBadgeBg = isOnline ? "#ecfdf5" : "#fffbeb";
-    const statusBadgeColor = isOnline ? "#047857" : "#b45309";
-    const statusBadgeBorder = isOnline ? "#a7f3d0" : "#fde68a";
+    const statusBadgeBg = isOnline ? "#00F59B" : "#FFE600";
+    const statusBadgeColor = "#0A0A0A";
+    const statusBadgeBorder = "#0A0A0A";
 
     const formattedDate = formatOrderDate(order.createdAt);
     const orderRef = String(order._id);
@@ -125,17 +125,17 @@ const generateOrderReceiptHtml = (order, customerName, clientUrl) => {
         .map((item) => {
             const itemTotal = (Number(item.price) * Number(item.quantity)).toFixed(2);
             return `
-            <tr style="border-bottom: 1px solid #e2e8f0;">
-                <td style="padding: 12px 16px; color: #1e293b; font-size: 14px; font-weight: 500;">
+            <tr style="border-bottom: 1.5px solid #0A0A0A;">
+                <td style="padding: 12px 14px; color: #0A0A0A; font-size: 14px; font-weight: 700;">
                     ${item.title || "Item"}
                 </td>
-                <td style="padding: 12px 16px; color: #64748b; font-size: 14px; text-align: center;">
+                <td style="padding: 12px 14px; color: #0A0A0A; font-size: 14px; font-weight: 800; text-align: center;">
                     ${item.quantity}
                 </td>
-                <td style="padding: 12px 16px; color: #64748b; font-size: 14px; text-align: right;">
+                <td style="padding: 12px 14px; color: #383838; font-size: 14px; text-align: right; font-weight: 600;">
                     ₹${Number(item.price).toFixed(2)}
                 </td>
-                <td style="padding: 12px 16px; color: #0f172a; font-size: 14px; font-weight: 600; text-align: right;">
+                <td style="padding: 12px 14px; color: #0A0A0A; font-size: 14px; font-weight: 800; text-align: right;">
                     ₹${itemTotal}
                 </td>
             </tr>
@@ -157,37 +157,37 @@ const generateOrderReceiptHtml = (order, customerName, clientUrl) => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Receipt - CARTSY</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f1f5f9; padding: 30px 10px;">
+<body style="margin: 0; padding: 0; background-color: #FFFDF9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #FFFDF9; padding: 32px 10px;">
         <tr>
             <td align="center">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 620px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; background-color: #ffffff; border: 2.5px solid #0A0A0A; border-radius: 14px; overflow: hidden; box-shadow: 6px 6px 0px #0A0A0A;">
                     
                     <!-- BRAND HEADER -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 32px 30px; text-align: center;">
-                            <div style="font-size: 26px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-                                🎓 CARTSY
+                        <td style="background-color: #FFE600; border-bottom: 2.5px solid #0A0A0A; padding: 28px 24px; text-align: center;">
+                            <div style="font-size: 30px; font-weight: 900; color: #0A0A0A; letter-spacing: -1px; text-transform: uppercase;">
+                                🛒 CARTSY
                             </div>
-                            <div style="font-size: 13px; color: #e0e7ff; margin-top: 4px; font-weight: 500; letter-spacing: 0.5px;">
-                                ONLINE STORE &bull; OFFICIAL RECEIPT
+                            <div style="display: inline-block; background-color: #FF6EA7; color: #0A0A0A; font-size: 11px; font-weight: 900; padding: 4px 12px; border-radius: 20px; border: 1.5px solid #0A0A0A; margin-top: 8px; letter-spacing: 0.5px; text-transform: uppercase;">
+                                OFFICIAL ORDER RECEIPT • NO CAP
                             </div>
                         </td>
                     </tr>
 
                     <!-- STATUS BADGE & GREETING -->
                     <tr>
-                        <td style="padding: 30px 30px 20px 30px; text-align: center;">
-                            <div style="display: inline-block; background-color: ${statusBadgeBg}; color: ${statusBadgeColor}; border: 1px solid ${statusBadgeBorder}; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 20px; letter-spacing: 0.8px; margin-bottom: 16px;">
+                        <td style="padding: 28px 28px 18px 28px; text-align: center;">
+                            <div style="display: inline-block; background-color: ${statusBadgeBg}; color: ${statusBadgeColor}; border: 2px solid ${statusBadgeBorder}; box-shadow: 2px 2px 0px #0A0A0A; font-size: 12px; font-weight: 900; padding: 6px 16px; border-radius: 20px; letter-spacing: 0.8px; margin-bottom: 16px;">
                                 ${statusBadgeText}
                             </div>
-                            <h2 style="margin: 0; color: #0f172a; font-size: 22px; font-weight: 700;">
+                            <h2 style="margin: 0; color: #0A0A0A; font-size: 22px; font-weight: 900; text-transform: uppercase;">
                                 Thank You for Your Order, ${customerName}!
                             </h2>
-                            <p style="margin: 8px 0 0 0; color: #64748b; font-size: 14px; line-height: 1.5;">
+                            <p style="margin: 8px 0 0 0; color: #383838; font-size: 14px; line-height: 1.5; font-weight: 500;">
                                 ${
                                     isOnline
-                                        ? "Your payment was received successfully and your order is currently being prepared."
+                                        ? "Your payment was received successfully and your drip is currently being prepared."
                                         : "Your cash on delivery order has been placed and stock has been reserved for you."
                                 }
                             </p>
@@ -196,26 +196,26 @@ const generateOrderReceiptHtml = (order, customerName, clientUrl) => {
 
                     <!-- ORDER METADATA -->
                     <tr>
-                        <td style="padding: 0 30px 24px 30px;">
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+                        <td style="padding: 0 28px 20px 28px;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #FFFDF0; border: 2px solid #0A0A0A; border-radius: 10px; box-shadow: 3px 3px 0px #0A0A0A; padding: 16px;">
                                 <tr>
-                                    <td style="padding: 4px 8px; font-size: 13px; color: #64748b;">
+                                    <td style="padding: 4px 8px; font-size: 13px; color: #0A0A0A;">
                                         <strong>Order Ref:</strong> #${shortOrderRef}
                                     </td>
-                                    <td style="padding: 4px 8px; font-size: 13px; color: #64748b; text-align: right;">
+                                    <td style="padding: 4px 8px; font-size: 13px; color: #0A0A0A; text-align: right;">
                                         <strong>Date:</strong> ${formattedDate}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 4px 8px; font-size: 13px; color: #64748b;" colspan="2">
-                                        <strong>Payment Mode:</strong> <span style="color: #0f172a; font-weight: 600;">${paymentLabel}</span>
+                                    <td style="padding: 4px 8px; font-size: 13px; color: #0A0A0A;" colspan="2">
+                                        <strong>Payment Mode:</strong> <span style="color: #0A0A0A; font-weight: 800;">${paymentLabel}</span>
                                     </td>
                                 </tr>
                                 ${
                                     order.razorpayOrderId
                                         ? `
                                 <tr>
-                                    <td style="padding: 4px 8px; font-size: 12px; color: #94a3b8;" colspan="2">
+                                    <td style="padding: 4px 8px; font-size: 12px; color: #666666;" colspan="2">
                                         <strong>Razorpay ID:</strong> ${order.razorpayOrderId}
                                     </td>
                                 </tr>`
@@ -227,28 +227,28 @@ const generateOrderReceiptHtml = (order, customerName, clientUrl) => {
 
                     <!-- ITEMIZED PRODUCTS TABLE -->
                     <tr>
-                        <td style="padding: 0 30px 24px 30px;">
-                            <h3 style="margin: 0 0 12px 0; color: #0f172a; font-size: 16px; font-weight: 700;">
+                        <td style="padding: 0 28px 20px 28px;">
+                            <h3 style="margin: 0 0 10px 0; color: #0A0A0A; font-size: 15px; font-weight: 900; text-transform: uppercase;">
                                 Items Ordered
                             </h3>
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse; border: 2px solid #0A0A0A; border-radius: 10px; overflow: hidden;">
                                 <thead>
-                                    <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                                        <th style="padding: 12px 16px; font-size: 12px; font-weight: 600; color: #64748b; text-align: left; text-transform: uppercase; letter-spacing: 0.5px;">Item</th>
-                                        <th style="padding: 12px 16px; font-size: 12px; font-weight: 600; color: #64748b; text-align: center; text-transform: uppercase; letter-spacing: 0.5px;">Qty</th>
-                                        <th style="padding: 12px 16px; font-size: 12px; font-weight: 600; color: #64748b; text-align: right; text-transform: uppercase; letter-spacing: 0.5px;">Price</th>
-                                        <th style="padding: 12px 16px; font-size: 12px; font-weight: 600; color: #64748b; text-align: right; text-transform: uppercase; letter-spacing: 0.5px;">Total</th>
+                                    <tr style="background-color: #FFE600; border-bottom: 2px solid #0A0A0A;">
+                                        <th style="padding: 12px 14px; font-size: 12px; font-weight: 900; color: #0A0A0A; text-align: left; text-transform: uppercase;">Item</th>
+                                        <th style="padding: 12px 14px; font-size: 12px; font-weight: 900; color: #0A0A0A; text-align: center; text-transform: uppercase;">Qty</th>
+                                        <th style="padding: 12px 14px; font-size: 12px; font-weight: 900; color: #0A0A0A; text-align: right; text-transform: uppercase;">Price</th>
+                                        <th style="padding: 12px 14px; font-size: 12px; font-weight: 900; color: #0A0A0A; text-align: right; text-transform: uppercase;">Total</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     ${itemsRows}
                                 </tbody>
                                 <tfoot>
-                                    <tr>
-                                        <td colspan="3" style="padding: 16px; text-align: right; font-size: 15px; font-weight: 700; color: #0f172a;">
+                                    <tr style="background-color: #FFFDF0; border-top: 2px solid #0A0A0A;">
+                                        <td colspan="3" style="padding: 14px 16px; text-align: right; font-size: 14px; font-weight: 900; color: #0A0A0A; text-transform: uppercase;">
                                             Grand Total:
                                         </td>
-                                        <td style="padding: 16px; text-align: right; font-size: 18px; font-weight: 800; color: #4f46e5;">
+                                        <td style="padding: 14px 16px; text-align: right; font-size: 18px; font-weight: 900; color: #FF2A85;">
                                             ₹${totalAmount}
                                         </td>
                                     </tr>
@@ -259,21 +259,21 @@ const generateOrderReceiptHtml = (order, customerName, clientUrl) => {
 
                     <!-- DELIVERY ADDRESS BLOCK -->
                     <tr>
-                        <td style="padding: 0 30px 24px 30px;">
-                            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
-                                <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+                        <td style="padding: 0 28px 22px 28px;">
+                            <div style="background-color: #F0FFF7; border: 2px solid #0A0A0A; border-radius: 10px; box-shadow: 3px 3px 0px #0A0A0A; padding: 18px;">
+                                <div style="font-size: 12px; font-weight: 900; color: #0A0A0A; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
                                     📍 Delivery Information
                                 </div>
-                                <div style="font-size: 15px; font-weight: 600; color: #0f172a; margin-bottom: 4px;">
+                                <div style="font-size: 15px; font-weight: 800; color: #0A0A0A; margin-bottom: 4px;">
                                     ${shipping.fullName || customerName}
                                 </div>
-                                <div style="font-size: 14px; color: #475569; line-height: 1.5;">
+                                <div style="font-size: 14px; color: #383838; line-height: 1.5; font-weight: 500;">
                                     ${shipping.address || "Delivery Address"}<br>
                                     ${shipping.city || ""}${shipping.pincode ? " - " + shipping.pincode : ""}
                                 </div>
                                 ${
                                     shipping.phone
-                                        ? `<div style="font-size: 14px; color: #475569; margin-top: 6px;">
+                                        ? `<div style="font-size: 14px; color: #383838; margin-top: 6px; font-weight: 600;">
                                             <strong>Phone:</strong> ${shipping.phone}
                                            </div>`
                                         : ""
@@ -284,24 +284,27 @@ const generateOrderReceiptHtml = (order, customerName, clientUrl) => {
 
                     <!-- CALL TO ACTION BUTTON -->
                     <tr>
-                        <td style="padding: 10px 30px 32px 30px; text-align: center;">
-                            <a href="${trackOrderUrl}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: 10px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);">
-                                View Your Order
+                        <td style="padding: 10px 28px 28px 28px; text-align: center;">
+                            <a href="${trackOrderUrl}" target="_blank" style="display: inline-block; background-color: #FFE600; color: #0A0A0A; text-decoration: none; font-size: 15px; font-weight: 900; text-transform: uppercase; padding: 14px 34px; border-radius: 8px; border: 2.5px solid #0A0A0A; box-shadow: 4px 4px 0px #0A0A0A; letter-spacing: 0.5px;">
+                                View Your Order &rarr;
                             </a>
-                            <div style="margin-top: 10px; font-size: 12px; color: #94a3b8;">
+                            <div style="margin-top: 10px; font-size: 12px; color: #666666; font-weight: 600;">
                                 Track status, view order timeline, or print receipt anytime.
                             </div>
-                            <p style="margin: 16px 0 0 0; font-size: 12px; color: #64748b; line-height: 1.5; text-align: center; word-break: break-all;">
+                            <p style="margin: 14px 0 0 0; font-size: 12px; color: #666666; line-height: 1.5; text-align: center; word-break: break-all;">
                                 If the button above does not work, copy and paste this link into your browser:<br/>
-                                <a href="${trackOrderUrl}" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline;">${trackOrderUrl}</a>
+                                <a href="${trackOrderUrl}" target="_blank" rel="noopener noreferrer" style="color: #0A0A0A; font-weight: 700; text-decoration: underline;">${trackOrderUrl}</a>
                             </p>
                         </td>
                     </tr>
 
                     <!-- FOOTER -->
                     <tr>
-                        <td style="background-color: #0f172a; padding: 24px 30px; text-align: center;">
-                            <p style="margin: 0; font-size: 13px; color: #94a3b8; line-height: 1.5;">
+                        <td style="background-color: #0A0A0A; padding: 22px 28px; text-align: center; border-top: 2.5px solid #0A0A0A;">
+                            <div style="font-size: 14px; font-weight: 900; color: #FFE600; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                CARTSY
+                            </div>
+                            <p style="margin: 0; font-size: 12px; color: #CCCCCC; line-height: 1.5;">
                                 Questions or need support? Reply directly to this email.<br>
                                 &copy; ${new Date().getFullYear()} CARTSY. All rights reserved.
                             </p>
@@ -426,33 +429,33 @@ const getStatusConfig = (status, order, customerName) => {
         case "Shipped":
             return {
                 badgeText: "📦 SHIPPED & ON THE WAY",
-                badgeBg: "#eff6ff",
-                badgeBorder: "#bfdbfe",
-                badgeColor: "#1d4ed8",
-                headline: "Good news! Your order has been shipped!",
-                subheadline: "Your package has been dispatched and is on its way to your delivery address.",
-                instructionTitle: "📍 Delivery & Handover Instructions",
+                badgeBg: "#54B5FF",
+                badgeBorder: "#0A0A0A",
+                badgeColor: "#0A0A0A",
+                headline: "Your Order Has Shipped!",
+                subheadline: "Your package has been dispatched and is making its way to you.",
+                instructionTitle: "📍 Delivery & Handover Details",
                 instructionBody: `
-                    &bull; Our delivery partner will deliver this package to <strong>${shipping.address || "your delivery address"}</strong>.<br>
-                    &bull; Please keep your phone reachable at <strong>${shipping.phone || "the contact number provided"}</strong> for delivery coordination.<br>
-                    &bull; If you are unavailable, please ensure someone is authorized to receive the package on your behalf.
+                    &bull; Delivery partner will deliver this package to: <strong>${shipping.address || "your delivery address"}</strong>.<br>
+                    &bull; Please keep your contact reachable at <strong>${shipping.phone || "the phone number provided"}</strong>.<br>
+                    &bull; If you are away, ensure someone is authorized to receive your delivery.
                 `,
-                textInstructions: `Delivery Note: Your order has been dispatched and is on its way to ${shipping.address || "your delivery address"}. Please keep your phone reachable at ${shipping.phone || "the contact number provided"} for delivery coordination.`,
+                textInstructions: `Delivery Note: Your order has been dispatched and is on its way to ${shipping.address || "your delivery address"}. Contact: ${shipping.phone || "the phone number provided"}.`,
                 subject: `📦 Shipped! Order #${String(order._id).slice(-8).toUpperCase()} is on its way - CARTSY`,
             };
 
         case "Delivered":
             return {
                 badgeText: "✅ DELIVERED SUCCESSFULLY",
-                badgeBg: "#ecfdf5",
-                badgeBorder: "#a7f3d0",
-                badgeColor: "#047857",
-                headline: "Your order has been delivered!",
-                subheadline: "We hope you enjoy your items. Thank you for shopping with us!",
+                badgeBg: "#00F59B",
+                badgeBorder: "#0A0A0A",
+                badgeColor: "#0A0A0A",
+                headline: "Your Order Has Arrived!",
+                subheadline: "We hope you love your new gear. Thank you for shopping with Cartsy!",
                 instructionTitle: "📍 Delivery Confirmation",
                 instructionBody: `
-                    &bull; Delivered to <strong>${shipping.fullName || customerName}</strong> at <strong>${shipping.address || "your delivery address"}</strong>.<br>
-                    &bull; If you have not received this package or have any questions, please reply directly to this email for support.
+                    &bull; Delivered to: <strong>${shipping.fullName || customerName}</strong> at <strong>${shipping.address || "your delivery address"}</strong>.<br>
+                    &bull; Have questions or need an exchange? Simply reply directly to this email anytime.
                 `,
                 textInstructions: `Delivered to ${shipping.fullName || customerName} at ${shipping.address || "your delivery address"}. If you have any questions, reply directly to this email.`,
                 subject: `✅ Delivered! Order #${String(order._id).slice(-8).toUpperCase()} - CARTSY`,
@@ -461,15 +464,15 @@ const getStatusConfig = (status, order, customerName) => {
         case "Processing":
             return {
                 badgeText: "⚙️ ORDER IN PROCESSING",
-                badgeBg: "#fffbeb",
-                badgeBorder: "#fde68a",
-                badgeColor: "#b45309",
-                headline: "We're packing your order!",
-                subheadline: "Our team is currently picking and verifying your items for dispatch.",
-                instructionTitle: "📍 What Happens Next?",
+                badgeBg: "#FFE600",
+                badgeBorder: "#0A0A0A",
+                badgeColor: "#0A0A0A",
+                headline: "We're Packing Your Order!",
+                subheadline: "Our warehouse squad is picking, packing, and prepping your items.",
+                instructionTitle: "📍 What's Next?",
                 instructionBody: `
-                    &bull; Items are being verified for quality and packaged safely.<br>
-                    &bull; You will receive another notification with tracking details as soon as your package is dispatched.
+                    &bull; Items are inspected and packed with care.<br>
+                    &bull; You will get an instant notification as soon as courier tracking is assigned.
                 `,
                 textInstructions: `Our team is verifying and packing your items. You will receive another update when your package is dispatched.`,
                 subject: `⚙️ Processing: Order #${String(order._id).slice(-8).toUpperCase()} is being prepared - CARTSY`,
@@ -478,15 +481,15 @@ const getStatusConfig = (status, order, customerName) => {
         case "Cancelled":
             return {
                 badgeText: "❌ ORDER CANCELLED",
-                badgeBg: "#fef2f2",
-                badgeBorder: "#fecaca",
-                badgeColor: "#b91c1c",
-                headline: `Order #${String(order._id).slice(-8).toUpperCase()} has been cancelled`,
-                subheadline: "This order has been cancelled and will not be delivered.",
+                badgeBg: "#FF6EA7",
+                badgeBorder: "#0A0A0A",
+                badgeColor: "#0A0A0A",
+                headline: `Order #${String(order._id).slice(-8).toUpperCase()} Cancelled`,
+                subheadline: "This order has been cancelled and will not be dispatched.",
                 instructionTitle: "📍 Cancellation Details",
                 instructionBody: isPaid
-                    ? `&bull; A refund of <strong>₹${totalAmount}</strong> has been initiated to your original payment method. It will reflect in your account within 3–5 business days.<br>&bull; If you have any questions, reply to this email anytime.`
-                    : `&bull; Since this was a Cash on Delivery order, no amount was charged.<br>&bull; If you cancelled by mistake, feel free to place a new order on CARTSY anytime.`,
+                    ? `&bull; A full refund of <strong>₹${totalAmount}</strong> has been initiated to your original payment method (3–5 business days).<br>&bull; Questions? Reply to this email anytime.`
+                    : `&bull; Cash on Delivery order: No charge was incurred.<br>&bull; Changed your mind? Place a new order on Cartsy anytime!`,
                 textInstructions: isPaid
                     ? `A refund of Rs. ${totalAmount} has been initiated to your original payment method (3-5 business days).`
                     : `Since this was Cash on Delivery, no payment was collected. Feel free to re-order anytime.`,
@@ -496,13 +499,13 @@ const getStatusConfig = (status, order, customerName) => {
         default:
             return {
                 badgeText: `ORDER STATUS: ${status.toUpperCase()}`,
-                badgeBg: "#f8fafc",
-                badgeBorder: "#e2e8f0",
-                badgeColor: "#475569",
+                badgeBg: "#FFE600",
+                badgeBorder: "#0A0A0A",
+                badgeColor: "#0A0A0A",
                 headline: `Order #${String(order._id).slice(-8).toUpperCase()} is now ${status}`,
-                subheadline: "Your order status has been updated by our store team.",
+                subheadline: "Your order status has been updated by our team.",
                 instructionTitle: "📍 Order Details",
-                instructionBody: `Your order status is now <strong>${status}</strong>. You can track current progress in your account.`,
+                instructionBody: `Your order status is now <strong>${status}</strong>. Track live progress in your Cartsy account.`,
                 textInstructions: `Your order status is now ${status}. Track current progress in your CARTSY account.`,
                 subject: `Update: Order #${String(order._id).slice(-8).toUpperCase()} is ${status} - CARTSY`,
             };
@@ -527,14 +530,14 @@ const generateStatusUpdateHtml = (order, customerName, clientUrl, newStatus) => 
         .map((item) => {
             const itemTotal = (Number(item.price) * Number(item.quantity)).toFixed(2);
             return `
-            <tr style="border-bottom: 1px solid #e2e8f0;">
-                <td style="padding: 10px 14px; color: #1e293b; font-size: 13px; font-weight: 500;">
+            <tr style="border-bottom: 1.5px solid #0A0A0A;">
+                <td style="padding: 12px 14px; color: #0A0A0A; font-size: 13px; font-weight: 700;">
                     ${item.title || "Item"}
                 </td>
-                <td style="padding: 10px 14px; color: #64748b; font-size: 13px; text-align: center;">
+                <td style="padding: 12px 14px; color: #0A0A0A; font-size: 13px; text-align: center; font-weight: 800;">
                     ${item.quantity}
                 </td>
-                <td style="padding: 10px 14px; color: #0f172a; font-size: 13px; font-weight: 600; text-align: right;">
+                <td style="padding: 12px 14px; color: #0A0A0A; font-size: 13px; font-weight: 800; text-align: right;">
                     ₹${itemTotal}
                 </td>
             </tr>
@@ -550,47 +553,47 @@ const generateStatusUpdateHtml = (order, customerName, clientUrl, newStatus) => 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Update - CARTSY</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f1f5f9; padding: 30px 10px;">
+<body style="margin: 0; padding: 0; background-color: #FFFDF9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #FFFDF9; padding: 32px 10px;">
         <tr>
             <td align="center">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 620px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; background-color: #ffffff; border: 2.5px solid #0A0A0A; border-radius: 14px; overflow: hidden; box-shadow: 6px 6px 0px #0A0A0A;">
                     
                     <!-- BRAND HEADER -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 28px 30px; text-align: center;">
-                            <div style="font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-                                🎓 CARTSY
+                        <td style="background-color: #FFE600; border-bottom: 2.5px solid #0A0A0A; padding: 28px 24px; text-align: center;">
+                            <div style="font-size: 30px; font-weight: 900; color: #0A0A0A; letter-spacing: -1px; text-transform: uppercase;">
+                                🛒 CARTSY
                             </div>
-                            <div style="font-size: 12px; color: #e0e7ff; margin-top: 4px; font-weight: 500; letter-spacing: 0.5px;">
-                                ONLINE STORE &bull; ORDER STATUS UPDATE
+                            <div style="display: inline-block; background-color: #54B5FF; color: #0A0A0A; font-size: 11px; font-weight: 900; padding: 4px 12px; border-radius: 20px; border: 1.5px solid #0A0A0A; margin-top: 8px; letter-spacing: 0.5px; text-transform: uppercase;">
+                                ORDER STATUS UPDATE • LIVE DISPATCH
                             </div>
                         </td>
                     </tr>
 
                     <!-- STATUS BADGE & GREETING -->
                     <tr>
-                        <td style="padding: 28px 30px 18px 30px; text-align: center;">
-                            <div style="display: inline-block; background-color: ${config.badgeBg}; color: ${config.badgeColor}; border: 1px solid ${config.badgeBorder}; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 20px; letter-spacing: 0.8px; margin-bottom: 14px;">
+                        <td style="padding: 28px 28px 18px 28px; text-align: center;">
+                            <div style="display: inline-block; background-color: ${config.badgeBg}; color: ${config.badgeColor}; border: 2px solid ${config.badgeBorder}; box-shadow: 2px 2px 0px #0A0A0A; font-size: 12px; font-weight: 900; padding: 6px 16px; border-radius: 20px; letter-spacing: 0.8px; margin-bottom: 16px;">
                                 ${config.badgeText}
                             </div>
-                            <h2 style="margin: 0; color: #0f172a; font-size: 22px; font-weight: 700;">
+                            <h2 style="margin: 0; color: #0A0A0A; font-size: 22px; font-weight: 900; text-transform: uppercase;">
                                 ${config.headline}
                             </h2>
-                            <p style="margin: 8px 0 0 0; color: #64748b; font-size: 14px; line-height: 1.5;">
+                            <p style="margin: 8px 0 0 0; color: #383838; font-size: 14px; line-height: 1.5; font-weight: 500;">
                                 Hi ${customerName}, ${config.subheadline}
                             </p>
                         </td>
                     </tr>
 
-                    <!-- CAMPUS INSTRUCTION CARD -->
+                    <!-- INSTRUCTION CARD -->
                     <tr>
-                        <td style="padding: 0 30px 20px 30px;">
-                            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #4f46e5; border-radius: 8px; padding: 16px 20px;">
-                                <div style="font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">
+                        <td style="padding: 0 28px 20px 28px;">
+                            <div style="background-color: #FFFDF0; border: 2px solid #0A0A0A; border-radius: 10px; box-shadow: 3px 3px 0px #0A0A0A; padding: 18px 20px;">
+                                <div style="font-size: 13px; font-weight: 900; color: #0A0A0A; margin-bottom: 6px; text-transform: uppercase;">
                                     ${config.instructionTitle}
                                 </div>
-                                <div style="font-size: 13px; color: #475569; line-height: 1.6;">
+                                <div style="font-size: 13px; color: #1f2937; line-height: 1.6; font-weight: 500;">
                                     ${config.instructionBody}
                                 </div>
                             </div>
@@ -599,24 +602,24 @@ const generateStatusUpdateHtml = (order, customerName, clientUrl, newStatus) => 
 
                     <!-- ORDER SUMMARY -->
                     <tr>
-                        <td style="padding: 0 30px 20px 30px;">
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
+                        <td style="padding: 0 28px 20px 28px;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse; border: 2px solid #0A0A0A; border-radius: 10px; overflow: hidden; background: #ffffff; box-shadow: 3px 3px 0px #0A0A0A;">
                                 <thead>
-                                    <tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 600; color: #64748b; text-align: left; text-transform: uppercase;">Item</th>
-                                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 600; color: #64748b; text-align: center; text-transform: uppercase;">Qty</th>
-                                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 600; color: #64748b; text-align: right; text-transform: uppercase;">Total</th>
+                                    <tr style="background-color: #0A0A0A;">
+                                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 900; color: #ffffff; text-align: left; text-transform: uppercase; letter-spacing: 0.8px;">Item</th>
+                                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 900; color: #ffffff; text-align: center; text-transform: uppercase; letter-spacing: 0.8px;">Qty</th>
+                                        <th style="padding: 10px 14px; font-size: 11px; font-weight: 900; color: #ffffff; text-align: right; text-transform: uppercase; letter-spacing: 0.8px;">Total</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     ${itemsRows}
                                 </tbody>
                                 <tfoot>
-                                    <tr style="background-color: #f8fafc;">
-                                        <td colspan="2" style="padding: 12px 14px; text-align: right; font-size: 13px; font-weight: 700; color: #0f172a;">
+                                    <tr style="background-color: #FFFDF0; border-top: 2px solid #0A0A0A;">
+                                        <td colspan="2" style="padding: 12px 14px; text-align: right; font-size: 13px; font-weight: 900; color: #0A0A0A;">
                                             Order Total:
                                         </td>
-                                        <td style="padding: 12px 14px; text-align: right; font-size: 15px; font-weight: 800; color: #4f46e5;">
+                                        <td style="padding: 12px 14px; text-align: right; font-size: 15px; font-weight: 900; color: #0A0A0A;">
                                             ₹${totalAmount}
                                         </td>
                                     </tr>
@@ -627,33 +630,32 @@ const generateStatusUpdateHtml = (order, customerName, clientUrl, newStatus) => 
 
                     <!-- DELIVERY ADDRESS CARD -->
                     <tr>
-                        <td style="padding: 0 30px 20px 30px;">
-                            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px; font-size: 13px; color: #475569; line-height: 1.5;">
-                                <strong>Delivery Location:</strong> ${shipping.fullName || customerName}, ${shipping.address || "Delivery Address"}, ${shipping.city || ""} ${shipping.pincode ? "- " + shipping.pincode : ""} ${shipping.phone ? " (Phone: " + shipping.phone + ")" : ""}
+                        <td style="padding: 0 28px 20px 28px;">
+                            <div style="background-color: #FFFDF0; border: 2px solid #0A0A0A; border-radius: 10px; box-shadow: 3px 3px 0px #0A0A0A; padding: 14px 18px; font-size: 13px; color: #0A0A0A; line-height: 1.5;">
+                                <strong style="text-transform: uppercase;">Delivery Location:</strong> ${shipping.fullName || customerName}, ${shipping.address || "Delivery Address"}, ${shipping.city || ""} ${shipping.pincode ? "- " + shipping.pincode : ""} ${shipping.phone ? " (Phone: " + shipping.phone + ")" : ""}
                             </div>
                         </td>
                     </tr>
 
                     <!-- CALL TO ACTION BUTTON -->
                     <tr>
-                        <td style="padding: 10px 30px 28px 30px; text-align: center;">
-                            <a href="${trackOrderUrl}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; padding: 12px 28px; border-radius: 8px; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
-                                Track Your Order
+                        <td style="padding: 10px 28px 28px 28px; text-align: center;">
+                            <a href="${trackOrderUrl}" target="_blank" style="display: inline-block; background-color: #FFE600; color: #0A0A0A; text-decoration: none; font-size: 14px; font-weight: 900; padding: 14px 32px; border-radius: 8px; border: 2.5px solid #0A0A0A; box-shadow: 4px 4px 0px #0A0A0A; text-transform: uppercase; letter-spacing: 0.5px;">
+                                Track Your Order &rarr;
                             </a>
-                            <div style="margin-top: 8px; font-size: 12px; color: #94a3b8;">
-                                View live order status and delivery timeline on CARTSY.
+                            <div style="margin-top: 10px; font-size: 12px; color: #666666; font-weight: 600;">
+                                View live order status and delivery updates on CARTSY.
                             </div>
-                            <p style="margin: 14px 0 0 0; font-size: 12px; color: #64748b; line-height: 1.5; text-align: center; word-break: break-all;">
-                                If the button above does not work, copy and paste this link into your browser:<br/>
-                                <a href="${trackOrderUrl}" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline;">${trackOrderUrl}</a>
+                            <p style="margin: 14px 0 0 0; font-size: 12px; color: #666666; line-height: 1.5; text-align: center; word-break: break-all;">
+                                Direct link: <a href="${trackOrderUrl}" target="_blank" rel="noopener noreferrer" style="color: #0A0A0A; font-weight: 700; text-decoration: underline;">${trackOrderUrl}</a>
                             </p>
                         </td>
                     </tr>
 
                     <!-- FOOTER -->
                     <tr>
-                        <td style="background-color: #0f172a; padding: 20px 30px; text-align: center;">
-                            <p style="margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.5;">
+                        <td style="background-color: #0A0A0A; padding: 22px 30px; text-align: center; border-top: 2.5px solid #0A0A0A;">
+                            <p style="margin: 0; font-size: 12px; color: #999999; line-height: 1.5;">
                                 Questions about this order? Reply directly to this email.<br>
                                 &copy; ${new Date().getFullYear()} CARTSY. All rights reserved.
                             </p>
@@ -857,80 +859,80 @@ const generatePasswordResetHtml = ({ customerName, otp, resetToken, clientUrl, r
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Password Reset Request - CARTSY</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #cbd5e1;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #0b0f19; padding: 40px 12px;">
+<body style="margin: 0; padding: 0; background-color: #FFFDF9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #FFFDF9; padding: 32px 10px;">
         <tr>
             <td align="center">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 580px; background-color: #111827; border: 1px solid #1f2937; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 580px; background-color: #ffffff; border: 2.5px solid #0A0A0A; border-radius: 14px; overflow: hidden; box-shadow: 6px 6px 0px #0A0A0A;">
                     
                     <!-- BRAND HEADER -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #0284c7 0%, #7c3aed 100%); padding: 32px 30px; text-align: center;">
-                            <div style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-                                🎓 CARTSY
+                        <td style="background-color: #FFE600; border-bottom: 2.5px solid #0A0A0A; padding: 28px 24px; text-align: center;">
+                            <div style="font-size: 30px; font-weight: 900; color: #0A0A0A; letter-spacing: -1px; text-transform: uppercase;">
+                                🛒 CARTSY
                             </div>
-                            <div style="font-size: 13px; color: #e0f2fe; margin-top: 5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">
-                                Account Security &bull; Password Reset
+                            <div style="display: inline-block; background-color: #FF6EA7; color: #0A0A0A; font-size: 11px; font-weight: 900; padding: 4px 12px; border-radius: 20px; border: 1.5px solid #0A0A0A; margin-top: 8px; letter-spacing: 0.5px; text-transform: uppercase;">
+                                ACCOUNT SECURITY • PASSWORD RESET
                             </div>
                         </td>
                     </tr>
 
                     <!-- MAIN CONTENT -->
                     <tr>
-                        <td style="padding: 36px 32px 24px 32px;">
-                            <h1 style="margin: 0 0 16px 0; font-size: 22px; font-weight: 700; color: #f8fafc; line-height: 1.3;">
+                        <td style="padding: 32px 28px 24px 28px;">
+                            <h1 style="margin: 0 0 16px 0; font-size: 22px; font-weight: 900; color: #0A0A0A; line-height: 1.3; text-transform: uppercase;">
                                 Reset Your Password
                             </h1>
-                            <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #94a3b8;">
-                                Hello <strong style="color: #f1f5f9;">${customerName || "CARTSY User"}</strong>,
+                            <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #383838; font-weight: 500;">
+                                Hello <strong style="color: #0A0A0A; font-weight: 800;">${customerName || "Cartsy Shopper"}</strong>,
                             </p>
-                            <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #94a3b8;">
-                                We received a request to reset the password for your CARTSY account (<span style="color: #38bdf8;">${recipientEmail}</span>). You can reset your password using the 6-digit verification code below, or by clicking the direct reset button.
+                            <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.6; color: #383838; font-weight: 500;">
+                                We received a request to reset the password for your Cartsy account (<span style="color: #0A0A0A; font-weight: 800;">${recipientEmail}</span>). Use the 6-digit verification code below or tap the direct button.
                             </p>
 
                             <!-- OTP CODE CARD -->
-                            <div style="background: #1e293b; border: 2px dashed #38bdf8; border-radius: 14px; padding: 24px; text-align: center; margin: 26px 0;">
-                                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #38bdf8; margin-bottom: 8px;">
-                                    Your 6-Digit Verification Code
+                            <div style="background: #FFFDF0; border: 2.5px dashed #0A0A0A; border-radius: 12px; box-shadow: 3px 3px 0px #0A0A0A; padding: 22px; text-align: center; margin: 24px 0;">
+                                <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; color: #0A0A0A; margin-bottom: 8px;">
+                                    YOUR 6-DIGIT VERIFICATION CODE
                                 </div>
-                                <div style="font-size: 38px; font-weight: 800; letter-spacing: 10px; color: #ffffff; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; padding: 6px 0;">
+                                <div style="font-size: 38px; font-weight: 900; letter-spacing: 10px; color: #0A0A0A; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; padding: 6px 0;">
                                     ${otp}
                                 </div>
-                                <div style="font-size: 13px; color: #94a3b8; margin-top: 8px;">
-                                    ⏱️ Code expires in <strong style="color: #f1f5f9;">15 minutes</strong>
+                                <div style="font-size: 12px; color: #666666; font-weight: 600; margin-top: 6px;">
+                                    ⏱️ Code expires in <strong style="color: #0A0A0A;">15 minutes</strong>
                                 </div>
                             </div>
 
                             <!-- DIVIDER -->
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 28px 0 24px 0;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 24px 0 20px 0;">
                                 <tr>
-                                    <td style="border-top: 1px solid #1f2937;"></td>
-                                    <td style="padding: 0 16px; color: #64748b; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap;">
+                                    <td style="border-top: 2px solid #0A0A0A;"></td>
+                                    <td style="padding: 0 14px; color: #0A0A0A; font-size: 11px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap;">
                                         OR USE DIRECT LINK
                                     </td>
-                                    <td style="border-top: 1px solid #1f2937;"></td>
+                                    <td style="border-top: 2px solid #0A0A0A;"></td>
                                 </tr>
                             </table>
 
                             <!-- DIRECT ACTION BUTTON -->
-                            <div style="text-align: center; margin: 24px 0 20px 0;">
-                                <a href="${resetUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: linear-gradient(135deg, #00d2ff 0%, #a259ff 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; padding: 15px 36px; border-radius: 10px; box-shadow: 0 4px 18px rgba(0, 210, 255, 0.35);">
+                            <div style="text-align: center; margin: 24px 0 18px 0;">
+                                <a href="${resetUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #FFE600; color: #0A0A0A; text-decoration: none; font-size: 15px; font-weight: 900; padding: 14px 34px; border-radius: 8px; border: 2.5px solid #0A0A0A; box-shadow: 4px 4px 0px #0A0A0A; text-transform: uppercase; letter-spacing: 0.5px;">
                                     Reset My Password &rarr;
                                 </a>
                             </div>
 
-                            <p style="margin: 0 0 26px 0; font-size: 13px; color: #94a3b8; line-height: 1.6; text-align: center; word-break: break-all;">
-                                If the button above does not work, copy and paste this link into your browser:<br/>
-                                <a href="${resetUrl}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline; font-weight: 500;">${resetUrl}</a>
+                            <p style="margin: 0 0 24px 0; font-size: 12px; color: #666666; line-height: 1.5; text-align: center; word-break: break-all;">
+                                If the button above does not work, copy and paste this link:<br/>
+                                <a href="${resetUrl}" target="_blank" rel="noopener noreferrer" style="color: #0A0A0A; font-weight: 700; text-decoration: underline;">${resetUrl}</a>
                             </p>
 
-                            <!-- MANDATORY SECURITY WARNING -->
-                            <div style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; border-radius: 8px; padding: 16px 18px; margin: 26px 0;">
-                                <div style="font-size: 14px; font-weight: 700; color: #fbbf24; margin-bottom: 4px;">
+                            <!-- SECURITY WARNING -->
+                            <div style="background: #FFFDF0; border: 2px solid #0A0A0A; border-left: 6px solid #FF6EA7; border-radius: 8px; box-shadow: 3px 3px 0px #0A0A0A; padding: 14px 18px; margin: 24px 0;">
+                                <div style="font-size: 13px; font-weight: 900; color: #0A0A0A; margin-bottom: 4px; text-transform: uppercase;">
                                     🛡️ Security Notice
                                 </div>
-                                <div style="font-size: 13px; line-height: 1.5; color: #fde68a;">
-                                    <strong>If you didn't request this, you can safely ignore this email.</strong> Your password will remain unchanged and your account is secure. Someone may have entered your email address by mistake.
+                                <div style="font-size: 12px; line-height: 1.5; color: #383838; font-weight: 500;">
+                                    <strong>If you didn't request this, you can safely ignore this email.</strong> Your password will remain unchanged and your account is completely safe.
                                 </div>
                             </div>
                         </td>
@@ -938,9 +940,9 @@ const generatePasswordResetHtml = ({ customerName, otp, resetToken, clientUrl, r
 
                     <!-- FOOTER -->
                     <tr>
-                        <td style="background-color: #0f172a; padding: 22px 30px; text-align: center; border-top: 1px solid #1e293b;">
-                            <div style="font-size: 12px; color: #64748b; line-height: 1.6;">
-                                Need assistance? Reach out to our customer support team.<br/>
+                        <td style="background-color: #0A0A0A; padding: 20px 30px; text-align: center; border-top: 2.5px solid #0A0A0A;">
+                            <div style="font-size: 12px; color: #999999; line-height: 1.5;">
+                                Need assistance? Reach out to our customer support squad.<br/>
                                 &copy; ${new Date().getFullYear()} CARTSY. All rights reserved.
                             </div>
                         </td>
@@ -1057,80 +1059,82 @@ const generatePasswordResetSuccessHtml = ({ customerName, clientUrl, recipientEm
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Password Changed Successfully - CARTSY</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #cbd5e1;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #0b0f19; padding: 40px 12px;">
+<body style="margin: 0; padding: 0; background-color: #FFFDF9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #FFFDF9; padding: 32px 10px;">
         <tr>
             <td align="center">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 580px; background-color: #111827; border: 1px solid #1f2937; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 580px; background-color: #ffffff; border: 2.5px solid #0A0A0A; border-radius: 14px; overflow: hidden; box-shadow: 6px 6px 0px #0A0A0A;">
                     
                     <!-- BRAND HEADER -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #059669 0%, #0284c7 100%); padding: 32px 30px; text-align: center;">
-                            <div style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-                                🎓 CARTSY
+                        <td style="background-color: #FFE600; border-bottom: 2.5px solid #0A0A0A; padding: 28px 24px; text-align: center;">
+                            <div style="font-size: 30px; font-weight: 900; color: #0A0A0A; letter-spacing: -1px; text-transform: uppercase;">
+                                🛒 CARTSY
                             </div>
-                            <div style="font-size: 13px; color: #d1fae5; margin-top: 5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">
-                                Account Security &bull; Password Updated
+                            <div style="display: inline-block; background-color: #00F59B; color: #0A0A0A; font-size: 11px; font-weight: 900; padding: 4px 12px; border-radius: 20px; border: 1.5px solid #0A0A0A; margin-top: 8px; letter-spacing: 0.5px; text-transform: uppercase;">
+                                ACCOUNT SECURITY • PASSWORD UPDATED
                             </div>
                         </td>
                     </tr>
 
                     <!-- MAIN CONTENT -->
                     <tr>
-                        <td style="padding: 36px 32px 24px 32px;">
-                            <div style="text-align: center; margin-bottom: 24px;">
-                                <div style="display: inline-block; width: 64px; height: 64px; line-height: 64px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; font-size: 32px; color: #10b981;">
+                        <td style="padding: 32px 28px 24px 28px;">
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <div style="display: inline-block; width: 64px; height: 64px; line-height: 60px; border-radius: 50%; background: #00F59B; border: 2.5px solid #0A0A0A; box-shadow: 3px 3px 0px #0A0A0A; font-size: 32px; font-weight: 900; color: #0A0A0A;">
                                     &#10003;
                                 </div>
                             </div>
 
-                            <h1 style="margin: 0 0 16px 0; font-size: 22px; font-weight: 700; color: #f8fafc; line-height: 1.3; text-align: center;">
-                                Your Password Has Been Reset
+                            <h1 style="margin: 0 0 16px 0; font-size: 22px; font-weight: 900; color: #0A0A0A; line-height: 1.3; text-align: center; text-transform: uppercase;">
+                                Password Successfully Reset
                             </h1>
-                            <p style="margin: 0 0 18px 0; font-size: 15px; line-height: 1.6; color: #94a3b8; text-align: center;">
-                                Hello <strong style="color: #f1f5f9;">${customerName || "CARTSY User"}</strong>,
+                            <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #383838; text-align: center; font-weight: 500;">
+                                Hello <strong style="color: #0A0A0A; font-weight: 800;">${customerName || "Cartsy Shopper"}</strong>,
                             </p>
-                            <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #94a3b8; text-align: center;">
-                                This email confirms that the password for your CARTSY account (<span style="color: #38bdf8;">${recipientEmail}</span>) was successfully updated on <strong style="color: #f1f5f9;">${formattedDate}</strong>.
+                            <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.6; color: #383838; text-align: center; font-weight: 500;">
+                                Your Cartsy account (<span style="color: #0A0A0A; font-weight: 800;">${recipientEmail}</span>) password was successfully updated on <strong style="color: #0A0A0A;">${formattedDate}</strong>.
                             </p>
 
                             <!-- DETAILS CARD -->
-                            <div style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin: 24px 0;">
+                            <div style="background: #FFFDF0; border: 2px solid #0A0A0A; border-radius: 10px; box-shadow: 3px 3px 0px #0A0A0A; padding: 18px 20px; margin: 24px 0;">
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                     <tr>
-                                        <td style="padding: 6px 0; font-size: 13px; color: #94a3b8; font-weight: 600;">Account:</td>
-                                        <td style="padding: 6px 0; font-size: 13px; color: #f8fafc; text-align: right; font-weight: 600;">${recipientEmail}</td>
+                                        <td style="padding: 6px 0; font-size: 13px; color: #666666; font-weight: 700; text-transform: uppercase;">Account:</td>
+                                        <td style="padding: 6px 0; font-size: 13px; color: #0A0A0A; text-align: right; font-weight: 800;">${recipientEmail}</td>
                                     </tr>
                                     <tr>
-                                        <td style="padding: 6px 0; font-size: 13px; color: #94a3b8; font-weight: 600;">Date &amp; Time:</td>
-                                        <td style="padding: 6px 0; font-size: 13px; color: #f8fafc; text-align: right;">${formattedDate}</td>
+                                        <td style="padding: 6px 0; font-size: 13px; color: #666666; font-weight: 700; text-transform: uppercase;">Date &amp; Time:</td>
+                                        <td style="padding: 6px 0; font-size: 13px; color: #0A0A0A; text-align: right; font-weight: 800;">${formattedDate}</td>
                                     </tr>
                                     <tr>
-                                        <td style="padding: 6px 0; font-size: 13px; color: #94a3b8; font-weight: 600;">Status:</td>
-                                        <td style="padding: 6px 0; font-size: 13px; color: #10b981; text-align: right; font-weight: 700;">Completed</td>
+                                        <td style="padding: 6px 0; font-size: 13px; color: #666666; font-weight: 700; text-transform: uppercase;">Security Status:</td>
+                                        <td style="padding: 6px 0; font-size: 13px; color: #0A0A0A; text-align: right; font-weight: 900;">
+                                            <span style="display: inline-block; background-color: #00F59B; color: #0A0A0A; font-size: 11px; font-weight: 900; padding: 2px 10px; border-radius: 20px; border: 1.5px solid #0A0A0A;">COMPLETED</span>
+                                        </td>
                                     </tr>
                                 </table>
                             </div>
 
                             <!-- ACTION BUTTON -->
-                            <div style="text-align: center; margin: 28px 0 20px 0;">
-                                <a href="${loginUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: linear-gradient(135deg, #00d2ff 0%, #a259ff 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; padding: 15px 36px; border-radius: 10px; box-shadow: 0 4px 18px rgba(0, 210, 255, 0.35);">
+                            <div style="text-align: center; margin: 26px 0 18px 0;">
+                                <a href="${loginUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #FFE600; color: #0A0A0A; text-decoration: none; font-size: 15px; font-weight: 900; padding: 14px 34px; border-radius: 8px; border: 2.5px solid #0A0A0A; box-shadow: 4px 4px 0px #0A0A0A; text-transform: uppercase; letter-spacing: 0.5px;">
                                     Log In to CARTSY &rarr;
                                 </a>
                             </div>
 
-                            <p style="margin: 0 0 26px 0; font-size: 13px; color: #94a3b8; line-height: 1.6; text-align: center; word-break: break-all;">
-                                If the button above does not work, copy and paste this link into your browser:<br/>
-                                <a href="${loginUrl}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline; font-weight: 500;">${loginUrl}</a>
+                            <p style="margin: 0 0 24px 0; font-size: 12px; color: #666666; line-height: 1.5; text-align: center; word-break: break-all;">
+                                If the button above does not work, copy and paste this link:<br/>
+                                <a href="${loginUrl}" target="_blank" rel="noopener noreferrer" style="color: #0A0A0A; font-weight: 700; text-decoration: underline;">${loginUrl}</a>
                             </p>
 
                             <!-- SECURITY WARNING -->
-                            <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; border-radius: 8px; padding: 16px 18px; margin: 26px 0;">
-                                <div style="font-size: 14px; font-weight: 700; color: #f87171; margin-bottom: 4px;">
+                            <div style="background: #FFFDF0; border: 2px solid #0A0A0A; border-left: 6px solid #FF3366; border-radius: 8px; box-shadow: 3px 3px 0px #0A0A0A; padding: 14px 18px; margin: 24px 0;">
+                                <div style="font-size: 13px; font-weight: 900; color: #0A0A0A; margin-bottom: 4px; text-transform: uppercase;">
                                     🛡️ Didn't request this change?
                                 </div>
-                                <div style="font-size: 13px; line-height: 1.5; color: #fca5a5;">
-                                    If you did not perform this password reset, please <a href="${forgotUrl}" target="_blank" rel="noopener noreferrer" style="color: #ffffff; text-decoration: underline; font-weight: 700;">reset your password immediately</a> to secure your account, or contact customer support.
+                                <div style="font-size: 12px; line-height: 1.5; color: #383838; font-weight: 500;">
+                                    If you did not perform this password reset, please <a href="${forgotUrl}" target="_blank" rel="noopener noreferrer" style="color: #0A0A0A; text-decoration: underline; font-weight: 800;">reset your password immediately</a> to secure your account, or contact our support team.
                                 </div>
                             </div>
                         </td>
@@ -1138,9 +1142,9 @@ const generatePasswordResetSuccessHtml = ({ customerName, clientUrl, recipientEm
 
                     <!-- FOOTER -->
                     <tr>
-                        <td style="background-color: #0f172a; padding: 22px 30px; text-align: center; border-top: 1px solid #1e293b;">
-                            <div style="font-size: 12px; color: #64748b; line-height: 1.6;">
-                                Need assistance? Reach out to our customer support team.<br/>
+                        <td style="background-color: #0A0A0A; padding: 20px 30px; text-align: center; border-top: 2.5px solid #0A0A0A;">
+                            <div style="font-size: 12px; color: #999999; line-height: 1.5;">
+                                Need assistance? Reach out to our customer support squad.<br/>
                                 &copy; ${new Date().getFullYear()} CARTSY. All rights reserved.
                             </div>
                         </td>
@@ -1214,7 +1218,7 @@ const sendPasswordResetSuccessEmail = async ({ recipientEmail, customerName, cli
 const generateWelcomeEmailText = ({ customerName, clientUrl, recipientEmail }) => {
     const baseUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
     const catalogUrl = `${baseUrl.replace(/\/$/, "")}/product`;
-    const displayName = customerName || "Student";
+    const displayName = customerName || "Shopper";
 
     return `CARTSY - WELCOME TO THE COMMUNITY!
 ==========================================
@@ -1256,47 +1260,47 @@ const generateWelcomeEmailHtml = ({ customerName, clientUrl, recipientEmail }) =
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to CARTSY, ${displayName}!</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #cbd5e1;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #0b0f19; padding: 40px 12px;">
+<body style="margin: 0; padding: 0; background-color: #FFFDF9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #FFFDF9; padding: 32px 10px;">
         <tr>
             <td align="center">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 580px; background-color: #111827; border: 1px solid #1f2937; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 580px; background-color: #ffffff; border: 2.5px solid #0A0A0A; border-radius: 14px; overflow: hidden; box-shadow: 6px 6px 0px #0A0A0A;">
                     
                     <!-- BRAND HEADER -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #00d2ff 0%, #a259ff 100%); padding: 36px 30px; text-align: center;">
-                            <div style="font-size: 30px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
+                        <td style="background-color: #FFE600; border-bottom: 2.5px solid #0A0A0A; padding: 28px 24px; text-align: center;">
+                            <div style="font-size: 30px; font-weight: 900; color: #0A0A0A; letter-spacing: -1px; text-transform: uppercase;">
                                 🛍️ CARTSY
                             </div>
-                            <div style="font-size: 13px; color: #e0f2fe; margin-top: 6px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;">
-                                Your Daily Drip &amp; Lifestyle Marketplace
+                            <div style="display: inline-block; background-color: #FF6EA7; color: #0A0A0A; font-size: 11px; font-weight: 900; padding: 4px 12px; border-radius: 20px; border: 1.5px solid #0A0A0A; margin-top: 8px; letter-spacing: 0.5px; text-transform: uppercase;">
+                                YOUR DAILY DRIP &amp; LIFESTYLE MARKETPLACE
                             </div>
                         </td>
                     </tr>
 
                     <!-- MAIN CONTENT -->
                     <tr>
-                        <td style="padding: 36px 32px 28px 32px;">
-                            <h1 style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #f8fafc; line-height: 1.3; text-align: center;">
-                                Welcome to CARTSY, <span style="color: #38bdf8;">${displayName}</span>! 🎉
+                        <td style="padding: 32px 28px 28px 28px;">
+                            <h1 style="margin: 0 0 16px 0; font-size: 24px; font-weight: 900; color: #0A0A0A; line-height: 1.3; text-align: center; text-transform: uppercase;">
+                                Welcome to CARTSY, <span style="background-color: #FFE600; padding: 2px 8px; border: 1.5px solid #0A0A0A; border-radius: 6px;">${displayName}</span>! 🎉
                             </h1>
-                            <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #94a3b8; text-align: center;">
-                                We're excited to have you on board! CARTSY is your ultimate destination to discover aesthetic room setups, streetwear fits, trending tech, and curated essentials.
+                            <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.6; color: #383838; text-align: center; font-weight: 500;">
+                                We're hyped to have you here! CARTSY is your ultimate destination to discover aesthetic room setups, streetwear fits, trending tech, and curated lifestyle essentials.
                             </p>
 
                             <!-- FEATURE CARDS -->
-                            <div style="margin: 28px 0;">
+                            <div style="margin: 24px 0;">
                                 <!-- Card 1: Buy & Save -->
-                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; margin-bottom: 12px;">
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: #FFFDF0; border: 2px solid #0A0A0A; border-radius: 10px; box-shadow: 3px 3px 0px #0A0A0A; margin-bottom: 12px;">
                                     <tr>
-                                        <td style="padding: 16px; width: 48px; vertical-align: top; text-align: center; font-size: 26px;">
+                                        <td style="padding: 14px; width: 44px; vertical-align: top; text-align: center; font-size: 24px;">
                                             🛒
                                         </td>
-                                        <td style="padding: 16px 16px 16px 0; vertical-align: middle;">
-                                            <div style="font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 3px;">
+                                        <td style="padding: 14px 14px 14px 0; vertical-align: middle;">
+                                            <div style="font-size: 14px; font-weight: 900; color: #0A0A0A; margin-bottom: 3px; text-transform: uppercase;">
                                                 Buy &amp; Save Big
                                             </div>
-                                            <div style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
+                                            <div style="font-size: 13px; color: #383838; line-height: 1.5; font-weight: 500;">
                                                 Find high-aura gear, tech accessories, room aesthetics, and fits at steal prices.
                                             </div>
                                         </td>
@@ -1304,16 +1308,16 @@ const generateWelcomeEmailHtml = ({ customerName, clientUrl, recipientEmail }) =
                                 </table>
 
                                 <!-- Card 2: Sell Easily -->
-                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; margin-bottom: 12px;">
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: #FFFDF0; border: 2px solid #0A0A0A; border-radius: 10px; box-shadow: 3px 3px 0px #0A0A0A; margin-bottom: 12px;">
                                     <tr>
-                                        <td style="padding: 16px; width: 48px; vertical-align: top; text-align: center; font-size: 26px;">
+                                        <td style="padding: 14px; width: 44px; vertical-align: top; text-align: center; font-size: 24px;">
                                             🏷️
                                         </td>
-                                        <td style="padding: 16px 16px 16px 0; vertical-align: middle;">
-                                            <div style="font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 3px;">
+                                        <td style="padding: 14px 14px 14px 0; vertical-align: middle;">
+                                            <div style="font-size: 14px; font-weight: 900; color: #0A0A0A; margin-bottom: 3px; text-transform: uppercase;">
                                                 Sell Quickly for Cash
                                             </div>
-                                            <div style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
+                                            <div style="font-size: 13px; color: #383838; line-height: 1.5; font-weight: 500;">
                                                 Declutter your space and turn pre-loved items and collectibles into cash with zero hassle.
                                             </div>
                                         </td>
@@ -1321,16 +1325,16 @@ const generateWelcomeEmailHtml = ({ customerName, clientUrl, recipientEmail }) =
                                 </table>
 
                                 <!-- Card 3: Safe & Fast Delivery -->
-                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: #1e293b; border: 1px solid #334155; border-radius: 12px;">
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: #FFFDF0; border: 2px solid #0A0A0A; border-radius: 10px; box-shadow: 3px 3px 0px #0A0A0A;">
                                     <tr>
-                                        <td style="padding: 16px; width: 48px; vertical-align: top; text-align: center; font-size: 26px;">
+                                        <td style="padding: 14px; width: 44px; vertical-align: top; text-align: center; font-size: 24px;">
                                             🚀
                                         </td>
-                                        <td style="padding: 16px 16px 16px 0; vertical-align: middle;">
-                                            <div style="font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 3px;">
+                                        <td style="padding: 14px 14px 14px 0; vertical-align: middle;">
+                                            <div style="font-size: 14px; font-weight: 900; color: #0A0A0A; margin-bottom: 3px; text-transform: uppercase;">
                                                 Fast &amp; Safe Delivery
                                             </div>
-                                            <div style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
+                                            <div style="font-size: 13px; color: #383838; line-height: 1.5; font-weight: 500;">
                                                 Lightning-quick doorstep delivery and secure encrypted checkout.
                                             </div>
                                         </td>
@@ -1339,23 +1343,23 @@ const generateWelcomeEmailHtml = ({ customerName, clientUrl, recipientEmail }) =
                             </div>
 
                             <!-- ACTION BUTTON -->
-                            <div style="text-align: center; margin: 32px 0 20px 0;">
-                                <a href="${catalogUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: linear-gradient(135deg, #00d2ff 0%, #a259ff 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; padding: 16px 38px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 210, 255, 0.4);">
+                            <div style="text-align: center; margin: 28px 0 18px 0;">
+                                <a href="${catalogUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #FFE600; color: #0A0A0A; text-decoration: none; font-size: 15px; font-weight: 900; padding: 14px 36px; border-radius: 8px; border: 2.5px solid #0A0A0A; box-shadow: 4px 4px 0px #0A0A0A; text-transform: uppercase; letter-spacing: 0.5px;">
                                     Explore Fresh Drops &rarr;
                                 </a>
                             </div>
 
-                            <p style="margin: 0 0 24px 0; font-size: 13px; color: #94a3b8; line-height: 1.6; text-align: center; word-break: break-all;">
-                                If the button above does not work, copy and paste this link into your browser:<br/>
-                                <a href="${catalogUrl}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline; font-weight: 500;">${catalogUrl}</a>
+                            <p style="margin: 0 0 24px 0; font-size: 12px; color: #666666; line-height: 1.5; text-align: center; word-break: break-all;">
+                                If the button above does not work, copy and paste this link:<br/>
+                                <a href="${catalogUrl}" target="_blank" rel="noopener noreferrer" style="color: #0A0A0A; font-weight: 700; text-decoration: underline;">${catalogUrl}</a>
                             </p>
                         </td>
                     </tr>
 
                     <!-- FOOTER -->
                     <tr>
-                        <td style="background-color: #0f172a; padding: 24px 30px; text-align: center; border-top: 1px solid #1e293b;">
-                            <div style="font-size: 12px; color: #64748b; line-height: 1.6;">
+                        <td style="background-color: #0A0A0A; padding: 22px 30px; text-align: center; border-top: 2.5px solid #0A0A0A;">
+                            <div style="font-size: 12px; color: #999999; line-height: 1.6;">
                                 Need help or have questions? Contact our support squad anytime.<br/>
                                 &copy; ${new Date().getFullYear()} CARTSY. All rights reserved.
                             </div>
@@ -1372,7 +1376,7 @@ const generateWelcomeEmailHtml = ({ customerName, clientUrl, recipientEmail }) =
 };
 
 /**
- * Dispatches a welcome email to a newly registered student
+ * Dispatches a welcome email to a newly registered customer
  */
 const sendWelcomeEmail = async ({ recipientEmail, customerName, clientUrl }) => {
     try {
@@ -1406,7 +1410,7 @@ const sendWelcomeEmail = async ({ recipientEmail, customerName, clientUrl }) => 
             from: fromAddress,
             replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER,
             to: recipientEmail,
-            subject: `Welcome to CARTSY, ${customerName || "Student"}! 🎓`,
+            subject: `Welcome to CARTSY, ${customerName || "Friend"}! 🛍️`,
             text,
             html,
             headers: {
@@ -1485,27 +1489,27 @@ const generateAdminNewOrderAlertHtml = (order, customerDetails, clientUrl) => {
     const formattedDate = formatOrderDate(order.createdAt || Date.now());
     const shipping = order.shippingAddress || {};
     const isOnline = order.paymentMethod === "Razorpay";
-    const paymentBadgeText = isOnline ? "PAID ONLINE (RAZORPAY)" : "CASH ON DELIVERY";
-    const paymentBadgeBg = isOnline ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)";
-    const paymentBadgeColor = isOnline ? "#34d399" : "#fbbf24";
-    const paymentBadgeBorder = isOnline ? "rgba(16, 185, 129, 0.3)" : "rgba(245, 158, 11, 0.3)";
+    const paymentBadgeText = isOnline ? "PAID ONLINE (RAZORPAY)" : "CASH ON DELIVERY (COD)";
+    const paymentBadgeBg = isOnline ? "#00F59B" : "#FFE600";
+    const paymentBadgeColor = "#0A0A0A";
+    const paymentBadgeBorder = "#0A0A0A";
     const total = Number(order.totalPrice || order.amount || 0).toFixed(2);
 
     const itemsRows = (order.orderItems || [])
         .map(
             (item) => `
-            <tr>
-                <td style="padding: 12px 0; border-bottom: 1px solid #1f2937; color: #f8fafc; font-size: 14px; font-weight: 500;">
+            <tr style="border-bottom: 1.5px solid #0A0A0A;">
+                <td style="padding: 12px 14px; color: #0A0A0A; font-size: 13px; font-weight: 700;">
                     ${item.title || "Item"}
                 </td>
-                <td style="padding: 12px 0; border-bottom: 1px solid #1f2937; color: #94a3b8; font-size: 14px; text-align: center;">
+                <td style="padding: 12px 14px; color: #0A0A0A; font-size: 13px; text-align: center; font-weight: 800;">
                     ${item.quantity}
                 </td>
-                <td style="padding: 12px 0; border-bottom: 1px solid #1f2937; color: #94a3b8; font-size: 14px; text-align: right;">
-                    Rs. ${Number(item.price).toFixed(2)}
+                <td style="padding: 12px 14px; color: #383838; font-size: 13px; text-align: right; font-weight: 600;">
+                    ₹${Number(item.price).toFixed(2)}
                 </td>
-                <td style="padding: 12px 0; border-bottom: 1px solid #1f2937; color: #38bdf8; font-size: 14px; font-weight: 600; text-align: right;">
-                    Rs. ${(Number(item.price) * Number(item.quantity)).toFixed(2)}
+                <td style="padding: 12px 14px; color: #0A0A0A; font-size: 13px; font-weight: 900; text-align: right;">
+                    ₹${(Number(item.price) * Number(item.quantity)).toFixed(2)}
                 </td>
             </tr>`
         )
@@ -1518,56 +1522,56 @@ const generateAdminNewOrderAlertHtml = (order, customerDetails, clientUrl) => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Order #${shortId} Received</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #cbd5e1;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #0b0f19; padding: 40px 12px;">
+<body style="margin: 0; padding: 0; background-color: #FFFDF9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #FFFDF9; padding: 32px 10px;">
         <tr>
             <td align="center">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; background-color: #111827; border: 1px solid #1f2937; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; background-color: #ffffff; border: 2.5px solid #0A0A0A; border-radius: 14px; overflow: hidden; box-shadow: 6px 6px 0px #0A0A0A;">
                     
                     <!-- BRAND HEADER -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #0284c7 0%, #7c3aed 100%); padding: 32px 30px; text-align: center;">
-                            <div style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-                                🎓 CARTSY Admin Alert
+                        <td style="background-color: #FFE600; border-bottom: 2.5px solid #0A0A0A; padding: 28px 24px; text-align: center;">
+                            <div style="font-size: 30px; font-weight: 900; color: #0A0A0A; letter-spacing: -1px; text-transform: uppercase;">
+                                🛒 CARTSY ADMIN ALERT
                             </div>
-                            <div style="font-size: 13px; color: #e0f2fe; margin-top: 5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">
-                                New Order Notification
+                            <div style="display: inline-block; background-color: #00F59B; color: #0A0A0A; font-size: 11px; font-weight: 900; padding: 4px 12px; border-radius: 20px; border: 1.5px solid #0A0A0A; margin-top: 8px; letter-spacing: 0.5px; text-transform: uppercase;">
+                                NEW ORDER DISPATCH • LIVE NOTIFICATION
                             </div>
                         </td>
                     </tr>
 
                     <!-- MAIN CONTENT -->
                     <tr>
-                        <td style="padding: 32px 30px 24px 30px;">
+                        <td style="padding: 30px 28px 24px 28px;">
                             
                             <!-- ORDER HIGHLIGHT BOX -->
-                            <div style="background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 22px; margin-bottom: 24px;">
+                            <div style="background: #FFFDF0; border: 2px solid #0A0A0A; border-radius: 10px; box-shadow: 3px 3px 0px #0A0A0A; padding: 20px; margin-bottom: 22px;">
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                     <tr>
                                         <td>
-                                            <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">
+                                            <div style="font-size: 11px; font-weight: 900; color: #666666; text-transform: uppercase; letter-spacing: 1px;">
                                                 ORDER REF
                                             </div>
-                                            <div style="font-size: 20px; font-weight: 800; color: #f8fafc; margin-top: 2px;">
+                                            <div style="font-size: 22px; font-weight: 900; color: #0A0A0A; margin-top: 2px;">
                                                 #${shortId}
                                             </div>
                                         </td>
                                         <td style="text-align: right;">
-                                            <span style="display: inline-block; background: ${paymentBadgeBg}; color: ${paymentBadgeColor}; border: 1px solid ${paymentBadgeBorder}; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 20px; letter-spacing: 0.5px;">
+                                            <span style="display: inline-block; background: ${paymentBadgeBg}; color: ${paymentBadgeColor}; border: 1.5px solid ${paymentBadgeBorder}; font-size: 11px; font-weight: 900; padding: 5px 12px; border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase;">
                                                 ${paymentBadgeText}
                                             </span>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="2" style="padding-top: 14px; border-top: 1px solid #334155; margin-top: 14px;">
+                                        <td colspan="2" style="padding-top: 14px; border-top: 1.5px solid #0A0A0A; margin-top: 14px;">
                                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                                 <tr>
-                                                    <td style="font-size: 13px; color: #94a3b8;">Order Date:</td>
-                                                    <td style="font-size: 13px; color: #f8fafc; text-align: right; font-weight: 500;">${formattedDate}</td>
+                                                    <td style="font-size: 13px; color: #383838; font-weight: 600;">Order Date:</td>
+                                                    <td style="font-size: 13px; color: #0A0A0A; text-align: right; font-weight: 700;">${formattedDate}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="font-size: 13px; color: #94a3b8; padding-top: 6px;">Total Amount:</td>
-                                                    <td style="font-size: 16px; color: #38bdf8; text-align: right; font-weight: 700; padding-top: 6px;">Rs. ${total}</td>
+                                                    <td style="font-size: 13px; color: #383838; font-weight: 600; padding-top: 6px;">Total Amount:</td>
+                                                    <td style="font-size: 16px; color: #0A0A0A; text-align: right; font-weight: 900; padding-top: 6px;">₹${total}</td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -1576,26 +1580,26 @@ const generateAdminNewOrderAlertHtml = (order, customerDetails, clientUrl) => {
                             </div>
 
                             <!-- CUSTOMER & DELIVERY INFO -->
-                            <div style="background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 22px; margin-bottom: 24px;">
-                                <div style="font-size: 13px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
+                            <div style="background: #FFFDF0; border: 2px solid #0A0A0A; border-radius: 10px; box-shadow: 3px 3px 0px #0A0A0A; padding: 20px; margin-bottom: 22px;">
+                                <div style="font-size: 13px; font-weight: 900; color: #0A0A0A; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
                                     👤 Customer &amp; Delivery Details
                                 </div>
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                     <tr>
-                                        <td style="font-size: 13px; color: #94a3b8; padding: 4px 0; width: 35%;">Customer Name:</td>
-                                        <td style="font-size: 13px; color: #f8fafc; padding: 4px 0; font-weight: 600;">${customerDetails.customerName}</td>
+                                        <td style="font-size: 13px; color: #666666; font-weight: 600; padding: 4px 0; width: 35%;">Customer Name:</td>
+                                        <td style="font-size: 13px; color: #0A0A0A; padding: 4px 0; font-weight: 800;">${customerDetails.customerName}</td>
                                     </tr>
                                     <tr>
-                                        <td style="font-size: 13px; color: #94a3b8; padding: 4px 0;">Email Address:</td>
-                                        <td style="font-size: 13px; color: #f8fafc; padding: 4px 0;">${customerDetails.customerEmail}</td>
+                                        <td style="font-size: 13px; color: #666666; font-weight: 600; padding: 4px 0;">Email Address:</td>
+                                        <td style="font-size: 13px; color: #0A0A0A; padding: 4px 0; font-weight: 700;">${customerDetails.customerEmail}</td>
                                     </tr>
                                     <tr>
-                                        <td style="font-size: 13px; color: #94a3b8; padding: 4px 0;">Phone Number:</td>
-                                        <td style="font-size: 13px; color: #38bdf8; padding: 4px 0; font-weight: 600;">${shipping.phone || "Not provided"}</td>
+                                        <td style="font-size: 13px; color: #666666; font-weight: 600; padding: 4px 0;">Phone Number:</td>
+                                        <td style="font-size: 13px; color: #0A0A0A; padding: 4px 0; font-weight: 800;">${shipping.phone || "Not provided"}</td>
                                     </tr>
                                     <tr>
-                                        <td style="font-size: 13px; color: #94a3b8; padding: 4px 0; vertical-align: top;">Delivery Address:</td>
-                                        <td style="font-size: 13px; color: #f8fafc; padding: 4px 0; line-height: 1.4;">
+                                        <td style="font-size: 13px; color: #666666; font-weight: 600; padding: 4px 0; vertical-align: top;">Delivery Address:</td>
+                                        <td style="font-size: 13px; color: #0A0A0A; padding: 4px 0; line-height: 1.4; font-weight: 600;">
                                             ${shipping.address || "Delivery Address"}<br/>
                                             ${shipping.city || ""}${shipping.pincode ? " - " + shipping.pincode : ""}
                                         </td>
@@ -1604,29 +1608,29 @@ const generateAdminNewOrderAlertHtml = (order, customerDetails, clientUrl) => {
                             </div>
 
                             <!-- ORDER ITEMS TABLE -->
-                            <div style="background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 22px; margin-bottom: 24px;">
-                                <div style="font-size: 13px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
+                            <div style="background: #ffffff; border: 2px solid #0A0A0A; border-radius: 10px; box-shadow: 3px 3px 0px #0A0A0A; overflow: hidden; margin-bottom: 22px;">
+                                <div style="background-color: #0A0A0A; padding: 10px 14px; font-size: 12px; font-weight: 900; color: #ffffff; text-transform: uppercase; letter-spacing: 1px;">
                                     📦 Items Ordered
                                 </div>
-                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse;">
                                     <thead>
-                                        <tr>
-                                            <th style="font-size: 12px; font-weight: 700; color: #64748b; text-align: left; padding-bottom: 8px; border-bottom: 1px solid #334155;">ITEM</th>
-                                            <th style="font-size: 12px; font-weight: 700; color: #64748b; text-align: center; padding-bottom: 8px; border-bottom: 1px solid #334155;">QTY</th>
-                                            <th style="font-size: 12px; font-weight: 700; color: #64748b; text-align: right; padding-bottom: 8px; border-bottom: 1px solid #334155;">PRICE</th>
-                                            <th style="font-size: 12px; font-weight: 700; color: #64748b; text-align: right; padding-bottom: 8px; border-bottom: 1px solid #334155;">TOTAL</th>
+                                        <tr style="background-color: #FFFDF0; border-bottom: 1.5px solid #0A0A0A;">
+                                            <th style="font-size: 11px; font-weight: 800; color: #0A0A0A; text-align: left; padding: 10px 14px; text-transform: uppercase;">ITEM</th>
+                                            <th style="font-size: 11px; font-weight: 800; color: #0A0A0A; text-align: center; padding: 10px 14px; text-transform: uppercase;">QTY</th>
+                                            <th style="font-size: 11px; font-weight: 800; color: #0A0A0A; text-align: right; padding: 10px 14px; text-transform: uppercase;">PRICE</th>
+                                            <th style="font-size: 11px; font-weight: 800; color: #0A0A0A; text-align: right; padding: 10px 14px; text-transform: uppercase;">TOTAL</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         ${itemsRows}
                                     </tbody>
                                     <tfoot>
-                                        <tr>
-                                            <td colspan="3" style="padding-top: 14px; font-size: 14px; font-weight: 700; color: #f8fafc; text-align: right;">
+                                        <tr style="background-color: #FFFDF0; border-top: 1.5px solid #0A0A0A;">
+                                            <td colspan="3" style="padding: 12px 14px; font-size: 13px; font-weight: 900; color: #0A0A0A; text-align: right; text-transform: uppercase;">
                                                 Grand Total:
                                             </td>
-                                            <td style="padding-top: 14px; font-size: 16px; font-weight: 800; color: #38bdf8; text-align: right;">
-                                                Rs. ${total}
+                                            <td style="padding: 12px 14px; font-size: 15px; font-weight: 900; color: #0A0A0A; text-align: right;">
+                                                ₹${total}
                                             </td>
                                         </tr>
                                     </tfoot>
@@ -1634,23 +1638,22 @@ const generateAdminNewOrderAlertHtml = (order, customerDetails, clientUrl) => {
                             </div>
 
                             <!-- ACTION BUTTON -->
-                            <div style="text-align: center; margin: 28px 0 16px 0;">
-                                <a href="${adminOrderUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: linear-gradient(135deg, #00d2ff 0%, #a259ff 100%); color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700; padding: 15px 34px; border-radius: 10px; box-shadow: 0 4px 18px rgba(0, 210, 255, 0.35);">
+                            <div style="text-align: center; margin: 26px 0 16px 0;">
+                                <a href="${adminOrderUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #FFE600; color: #0A0A0A; text-decoration: none; font-size: 15px; font-weight: 900; padding: 14px 34px; border-radius: 8px; border: 2.5px solid #0A0A0A; box-shadow: 4px 4px 0px #0A0A0A; text-transform: uppercase; letter-spacing: 0.5px;">
                                     View Order in Admin Dashboard &rarr;
                                 </a>
                             </div>
 
-                            <p style="margin: 0 0 20px 0; font-size: 12px; color: #94a3b8; line-height: 1.5; text-align: center; word-break: break-all;">
-                                If the button above does not work, copy and paste this link into your browser:<br/>
-                                <a href="${adminOrderUrl}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline;">${adminOrderUrl}</a>
+                            <p style="margin: 0 0 20px 0; font-size: 12px; color: #666666; line-height: 1.5; text-align: center; word-break: break-all;">
+                                Direct link: <a href="${adminOrderUrl}" target="_blank" rel="noopener noreferrer" style="color: #0A0A0A; font-weight: 700; text-decoration: underline;">${adminOrderUrl}</a>
                             </p>
                         </td>
                     </tr>
 
                     <!-- FOOTER -->
                     <tr>
-                        <td style="background-color: #0f172a; padding: 20px 30px; text-align: center; border-top: 1px solid #1e293b;">
-                            <div style="font-size: 12px; color: #64748b; line-height: 1.5;">
+                        <td style="background-color: #0A0A0A; padding: 20px 30px; text-align: center; border-top: 2.5px solid #0A0A0A;">
+                            <div style="font-size: 12px; color: #999999; line-height: 1.5;">
                                 CARTSY Store Management System<br/>
                                 &copy; ${new Date().getFullYear()} CARTSY. All rights reserved.
                             </div>

@@ -1,5 +1,5 @@
 /**
- * Discord Webhook Service for CampusMart
+ * Discord Webhook Service for Cartsy
  * Lightweight notification handler using native Node.js fetch()
  */
 
@@ -19,8 +19,8 @@ const buildStockAlertEmbed = (product, previousStock, clientUrl) => {
     const catalogUrl = `${baseUrl.replace(/\/$/, "")}/product/${product._id}`;
     const adminUrl = `${baseUrl.replace(/\/$/, "")}/admin?tab=products`;
 
-    // 🔴 Vibrant Red for Out of Stock, 🟡 Amber for Low Stock (< 3)
-    const color = isOutOfStock ? 15548997 : 16098827; // 0xED4245 (Discord Red) or 0xF59E0B (Amber)
+    // 🔴 Neo Red (0xFF3366) for Out of Stock, 🟡 Neo Yellow (0xFFE600) for Low Stock (< 3)
+    const color = isOutOfStock ? 16724838 : 16770560; // 0xFF3366 (Neo Red) or 0xFFE600 (Neo Yellow)
 
     const title = `${isOutOfStock ? "🚨" : "⚠️"} ${product.title || "Product"}`;
 
@@ -77,7 +77,7 @@ const buildStockAlertEmbed = (product, previousStock, clientUrl) => {
         },
         {
             name: "🏢 Brand / Seller",
-            value: `**${product.brand || "EcomMart"}**`,
+            value: `**${product.brand || "Cartsy"}**`,
             inline: true,
         },
         {
@@ -99,7 +99,7 @@ const buildStockAlertEmbed = (product, previousStock, clientUrl) => {
 
     const embed = {
         author: {
-            name: isOutOfStock ? "ECOMMART • CRITICAL INVENTORY ALERT" : "ECOMMART • INVENTORY MONITOR",
+            name: isOutOfStock ? "CARTSY • CRITICAL INVENTORY ALERT" : "CARTSY • INVENTORY MONITOR",
         },
         title,
         url: catalogUrl,
@@ -107,7 +107,7 @@ const buildStockAlertEmbed = (product, previousStock, clientUrl) => {
         color,
         fields,
         footer: {
-            text: "EcomMart Automated Inventory Monitor",
+            text: "Cartsy Automated Inventory Monitor",
         },
         timestamp: new Date().toISOString(),
     };
@@ -148,7 +148,7 @@ const sendDiscordStockAlert = async (product, previousStock) => {
         const embed = buildStockAlertEmbed(product, previousStock);
 
         const payload = {
-            username: "EcomMart Inventory Alert",
+            username: "Cartsy Inventory Alert",
             embeds: [embed],
         };
 
@@ -280,15 +280,15 @@ const buildOrderAlertEmbed = (order, customerDetails, clientUrl) => {
 
     const embed = {
         author: {
-            name: "ECOMMART • NEW ORDER RECEIVED",
+            name: "CARTSY • NEW ORDER RECEIVED",
         },
         title,
         url: adminOrderUrl,
         description,
-        color: 3066993, // 0x2ECC71 (Emerald Green)
+        color: 62875, // 0x00F59B (Cartsy Neo Mint)
         fields,
         footer: {
-            text: "EcomMart Automated Order Dispatcher",
+            text: "Cartsy Automated Order Dispatcher",
         },
         timestamp: order.createdAt ? new Date(order.createdAt).toISOString() : new Date().toISOString(),
     };
@@ -409,14 +409,14 @@ const getContactWebhookUrl = () => {
  */
 const buildContactAlertEmbed = (contact) => {
     const subject = contact.subject || "General Inquiry";
-    const mailtoLink = `mailto:${contact.email}?subject=${encodeURIComponent(`Re: ${subject} - EcomMart Support`)}`;
+    const mailtoLink = `mailto:${contact.email}?subject=${encodeURIComponent(`Re: ${subject} - Cartsy Support`)}`;
 
     const title = `📬 New Inquiry from ${contact.name}`;
     const description = `> 💬 **Message:**\n> ${contact.message.length > 900 ? contact.message.slice(0, 900) + "..." : contact.message}`;
 
     const fields = [
         {
-            name: "👤 Student Name",
+            name: "👤 Customer Name",
             value: `**${contact.name}**`,
             inline: true,
         },
@@ -449,14 +449,14 @@ const buildContactAlertEmbed = (contact) => {
 
     const embed = {
         author: {
-            name: "ECOMMART • CUSTOMER SUPPORT INQUIRY",
+            name: "CARTSY • CUSTOMER SUPPORT INQUIRY",
         },
         title,
         description,
-        color: 5793266, // 0x5865F2 (Discord Blurple)
+        color: 16739943, // 0xFF6EA7 (Cartsy Neo Pink)
         fields,
         footer: {
-            text: "EcomMart Automated Support Desk",
+            text: "Cartsy Automated Support Desk",
         },
         timestamp: contact.createdAt ? new Date(contact.createdAt).toISOString() : new Date().toISOString(),
     };
@@ -480,7 +480,7 @@ const sendDiscordContactAlert = async (contact) => {
         const embed = buildContactAlertEmbed(contact);
 
         const payload = {
-            username: "EcomMart Support Desk",
+            username: "Cartsy Support Desk",
             embeds: [embed],
         };
 

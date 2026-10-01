@@ -4,7 +4,7 @@ const { buildOrderAlertEmbed } = require("../utils/discordService");
 
 async function runTest() {
     console.log("=================================================");
-    console.log("    CampusMart Discord Order Alert Diagnostic    ");
+    console.log("      Cartsy Discord Order Alert Diagnostic      ");
     console.log("=================================================");
 
     const webhookUrl = (
@@ -38,7 +38,7 @@ async function runTest() {
             },
             {
                 productId: "65fab9876543210fedcba202",
-                title: "Casio Scientific Calculator FX-991CW",
+                title: "Retro Wireless Mechanical Keyboard",
                 price: 1250.00,
                 quantity: 2,
                 thumbnail: "https://images.unsplash.com/photo-1587145820266-a5951ee6f620?w=500&auto=format&fit=crop&q=60",
@@ -46,7 +46,7 @@ async function runTest() {
         ],
         shippingAddress: {
             fullName: "Rahul Sharma",
-            address: "Room 304, Boys Hostel B, Campus",
+            address: "Room 304, Cyber Residences",
             city: "Jaipur",
             pincode: "302017",
             phone: "+91 98765 43210",
@@ -71,7 +71,7 @@ async function runTest() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                username: "CampusMart Order Alert",
+                username: "Cartsy Order Alert",
                 embeds: [orderEmbed],
             }),
         });

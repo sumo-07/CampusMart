@@ -11,7 +11,7 @@ const {
 
 async function runTest() {
     console.log("==========================================");
-    console.log("   CampusMart Nodemailer Diagnostic Test  ");
+    console.log("      Cartsy Nodemailer Diagnostic Test   ");
     console.log("==========================================");
     console.log("EMAIL_SERVICE:", process.env.EMAIL_SERVICE || "gmail");
     console.log("EMAIL_USER:   ", process.env.EMAIL_USER ? process.env.EMAIL_USER.replace(/(.{3})(.*)(@.*)/, "$1***$3") : "NOT SET");
@@ -49,20 +49,20 @@ async function runTest() {
         razorpayOrderId: "order_mock_" + Math.random().toString(36).substring(7),
         orderItems: [
             {
-                title: "Engineering Physics Textbook (Semester 1)",
+                title: "Oversized Cyber Heavyweight Tee",
                 quantity: 1,
                 price: 450,
             },
             {
-                title: "Scientific Calculator FX-991EX",
+                title: "Retro Wireless Mechanical Keyboard",
                 quantity: 1,
                 price: 800,
             },
         ],
         shippingAddress: {
-            fullName: "CampusMart Test Student",
-            address: "Hostel Block B, Room 304, Campus",
-            city: "Campus City",
+            fullName: "Cartsy Test Customer",
+            address: "104 Cyber Street, Neo Block",
+            city: "Metropolis",
             pincode: "110001",
             phone: "+91 9876543210",
         },
@@ -75,21 +75,21 @@ async function runTest() {
 
     if (testStatus) {
         console.log(`2. Sending Test Order Status Update (${testStatus}) to: ${targetEmail}...`);
-        html = generateStatusUpdateHtml(mockOrder, "Test Student", clientUrl, testStatus);
-        text = generateStatusUpdateText(mockOrder, "Test Student", clientUrl, testStatus);
-        subject = `[Test ${testStatus}] Order #${mockOrder._id.slice(-8).toUpperCase()} - CampusMart`;
+        html = generateStatusUpdateHtml(mockOrder, "Test Customer", clientUrl, testStatus);
+        text = generateStatusUpdateText(mockOrder, "Test Customer", clientUrl, testStatus);
+        subject = `[Test ${testStatus}] Order #${mockOrder._id.slice(-8).toUpperCase()} - Cartsy`;
     } else {
         console.log(`2. Sending Test Order Confirmation Receipt to: ${targetEmail}...`);
-        html = generateOrderReceiptHtml(mockOrder, "Test Student", clientUrl);
-        text = generateOrderReceiptText(mockOrder, "Test Student", clientUrl);
-        subject = `Payment Received & Order Confirmed #${mockOrder._id.slice(-8).toUpperCase()} - CampusMart`;
+        html = generateOrderReceiptHtml(mockOrder, "Test Customer", clientUrl);
+        text = generateOrderReceiptText(mockOrder, "Test Customer", clientUrl);
+        subject = `Payment Received & Order Confirmed #${mockOrder._id.slice(-8).toUpperCase()} - Cartsy`;
     }
 
     try {
-        let fromAddress = `"CampusMart" <${process.env.EMAIL_USER}>`;
+        let fromAddress = `"Cartsy" <${process.env.EMAIL_USER}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
-            const displayName = nameMatch ? nameMatch[1].trim() : "CampusMart";
+            const displayName = nameMatch ? nameMatch[1].trim() : "Cartsy";
             fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
         }
 

@@ -4,7 +4,7 @@ const { buildContactAlertEmbed } = require("../utils/discordService");
 
 async function runTest() {
     console.log("=================================================");
-    console.log("   CampusMart Discord Contact Alert Diagnostic   ");
+    console.log("    Cartsy Discord Contact Alert Diagnostic      ");
     console.log("=================================================");
 
     const webhookUrl = (
@@ -29,14 +29,14 @@ async function runTest() {
     const mockContact = {
         _id: "66a30edffa010770486ac999",
         name: "Aarav Gupta",
-        email: "aarav.gupta@chitkara.edu.in",
+        email: "aarav.gupta@example.com",
         phone: "+91 98123 45678",
-        subject: "Campus Delivery to Hostel Desk",
-        message: "Hi CampusMart team, I ordered a book earlier today. Will it be delivered directly to Gandhi Hostel block reception after 5 PM? Thank you!",
+        subject: "Delivery Information",
+        message: "Hi Cartsy team, I ordered a tee earlier today. Will it be delivered directly to my residence? Thank you!",
         createdAt: new Date().toISOString(),
     };
 
-    console.log(`Sending Sample Student Inquiry from "${mockContact.name}"...`);
+    console.log(`Sending Sample Customer Inquiry from "${mockContact.name}"...`);
     const embed = buildContactAlertEmbed(mockContact);
 
     try {
@@ -44,7 +44,7 @@ async function runTest() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                username: "CampusMart Support Desk",
+                username: "Cartsy Support Desk",
                 embeds: [embed],
             }),
         });

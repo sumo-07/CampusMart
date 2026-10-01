@@ -8,7 +8,7 @@ const {
 
 async function runTest() {
     console.log("=================================================");
-    console.log("    CampusMart Admin New Order Alert Diagnostic  ");
+    console.log("     Cartsy Admin New Order Alert Diagnostic     ");
     console.log("=================================================");
     console.log("EMAIL_SERVICE:", process.env.EMAIL_SERVICE || "gmail");
     console.log("EMAIL_USER:   ", process.env.EMAIL_USER ? process.env.EMAIL_USER.replace(/(.{3})(.*)(@.*)/, "$1***$3") : "NOT SET");
@@ -44,21 +44,21 @@ async function runTest() {
         amount: 1249.00,
         shippingAddress: {
             fullName: "Aarav Sharma",
-            address: "Room 402, Block B, Campus Boys Hostel",
-            city: "North Campus",
+            address: "Room 402, Block B, Neo Residency",
+            city: "Metropolis",
             pincode: "110007",
             phone: "+91 98765 43210",
         },
         orderItems: [
             {
                 productId: "prod-1",
-                title: "Data Structures & Algorithms in Java (6th Edition)",
+                title: "Oversized Cyber Heavyweight Tee",
                 price: 499.00,
                 quantity: 1,
             },
             {
                 productId: "prod-2",
-                title: "Scientific Calculator FX-991EX",
+                title: "Retro Wireless Mechanical Keyboard",
                 price: 750.00,
                 quantity: 1,
             },
@@ -67,7 +67,7 @@ async function runTest() {
 
     const mockCustomer = {
         customerName: "Aarav Sharma",
-        customerEmail: "aarav.sharma@campus.edu",
+        customerEmail: "aarav.sharma@example.com",
     };
 
     console.log(`2. Generating Admin New Order Alert Preview for: ${targetAdminEmail}...`);
@@ -79,10 +79,10 @@ async function runTest() {
     const subject = `New Order #${shortId} received from ${mockCustomer.customerName} (Rs. ${total}) [TEST]`;
 
     try {
-        let fromAddress = `"CampusMart System" <${process.env.EMAIL_USER}>`;
+        let fromAddress = `"Cartsy System" <${process.env.EMAIL_USER}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
-            const displayName = nameMatch ? nameMatch[1].trim() : "CampusMart";
+            const displayName = nameMatch ? nameMatch[1].trim() : "Cartsy";
             fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
         }
 
