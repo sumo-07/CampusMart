@@ -174,10 +174,6 @@ export const LegalPolicy = ({ initialPolicy = "terms" }) => {
                     <label>Support Desk</label>
                     <a href="mailto:support.cartsy07@gmail.com">support.cartsy07@gmail.com</a>
                   </div>
-                  {/* <div className="legal-contact-item">
-                    <label>Helpline</label>
-                    <a href="tel:+919876543210">+91 98765 43210</a>
-                  </div> */}
                   <div className="legal-contact-item">
                     <label>Operating Hours</label>
                     <span>Mon - Sat (9:00 AM - 6:00 PM IST)</span>

@@ -225,7 +225,7 @@ export const Contact = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      placeholder="e.g. +91 98765 43210"
+                      placeholder="Enter your phone number (optional)"
                     />
                   </div>
 
