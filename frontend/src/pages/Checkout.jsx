@@ -6,6 +6,7 @@ import { loadRazorpayScript } from "../utils/loadRazorpay";
 import { AddressModal } from "../components/UI/AddressModal";
 import { AuthContext } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
+import { LoadingScreen } from "../components/UI/LoadingScreen";
 import '../components/css/checkout.css';
 
 export const Checkout = () => {
@@ -53,7 +54,18 @@ export const Checkout = () => {
     ? (user.addresses.find(a => a._id === selectedAddressId) || user.addresses.find(a => a.isDefault) || user.addresses[0])
     : null;
 
-  if (authLoading || cartLoading) return <p style={{ textAlign: 'center', padding: '4rem' }}>Loading checkout...</p>;
+  if (authLoading || cartLoading) {
+    return (
+      <LoadingScreen
+        badge="💳 SECURE CHECKOUT"
+        badgeColor="green"
+        title="PREPARING CHECKOUT..."
+        subtitle="Setting up secure payment gateway and address profiles..."
+        icon="⚡"
+        statusText="Validating cart items & session..."
+      />
+    );
+  }
   if (!user) return null;
 
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);

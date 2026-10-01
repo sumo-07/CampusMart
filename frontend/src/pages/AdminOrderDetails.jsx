@@ -6,6 +6,7 @@ import { PrintableOrderSlip } from "../components/PrintableOrderSlip";
 import { NeoSelect } from "../components/UI/NeoSelect";
 import { NeoStatusConfirmModal } from "../components/UI/NeoStatusConfirmModal";
 import { NeoToast } from "../components/UI/NeoToast";
+import { LoadingScreen } from "../components/UI/LoadingScreen";
 import "../components/css/admin.css";
 import "../components/css/orders.css";
 
@@ -106,9 +107,14 @@ export const AdminOrderDetails = () => {
         return (
             <div className="section-admin">
                 <div className="container">
-                    <div className="admin-loading" style={{ textAlign: "center", padding: "4rem 0" }}>
-                        <div style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>⏳ Loading order details...</div>
-                    </div>
+                    <LoadingScreen
+                        badge="📦 ORDER CONSOLE"
+                        badgeColor="yellow"
+                        title="LOADING ORDER DETAILS..."
+                        subtitle="Fetching customer details, invoice line items, and delivery route..."
+                        icon="📦"
+                        statusText="Connecting to live database..."
+                    />
                 </div>
             </div>
         );

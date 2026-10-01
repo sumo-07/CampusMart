@@ -7,6 +7,7 @@ import { updateOrderStatus } from "../utils/orderUtils";
 import { NeoSelect } from "../components/UI/NeoSelect";
 import { NeoStatusConfirmModal } from "../components/UI/NeoStatusConfirmModal";
 import { NeoToast } from "../components/UI/NeoToast";
+import { LoadingScreen } from "../components/UI/LoadingScreen";
 import "../components/css/admin.css";
 import "../components/css/orders.css";
 
@@ -672,7 +673,18 @@ export const AdminDashboard = () => {
         return <span className="sort-icon inactive" aria-label="Sortable">↕</span>;
     };
 
-    if (loading) return <div className="admin-loading">Loading Dashboard...</div>;
+    if (loading) {
+        return (
+            <LoadingScreen
+                badge="⚡ ADMIN CONSOLE"
+                badgeColor="yellow"
+                title="LOADING DASHBOARD..."
+                subtitle="Syncing real-time store metrics, inventory, and order streams..."
+                icon="⚡"
+                statusText="Connecting to live database..."
+            />
+        );
+    }
 
     return (
         <section className="section-admin">

@@ -9,6 +9,7 @@ import {
 } from "../api/postApi";
 
 import { ProductCard } from "../components/UI/ProductCard";
+import { LoadingScreen } from "../components/UI/LoadingScreen";
 import "../components/css/products.css";
 
 const ITEMS_PER_PAGE = 16;
@@ -197,15 +198,22 @@ export const Products = () => {
 
 
   /* ------------------ Loading & Error ------------------ */
-  if (isLoading) return (
-    <div className="section-products">
-      <div className="container" style={{ textAlign: "center", padding: "5rem 0" }}>
-        <div className="products-empty-state">
-          <h2>🍳 Cooking up catalog drops...</h2>
+  if (isLoading) {
+    return (
+      <div className="section-products">
+        <div className="container">
+          <LoadingScreen
+            badge="⚡ CATALOG SYNC"
+            badgeColor="yellow"
+            title="LOADING CATALOG..."
+            subtitle="Cooking up the freshest drops, campus styles, and exclusive deals..."
+            icon="⚡"
+            statusText="Connecting to live database..."
+          />
         </div>
       </div>
-    </div>
-  );
+    );
+  }
   
   if (isError) return (
     <div className="section-products">

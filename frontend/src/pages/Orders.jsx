@@ -5,6 +5,7 @@ import { loadRazorpayScript } from "../utils/loadRazorpay";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { PrintableOrderSlip } from "../components/PrintableOrderSlip";
+import { LoadingScreen } from "../components/UI/LoadingScreen";
 import '../components/css/orders.css';
 
 export const Orders = () => {
@@ -271,13 +272,18 @@ export const Orders = () => {
         );
     };
 
-    if (loading) return (
-        <section className="orders-section">
-            <div className="orders-empty">
-                <h2>🍳 Fetching your drops...</h2>
-            </div>
-        </section>
-    );
+    if (loading) {
+        return (
+            <LoadingScreen
+                badge="📦 ORDER TRACKING"
+                badgeColor="yellow"
+                title="FETCHING YOUR DROPS..."
+                subtitle="Syncing purchase history, status updates, and tracking numbers..."
+                icon="📦"
+                statusText="Connecting to live database..."
+            />
+        );
+    }
 
     return (
         <section className="orders-section">

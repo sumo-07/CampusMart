@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { MdDeleteOutline } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
+import { LoadingScreen } from "../components/UI/LoadingScreen";
 
 import "../components/css/cart.css";
 
@@ -57,13 +58,18 @@ export const Cart = () => {
         );
     }
 
-    if (loading) return (
-        <section className="cart-empty-section">
-            <div className="cart-empty-card">
-                <h2>🍳 Loading your bag...</h2>
-            </div>
-        </section>
-    );
+    if (loading) {
+        return (
+            <LoadingScreen
+                badge="🛍️ BAG SYNC"
+                badgeColor="yellow"
+                title="LOADING YOUR BAG..."
+                subtitle="Retrieving saved items, discounts, and latest pricing..."
+                icon="🛍️"
+                statusText="Connecting to live database..."
+            />
+        );
+    }
 
     if (cartItems.length === 0) {
         return (

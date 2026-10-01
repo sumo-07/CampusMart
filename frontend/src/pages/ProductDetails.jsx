@@ -6,6 +6,7 @@ import { getProductById } from "../api/postApi";
 import "../components/css/productDetails.css";
 import { AuthContext } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
+import { LoadingScreen } from "../components/UI/LoadingScreen";
 
 export const ProductDetails = () => {
     const { productId } = useParams(); // ✅ MUST match route param
@@ -34,11 +35,14 @@ export const ProductDetails = () => {
     /* ------------------ Loading & Error ------------------ */
     if (isLoading) {
         return (
-            <section className="pd-section">
-                <div className="pd-container" style={{ textAlign: "center", display: "block", paddingTop: "4rem" }}>
-                    <p style={{ color: "var(--text-secondary)", fontSize: "1.2rem" }}>Loading product details...</p>
-                </div>
-            </section>
+            <LoadingScreen
+                badge="⚡ PRODUCT DROP"
+                badgeColor="pink"
+                title="LOADING PRODUCT..."
+                subtitle="Fetching specs, gallery photos, and real-time inventory..."
+                icon="🛍️"
+                statusText="Connecting to live database..."
+            />
         );
     }
 
