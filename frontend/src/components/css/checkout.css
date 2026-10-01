@@ -695,7 +695,7 @@
 /* Mobile & Small Tablet Viewports */
 @media (max-width: 48rem) {
   .checkout-section {
-    max-width: 25.5rem;
+    max-width: 42rem;
     width: calc(100% - 1.5rem);
     margin: 1.2rem auto 2.5rem auto;
   }
@@ -851,6 +851,13 @@
   .btn-back-cart {
     padding: 0.65rem 1rem;
     font-size: 0.85rem;
+  }
+}
+
+/* Responsive Mobile Phones (<= 30rem / <= 480px) */
+@media (max-width: 30rem) {
+  .checkout-section {
+    max-width: 26rem;
   }
 }
 

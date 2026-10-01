@@ -3638,11 +3638,17 @@
 }
 
 .refund-box {
-  background: #ECFEFF;
-  border: 1.5px solid #06B6D4;
+  background: #F0FDFA;
+  border: var(--border-medium);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-hard-xs);
   padding: 10px 12px;
   margin-top: 10px;
+}
+
+.refund-box .info-label {
+  color: #0F766E;
+  font-weight: 900;
 }
 
 /* ==================== ITEMS ORDERED SUMMARY CARD ==================== */

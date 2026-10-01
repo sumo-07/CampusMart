@@ -436,7 +436,7 @@
 @media (max-width: 54rem) {
   .cart-section {
     flex-direction: column;
-    max-width: 20rem;
+    max-width: 38rem;
     width: calc(100% - 2rem);
     padding: 0.65rem 0.8rem;
     margin: 1rem auto 1.5rem auto;
@@ -642,6 +642,12 @@
 
   .cart-empty-card p {
     font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 30rem) {
+  .cart-section {
+    max-width: 100%;
   }
 }
 

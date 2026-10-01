@@ -169,7 +169,7 @@ export const AddressModal = ({ isOpen, onClose, initialShowNew = false, onAddres
                     <>
                         <div className="modal-header">
                             <h2 className="modal-title">Choose your location</h2>
-                            <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '5px' }}>
+                            <p className="modal-subtitle">
                                 Delivery options and delivery speeds may vary for different locations
                             </p>
                         </div>
@@ -212,7 +212,7 @@ export const AddressModal = ({ isOpen, onClose, initialShowNew = false, onAddres
                                     </div>
                                 ))
                             ) : (
-                                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#64748b' }}>
+                                <div className="address-empty-state">
                                     <p style={{ margin: 0 }}>No saved addresses found.</p>
                                 </div>
                             )}
@@ -243,7 +243,7 @@ export const AddressModal = ({ isOpen, onClose, initialShowNew = false, onAddres
                             <h2 className="modal-title">
                                 {editingAddressId ? "Edit Address" : "Add New Address"}
                             </h2>
-                            <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '4px' }}>
+                            <p className="modal-subtitle">
                                 Enter your complete delivery details
                             </p>
                         </div>
@@ -287,17 +287,17 @@ export const AddressModal = ({ isOpen, onClose, initialShowNew = false, onAddres
                                 />
                             </div>
                             
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                            <div className="address-form-actions">
                                 <button 
+                                    type="button"
                                     className="save-btn" 
-                                    style={{ flex: 1 }} 
                                     onClick={editingAddressId ? handleSaveEditAddress : handleSaveNewAddress}
                                 >
                                     {editingAddressId ? "Update Address" : "Save Address"}
                                 </button>
                                 <button 
-                                    className="save-btn" 
-                                    style={{ background: '#f1f5f9', color: '#64748b' }} 
+                                    type="button"
+                                    className="cancel-btn" 
                                     onClick={() => {
                                         resetForm();
                                         if (!user?.addresses || user.addresses.length === 0) {

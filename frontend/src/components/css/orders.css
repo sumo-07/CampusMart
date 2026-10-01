@@ -886,7 +886,7 @@
    ========================================================================== */
 @media (max-width: 54rem) {
   .orders-section {
-    max-width: 25.5rem;
+    max-width: 44rem;
     width: calc(100% - 1.5rem);
     margin: 1.2rem auto 2.5rem auto;
     padding: 0;
@@ -1220,6 +1220,13 @@
   .pagination-info {
     font-size: 0.72rem;
     padding: 0.2rem 0.65rem;
+  }
+}
+
+/* Responsive Mobile Phones (<= 30rem / <= 480px) */
+@media (max-width: 30rem) {
+  .orders-section {
+    max-width: 26rem;
   }
 }
 

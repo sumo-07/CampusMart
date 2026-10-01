@@ -199,61 +199,76 @@ export const ProductDetails = () => {
 
                     {/* Actions */}
                     <div className="pd-actions">
-                        {product.stock <= 0 ? (
-                            <button className="pd-btn add-cart-btn disabled" disabled>
-                                Cooked (Sold Out) 💀
-                            </button>
-                        ) : getItemQuantity(product._id || product.id || productId) > 0 ? (
-                            <div className="pd-cart-qty-control">
+                        {user?.isAdmin ? (
+                            <div className="pd-admin-badge-notice">
+                                <span className="pd-admin-mode-pill">🛡️ Admin Preview Mode</span>
                                 <button
                                     type="button"
-                                    className="pd-qty-btn"
-                                    onClick={() => updateQuantity(product._id || product.id || productId, "dec")}
-                                    title="Decrease quantity"
+                                    className="pd-btn pd-admin-edit-btn"
+                                    onClick={() => navigate("/admin?tab=products")}
                                 >
-                                    −
-                                </button>
-                                <span className="pd-qty-display">
-                                    {getItemQuantity(product._id || product.id || productId)} IN BAG
-                                </span>
-                                <button
-                                    type="button"
-                                    className="pd-qty-btn"
-                                    onClick={() => {
-                                        const currentQty = getItemQuantity(product._id || product.id || productId);
-                                        if (currentQty >= (MAX_ITEM_QUANTITY || 5)) {
-                                            alert(`Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item`);
-                                            return;
-                                        }
-                                        if (product.stock !== undefined && currentQty >= product.stock) {
-                                            alert(`Only ${product.stock} items available in stock`);
-                                            return;
-                                        }
-                                        updateQuantity(product._id || product.id || productId, "inc");
-                                    }}
-                                    disabled={getItemQuantity(product._id || product.id || productId) >= (MAX_ITEM_QUANTITY || 5) || (product.stock !== undefined && getItemQuantity(product._id || product.id || productId) >= product.stock)}
-                                    title={getItemQuantity(product._id || product.id || productId) >= (MAX_ITEM_QUANTITY || 5) ? `Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item` : "Increase quantity"}
-                                >
-                                    +
+                                    ✏️ Manage In Admin Dashboard
                                 </button>
                             </div>
                         ) : (
-                            <button
-                                className="pd-btn add-cart-btn"
-                                onClick={handleAddToCart}
-                                disabled={addingToCart}
-                            >
-                                {addingToCart ? "Securing..." : "Secure The Bag 🛍️"}
-                            </button>
-                        )}
+                            <>
+                                {product.stock <= 0 ? (
+                                    <button className="pd-btn add-cart-btn disabled" disabled>
+                                        Cooked (Sold Out) 💀
+                                    </button>
+                                ) : getItemQuantity(product._id || product.id || productId) > 0 ? (
+                                    <div className="pd-cart-qty-control">
+                                        <button
+                                            type="button"
+                                            className="pd-qty-btn"
+                                            onClick={() => updateQuantity(product._id || product.id || productId, "dec")}
+                                            title="Decrease quantity"
+                                        >
+                                            −
+                                        </button>
+                                        <span className="pd-qty-display">
+                                            {getItemQuantity(product._id || product.id || productId)} IN BAG
+                                        </span>
+                                        <button
+                                            type="button"
+                                            className="pd-qty-btn"
+                                            onClick={() => {
+                                                const currentQty = getItemQuantity(product._id || product.id || productId);
+                                                if (currentQty >= (MAX_ITEM_QUANTITY || 5)) {
+                                                    alert(`Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item`);
+                                                    return;
+                                                }
+                                                if (product.stock !== undefined && currentQty >= product.stock) {
+                                                    alert(`Only ${product.stock} items available in stock`);
+                                                    return;
+                                                }
+                                                updateQuantity(product._id || product.id || productId, "inc");
+                                            }}
+                                            disabled={getItemQuantity(product._id || product.id || productId) >= (MAX_ITEM_QUANTITY || 5) || (product.stock !== undefined && getItemQuantity(product._id || product.id || productId) >= product.stock)}
+                                            title={getItemQuantity(product._id || product.id || productId) >= (MAX_ITEM_QUANTITY || 5) ? `Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item` : "Increase quantity"}
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        className="pd-btn add-cart-btn"
+                                        onClick={handleAddToCart}
+                                        disabled={addingToCart}
+                                    >
+                                        {addingToCart ? "Securing..." : "Secure The Bag 🛍️"}
+                                    </button>
+                                )}
 
-                        <button 
-                            className="pd-btn buy-now-btn"
-                            onClick={handleBuyNow}
-                            disabled={product.stock <= 0}
-                        >
-                            {product.stock <= 0 ? "Out of Stock" : "Instant Cop ⚡"}
-                        </button>
+                                <button 
+                                    className="pd-btn buy-now-btn"
+                                    onClick={handleBuyNow}
+                                    disabled={product.stock <= 0}
+                                >
+                                    {product.stock <= 0 ? "Out of Stock" : "Instant Cop ⚡"}
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
 

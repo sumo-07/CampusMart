@@ -202,7 +202,7 @@ export const ResetPassword = () => {
             <div className="success-icon-wrapper">
               <AiOutlineCheckCircle />
             </div>
-            <h3 style={{ color: "#f8fafc", fontSize: "1.3rem", fontWeight: 700, marginBottom: "0.5rem" }}>
+            <h3 className="auth-card-title">
               Password Reset Complete!
             </h3>
             <p className="auth-subtitle">
@@ -228,7 +228,7 @@ export const ResetPassword = () => {
           /* State B: Validating URL Token */
           <div className="auth-loading-card">
             <AiOutlineLoading3Quarters size={44} className="spinner-icon" />
-            <h3 style={{ color: "#f8fafc", fontSize: "1.2rem", fontWeight: 700, marginBottom: "0.4rem" }}>
+            <h3 className="auth-card-title">
               Verifying Reset Link...
             </h3>
             <p className="auth-subtitle" style={{ fontSize: "0.85rem", marginBottom: 0 }}>
@@ -241,7 +241,7 @@ export const ResetPassword = () => {
             <div className="error-icon-wrapper">
               <AiOutlineCloseCircle />
             </div>
-            <h3 style={{ color: "#f8fafc", fontSize: "1.3rem", fontWeight: 700, marginBottom: "0.5rem" }}>
+            <h3 className="auth-card-title">
               Link Expired or Invalid
             </h3>
             <p className="auth-subtitle">{tokenError}</p>

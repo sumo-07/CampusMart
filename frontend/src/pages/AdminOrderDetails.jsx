@@ -410,7 +410,7 @@ export const AdminOrderDetails = () => {
                             {/* Refund Details if refunded */}
                             {order.refund && order.refund.refundId && (
                                 <div className="info-group refund-box">
-                                    <span className="info-label" style={{ color: '#06b6d4' }}>Refund Details</span>
+                                    <span className="info-label">Refund Details</span>
                                     <div className="ref-item">
                                         <span className="ref-label">Refund ID:</span>
                                         <code className="ref-code">{order.refund.refundId}</code>
