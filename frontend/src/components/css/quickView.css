@@ -253,3 +253,45 @@
     padding: 1.8rem 1.4rem;
   }
 }
+
+@media (max-width: 520px) {
+  .quickview-overlay {
+    padding: 0.75rem;
+  }
+
+  .quickview-modal {
+    border-radius: var(--radius-md);
+  }
+
+  .quickview-visual {
+    padding: 2.8rem 1rem 1.2rem 1rem;
+  }
+
+  .quickview-details {
+    padding: 1.25rem 1.1rem;
+  }
+
+  .quickview-title {
+    font-size: 1.4rem;
+  }
+
+  .quickview-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .quickview-actions {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+
+  .quickview-actions button,
+  .quickview-actions a {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+  }
+}
+

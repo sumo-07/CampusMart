@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import api from "../api/axiosConfig";
@@ -88,6 +89,7 @@ export const AdminDashboard = () => {
     const [orderSort, setOrderSort] = useState("date-desc");
     const [orderStatusFilter, setOrderStatusFilter] = useState("all");
     const [orderSearchQuery, setOrderSearchQuery] = useState("");
+    const [isOrderFilterMenuOpen, setIsOrderFilterMenuOpen] = useState(false);
 
     const [imageInputMode, setImageInputMode] = useState("file"); // "file" | "url"
     const [imageFile, setImageFile] = useState(null);
@@ -152,10 +154,11 @@ export const AdminDashboard = () => {
         }
     };
     const [currentPage, setCurrentPage] = useState(1);
+    const [orderCurrentPage, setOrderCurrentPage] = useState(1);
     const [newProduct, setNewProduct] = useState({
         title: '',
         price: 0,
-        stock: 0,
+ stock: 0,
         category: '',
         description: '',
         thumbnail: '',
@@ -491,6 +494,73 @@ export const AdminDashboard = () => {
         setCurrentPage(1);
     }, [searchQuery, productSort]);
 
+    // Smart windowed pagination range matching store catalog
+    const getPaginationRange = (current, total, isMobile = false) => {
+        if (total <= 1) return [];
+
+        if (isMobile) {
+            if (total <= 4) {
+                return Array.from({ length: total }, (_, i) => i + 1);
+            }
+            if (current <= 2) {
+                return [1, 2, "...", total];
+            }
+            if (current >= total - 1) {
+                return [1, "...", total - 1, total];
+            }
+            return [1, "...", current, "...", total];
+        }
+
+        if (total <= 7) {
+            return Array.from({ length: total }, (_, i) => i + 1);
+        }
+
+        if (current <= 4) {
+            return [1, 2, 3, 4, 5, "...", total];
+        }
+
+        if (current >= total - 3) {
+            return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+        }
+
+        return [1, "...", current - 1, current, current + 1, "...", total];
+    };
+
+    const desktopPageRange = getPaginationRange(currentPage, totalPages, false);
+    const mobilePageRange = getPaginationRange(currentPage, totalPages, true);
+
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages && page !== currentPage) {
+            setCurrentPage(page);
+            const productsEl = document.querySelector(".admin-products");
+            if (productsEl) {
+                productsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+    };
+
+    // Modal popup event listeners: close on Escape & lock body scrolling
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape" && showAddForm) {
+                closeFormWithAnimation();
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [showAddForm]);
+
+    useEffect(() => {
+        if (showAddForm) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [showAddForm]);
+
     // Filter & Sort Orders
     const filteredOrders = orders.filter(order => {
         const isDraft = isAbandonedDraft(order);
@@ -551,6 +621,33 @@ export const AdminDashboard = () => {
         }
     });
 
+    const ordersPerPage = 10;
+    const orderTotalPages = Math.ceil(sortedOrders.length / ordersPerPage);
+    const paginatedOrders = sortedOrders.slice((orderCurrentPage - 1) * ordersPerPage, orderCurrentPage * ordersPerPage);
+
+    const activeOrderFiltersCount =
+        (orderStatusFilter !== "all" ? 1 : 0) +
+        (orderSearchQuery.trim() !== "" ? 1 : 0) +
+        (orderSort !== "date-desc" ? 1 : 0);
+
+    // Reset order page on search, filter, or sort change
+    useEffect(() => {
+        setOrderCurrentPage(1);
+    }, [orderSearchQuery, orderStatusFilter, orderSort]);
+
+    const desktopOrderPageRange = getPaginationRange(orderCurrentPage, orderTotalPages, false);
+    const mobileOrderPageRange = getPaginationRange(orderCurrentPage, orderTotalPages, true);
+
+    const handleOrderPageChange = (page) => {
+        if (page >= 1 && page <= orderTotalPages && page !== orderCurrentPage) {
+            setOrderCurrentPage(page);
+            const ordersEl = document.querySelector(".admin-orders");
+            if (ordersEl) {
+                ordersEl.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+    };
+
     const handleProductSortToggle = (field) => {
         if (field === "title") {
             setProductSort(prev => prev === "title-asc" ? "title-desc" : "title-asc");
@@ -593,7 +690,8 @@ export const AdminDashboard = () => {
                             </button>
                             <span className="breadcrumb-separator">/</span>
                             <span className="breadcrumb-current">
-                                {activeTab === "products" ? "Manage Products" : "View Orders"}
+                                <span className="tab-label-desktop">{activeTab === "products" ? "Manage Products" : "View Orders"}</span>
+                                <span className="tab-label-mobile">{activeTab === "products" ? "Products" : "Orders"}</span>
                             </span>
                         </div>
                     </div>
@@ -612,20 +710,22 @@ export const AdminDashboard = () => {
                             className={`tab-btn ${activeTab === "products" ? "active" : ""}`}
                             onClick={() => handleTabSelect("products")}
                         >
-                            Manage Products
+                            <span className="tab-label-desktop">Manage Products</span>
+                            <span className="tab-label-mobile">Products</span>
                         </button>
                         <button
                             className={`tab-btn ${activeTab === "orders" ? "active" : ""}`}
                             onClick={() => handleTabSelect("orders")}
                         >
-                            View Orders
+                            <span className="tab-label-desktop">View Orders</span>
+                            <span className="tab-label-mobile">Orders</span>
                         </button>
                     </div>
                 </div>
 
                 {activeTab === "overview" && (
                     <div className="admin-overview">
-                        <div className="metric-card">
+                        <div className="metric-card metric-card-revenue">
                             <h3>Total Revenue</h3>
                             <p>₹{totalSales.toFixed(2)}</p>
                             <span className="metric-subtext">Verified Paid & COD</span>
@@ -667,7 +767,7 @@ export const AdminDashboard = () => {
                             <span className="metric-subtext">Unpaid online checkouts</span>
                         </div>
                         <div
-                            className="metric-card clickable"
+                            className="metric-card metric-card-products clickable"
                             onClick={() => handleTabSelect("products")}
                             title="Manage product inventory"
                         >
@@ -680,14 +780,42 @@ export const AdminDashboard = () => {
 
                 {activeTab === "products" && (
                     <div className="admin-products">
-                        <div className="admin-toolbar-row">
-                            <div className="admin-toolbar-group">
-                                <h2>Manage Inventory</h2>
-                                <div className="admin-search-wrapper">
+                        <div className="admin-products-header">
+                            <div className="admin-products-title-group">
+                                <h2 className="admin-products-title">Manage Inventory</h2>
+                                <span className="admin-products-badge">
+                                    {sortedProducts.length} {sortedProducts.length === 1 ? 'Product' : 'Products'}
+                                </span>
+                            </div>
+
+                            <div className="admin-toolbar-actions">
+                                <button
+                                    type="button"
+                                    onClick={handleSyncCatalog}
+                                    disabled={isSeeding}
+                                    className="admin-btn-sync"
+                                    title="Fetch and sync products from DummyJSON"
+                                >
+                                    <span className={`sync-icon ${isSeeding ? "spinning" : ""}`}>🔄</span>
+                                    <span>{isSeeding ? "Syncing..." : "Sync Catalog"}</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={toggleAddForm}
+                                    className={`admin-btn-action ${showAddForm ? "cancel" : ""}`}
+                                >
+                                    {showAddForm ? "✕ Cancel" : "+ Add Product"}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="admin-products-toolbar">
+                            <div className="admin-products-filters-row">
+                                <div className="admin-search-wrapper products-search admin-products-search">
                                     <span className="search-icon">🔍</span>
                                     <input
                                         type="text"
-                                        placeholder="Search products by title, category, ID..."
+                                        placeholder="Search products (title, category, ID)..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         className="admin-search-input"
@@ -703,7 +831,8 @@ export const AdminDashboard = () => {
                                         </button>
                                     )}
                                 </div>
-                                <div className="admin-sort-wrapper">
+
+                                <div className="admin-filter-group">
                                     <span className="admin-control-label">Sort:</span>
                                     <NeoSelect
                                         id="product-sort-select"
@@ -720,6 +849,7 @@ export const AdminDashboard = () => {
                                         ]}
                                     />
                                 </div>
+
                                 {(productSort !== "default" || searchQuery) && (
                                     <button
                                         type="button"
@@ -734,352 +864,465 @@ export const AdminDashboard = () => {
                                     </button>
                                 )}
                             </div>
-                            <div className="admin-toolbar-actions">
-                                <button
-                                    type="button"
-                                    onClick={handleSyncCatalog}
-                                    disabled={isSeeding}
-                                    className="admin-btn-sync"
-                                    title="Fetch and sync products from DummyJSON"
-                                >
-                                    {isSeeding ? "Syncing..." : "🔄 Sync Catalog"}
-                                </button>
-                                <button onClick={toggleAddForm} className={`admin-btn-action ${showAddForm ? "cancel" : ""}`}>
-                                    {showAddForm ? "Cancel" : "+ Add New Product"}
-                                </button>
+
+                            <div className="admin-products-summary-bar">
+                                <span className="admin-products-count-text">
+                                    Showing <strong>{sortedProducts.length === 0 ? 0 : `${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, sortedProducts.length)}`}</strong> of <strong>{sortedProducts.length}</strong> items
+                                </span>
+                                {searchQuery && (
+                                    <span className="admin-search-active-pill">
+                                        Filtered: "{searchQuery}"
+                                    </span>
+                                )}
                             </div>
                         </div>
 
-                        {(showAddForm || isAnimatingOut) && (
-                            <div className={`admin-form-container ${isAnimatingOut ? 'anim-fade-out' : 'anim-fade-in'}`}>
-                                <h3>{editFormProduct ? "Edit Product" : "Add New Product"}</h3>
-                                <form onSubmit={handleSaveProduct} className="admin-form">
-                                    <input required type="text" placeholder="Title" value={newProduct.title} onChange={e => setNewProduct({ ...newProduct, title: e.target.value })} className="admin-form-input" />
-                                    <input
-                                        required
-                                        type="number"
-                                        min="0"
-                                        step="any"
-                                        placeholder="Price (₹)"
-                                        value={newProduct.price || ''}
-                                        onKeyDown={(e) => {
-                                            if (e.key === '-' || e.key === 'e') e.preventDefault();
-                                        }}
-                                        onChange={e => {
-                                            const val = e.target.value;
-                                            if (val === '') {
-                                                setNewProduct({ ...newProduct, price: '' });
-                                            } else {
-                                                const num = parseFloat(val);
-                                                setNewProduct({ ...newProduct, price: isNaN(num) ? '' : Math.max(0, num) });
-                                            }
-                                        }}
-                                        className="admin-form-input"
-                                    />
-                                    <input
-                                        required
-                                        type="number"
-                                        min="0"
-                                        step="1"
-                                        placeholder="Initial Stock"
-                                        value={newProduct.stock === 0 ? '0' : (newProduct.stock || '')}
-                                        onKeyDown={(e) => {
-                                            if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
-                                        }}
-                                        onChange={e => {
-                                            const val = e.target.value;
-                                            if (val === '') {
-                                                setNewProduct({ ...newProduct, stock: '' });
-                                            } else {
-                                                const num = parseInt(val, 10);
-                                                setNewProduct({ ...newProduct, stock: isNaN(num) ? '' : Math.max(0, num) });
-                                            }
-                                        }}
-                                        className="admin-form-input"
-                                    />
-                                    {!isCustomCategory ? (
-                                        <div className="admin-category-control">
-                                            <NeoSelect
-                                                value={allAvailableCategories.includes(newProduct.category) ? newProduct.category : (newProduct.category ? "__custom__" : "")}
-                                                onChange={(val) => {
-                                                    if (val === "__custom__") {
-                                                        setIsCustomCategory(true);
-                                                        setNewProduct({ ...newProduct, category: "" });
-                                                    } else {
-                                                        setNewProduct({ ...newProduct, category: val });
-                                                    }
-                                                }}
-                                                placeholder="-- Select Category --"
-                                                options={[
-                                                    ...allAvailableCategories.map((cat) => ({
-                                                        value: cat,
-                                                        label: cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, " ")
-                                                    })),
-                                                    { value: "__custom__", label: "➕ + Add New Category" }
-                                                ]}
-                                                fullWidth={true}
-                                            />
+                        {(showAddForm || isAnimatingOut) && createPortal(
+                            <div
+                                className={`admin-modal-overlay ${isAnimatingOut ? 'anim-fade-out' : 'anim-fade-in'}`}
+                                onClick={(e) => {
+                                    if (e.target === e.currentTarget) {
+                                        closeFormWithAnimation();
+                                    }
+                                }}
+                            >
+                                <div
+                                    className={`admin-modal-card ${isAnimatingOut ? 'anim-scale-out' : 'anim-scale-in'}`}
+                                    role="dialog"
+                                    aria-modal="true"
+                                >
+                                    <div className="admin-modal-header">
+                                        <div className="admin-modal-title-group">
+                                            <span className="admin-modal-title-icon">{editFormProduct ? "✏️" : "✨"}</span>
+                                            <h3 className="admin-modal-title">{editFormProduct ? "Edit Product" : "Add New Product"}</h3>
                                         </div>
-                                    ) : (
-                                        <div className="admin-category-custom-box">
-                                            <input
-                                                required
-                                                type="text"
-                                                placeholder="Type new category (e.g. electronics)..."
-                                                value={newProduct.category}
-                                                onChange={e => setNewProduct({ ...newProduct, category: e.target.value })}
-                                                className="admin-form-input admin-category-custom-input"
-                                                autoFocus
-                                            />
-                                            <button
-                                                type="button"
-                                                className="admin-btn-back-category"
-                                                onClick={() => {
-                                                    setIsCustomCategory(false);
-                                                    setNewProduct({ ...newProduct, category: allAvailableCategories[0] || "" });
-                                                }}
-                                                title="Return to category dropdown"
-                                            >
-                                                ✕ Back to list
-                                            </button>
-                                        </div>
-                                    )}
-
-                                    {/* Product Image Section */}
-                                    <div className="admin-form-image-section full-width">
-                                        <div className="admin-image-mode-row">
-                                            <label className="admin-form-label">Product Thumbnail Image</label>
-                                            <div className="admin-image-mode-tabs">
-                                                <button
-                                                    type="button"
-                                                    className={`admin-image-tab ${imageInputMode === "file" ? "active" : ""}`}
-                                                    onClick={() => setImageInputMode("file")}
-                                                >
-                                                    ☁️ Upload File
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className={`admin-image-tab ${imageInputMode === "url" ? "active" : ""}`}
-                                                    onClick={() => setImageInputMode("url")}
-                                                >
-                                                    🔗 Image URL
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <div className="admin-image-section-body">
-                                            {/* Left Column: Image Selector / Dropzone / URL Input */}
-                                            <div className="admin-image-input-col">
-                                                {imageInputMode === "file" ? (
-                                                    <div className="admin-file-upload-box">
-                                                        <input
-                                                            type="file"
-                                                            id="product-image-file"
-                                                            accept="image/png, image/jpeg, image/webp, image/gif"
-                                                            onChange={handleFileChange}
-                                                            style={{ display: "none" }}
-                                                        />
-                                                        <label htmlFor="product-image-file" className={`admin-file-dropzone ${imageFile ? 'has-file' : ''}`}>
-                                                            <span className="upload-icon">{imageFile ? '✅' : '📤'}</span>
-                                                            <span className="upload-text">
-                                                                {imageFile ? imageFile.name : (editFormProduct ? "Choose new image to replace current thumbnail" : "Click to select or drop image here")}
-                                                            </span>
-                                                            <span className="upload-hint">PNG, JPG, WebP, or GIF (Max 5MB)</span>
-                                                        </label>
-                                                    </div>
-                                                ) : (
-                                                    <div className="admin-url-upload-box">
-                                                        <input
-                                                            type="url"
-                                                            placeholder="Paste image URL (e.g. https://...)"
-                                                            value={newProduct.thumbnail}
-                                                            onChange={e => {
-                                                                setNewProduct({ ...newProduct, thumbnail: e.target.value });
-                                                                setImagePreview(e.target.value);
-                                                            }}
-                                                            className="admin-form-input"
-                                                        />
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Right Column: Switch Back to Uploaded Image Banner OR Side Preview */}
-                                            <div className="admin-image-side-col">
-                                                {newProduct.uploadedThumbnail && newProduct.thumbnail !== newProduct.uploadedThumbnail ? (
-                                                    <div className="admin-saved-upload-banner">
-                                                        <div className="admin-saved-upload-left">
-                                                            <img
-                                                                src={newProduct.uploadedThumbnail}
-                                                                alt="Preserved uploaded"
-                                                                className="admin-saved-upload-preview-thumb saved-upload-preview-thumb"
-                                                            />
-                                                            <div className="admin-saved-upload-details">
-                                                                <div className="admin-saved-upload-badge">
-                                                                    <span>☁️ Preserved Upload</span>
-                                                                </div>
-                                                                <p className="admin-saved-upload-note">
-                                                                    Your uploaded image is safely saved in Cloudinary.
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            className="admin-btn-restore-upload"
-                                                            onClick={() => {
-                                                                setNewProduct({
-                                                                    ...newProduct,
-                                                                    thumbnail: newProduct.uploadedThumbnail,
-                                                                    thumbnailPublicId: newProduct.uploadedThumbnailPublicId,
-                                                                });
-                                                                setImagePreview(newProduct.uploadedThumbnail);
-                                                                setImageFile(null);
-                                                                setImageInputMode("file");
-                                                            }}
-                                                            title="Switch product thumbnail back to the preserved uploaded image"
-                                                        >
-                                                            ↩️ Switch Back to Uploaded Image
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    imagePreview ? (
-                                                        <div className="admin-image-preview-card side-preview">
-                                                            <img
-                                                                src={imagePreview}
-                                                                alt="Thumbnail Preview"
-                                                                className="preview-img"
-                                                                onError={(e) => { e.target.style.display = "none"; }}
-                                                                onLoad={(e) => { e.target.style.display = "block"; }}
-                                                            />
-                                                            <div className="preview-meta">
-                                                                <span className="preview-status">
-                                                                    {imageFile ? "New file ready for upload" : "Active product thumbnail"}
-                                                                </span>
-                                                                {imageFile && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={clearSelectedFile}
-                                                                        className="admin-btn-clear-file"
-                                                                    >
-                                                                        ✕ Remove Selected File
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="admin-image-empty-placeholder">
-                                                            <span className="placeholder-icon">🖼️</span>
-                                                            <div className="placeholder-text">
-                                                                <span className="placeholder-title">Live Preview</span>
-                                                                <span className="placeholder-hint">Select a file or enter an image URL to preview</span>
-                                                            </div>
-                                                        </div>
-                                                    )
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Bottom Preview (shown if Preserved Banner occupies the right column and active preview is also present) */}
-                                        {newProduct.uploadedThumbnail && newProduct.thumbnail !== newProduct.uploadedThumbnail && imagePreview && (
-                                            <div className="admin-image-preview-card bottom-preview">
-                                                <img
-                                                    src={imagePreview}
-                                                    alt="Thumbnail Preview"
-                                                    className="preview-img"
-                                                    onError={(e) => { e.target.style.display = "none"; }}
-                                                    onLoad={(e) => { e.target.style.display = "block"; }}
-                                                />
-                                                <div className="preview-meta">
-                                                    <span className="preview-status">
-                                                        {imageFile ? "New file staged for upload" : "Current active thumbnail (external URL / new edit)"}
-                                                    </span>
-                                                    {imageFile && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={clearSelectedFile}
-                                                            className="admin-btn-clear-file"
-                                                        >
-                                                            ✕ Remove Selected File
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
+                                        <button
+                                            type="button"
+                                            className="admin-modal-close-btn"
+                                            onClick={closeFormWithAnimation}
+                                            aria-label="Close modal"
+                                            title="Close"
+                                        >
+                                            ✕
+                                        </button>
                                     </div>
 
-                                    <textarea required placeholder="Description" rows="3" value={newProduct.description} onChange={e => setNewProduct({ ...newProduct, description: e.target.value })} className="admin-form-textarea full-width"></textarea>
-                                    <button type="submit" disabled={isUploadingImage} className="admin-form-submit-btn">
-                                        {isUploadingImage
-                                            ? "Uploading to Cloudinary..."
-                                            : (editFormProduct ? "Save Changes" : "Create Product")}
-                                    </button>
-                                </form>
-                            </div>
+                                    <div className="admin-modal-body">
+                                        <form id="admin-product-form" onSubmit={handleSaveProduct} className="admin-form">
+                                            <input required type="text" placeholder="Title" value={newProduct.title} onChange={e => setNewProduct({ ...newProduct, title: e.target.value })} className="admin-form-input full-width" />
+                                            <div className="admin-form-row-duo">
+                                                <input
+                                                    required
+                                                    type="number"
+                                                    min="0"
+                                                    step="any"
+                                                    placeholder="Price (₹)"
+                                                    value={newProduct.price || ''}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === '-' || e.key === 'e') e.preventDefault();
+                                                    }}
+                                                    onChange={e => {
+                                                        const val = e.target.value;
+                                                        if (val === '') {
+                                                            setNewProduct({ ...newProduct, price: '' });
+                                                        } else {
+                                                            const num = parseFloat(val);
+                                                            setNewProduct({ ...newProduct, price: isNaN(num) ? '' : Math.max(0, num) });
+                                                        }
+                                                    }}
+                                                    className="admin-form-input"
+                                                />
+                                                <input
+                                                    required
+                                                    type="number"
+                                                    min="0"
+                                                    step="1"
+                                                    placeholder="Stock"
+                                                    value={newProduct.stock === 0 ? '0' : (newProduct.stock || '')}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
+                                                    }}
+                                                    onChange={e => {
+                                                        const val = e.target.value;
+                                                        if (val === '') {
+                                                            setNewProduct({ ...newProduct, stock: '' });
+                                                        } else {
+                                                            const num = parseInt(val, 10);
+                                                            setNewProduct({ ...newProduct, stock: isNaN(num) ? '' : Math.max(0, num) });
+                                                        }
+                                                    }}
+                                                    className="admin-form-input"
+                                                />
+                                            </div>
+                                            {!isCustomCategory ? (
+                                                <div className="admin-category-control">
+                                                    <NeoSelect
+                                                        value={allAvailableCategories.includes(newProduct.category) ? newProduct.category : (newProduct.category ? "__custom__" : "")}
+                                                        onChange={(val) => {
+                                                            if (val === "__custom__") {
+                                                                setIsCustomCategory(true);
+                                                                setNewProduct({ ...newProduct, category: "" });
+                                                            } else {
+                                                                setNewProduct({ ...newProduct, category: val });
+                                                            }
+                                                        }}
+                                                        placeholder="-- Select Category --"
+                                                        options={[
+                                                            { value: "__custom__", label: "➕ + Add New Category", isAction: true, sticky: "top" },
+                                                            ...allAvailableCategories.map((cat) => ({
+                                                                value: cat,
+                                                                label: cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, " ")
+                                                            }))
+                                                        ]}
+                                                        fullWidth={true}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="admin-category-custom-box">
+                                                    <input
+                                                        required
+                                                        type="text"
+                                                        placeholder="Type new category (e.g. electronics)..."
+                                                        value={newProduct.category}
+                                                        onChange={e => setNewProduct({ ...newProduct, category: e.target.value })}
+                                                        className="admin-form-input admin-category-custom-input"
+                                                        autoFocus
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="admin-btn-back-category"
+                                                        onClick={() => {
+                                                            setIsCustomCategory(false);
+                                                            setNewProduct({ ...newProduct, category: allAvailableCategories[0] || "" });
+                                                        }}
+                                                        title="Return to category dropdown"
+                                                    >
+                                                        ✕ Back to list
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* Product Image Section */}
+                                            <div className="admin-form-image-section full-width">
+                                                <div className="admin-image-mode-row">
+                                                    <label className="admin-form-label">Product Thumbnail Image</label>
+                                                    <div className="admin-image-mode-tabs">
+                                                        <button
+                                                            type="button"
+                                                            className={`admin-image-tab ${imageInputMode === "file" ? "active" : ""}`}
+                                                            onClick={() => setImageInputMode("file")}
+                                                        >
+                                                            ☁️ Upload File
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className={`admin-image-tab ${imageInputMode === "url" ? "active" : ""}`}
+                                                            onClick={() => setImageInputMode("url")}
+                                                        >
+                                                            🔗 Image URL
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="admin-image-section-body">
+                                                    {/* Left Column: Image Selector / Dropzone / URL Input */}
+                                                    <div className="admin-image-input-col">
+                                                        {imageInputMode === "file" ? (
+                                                            <div className="admin-file-upload-box">
+                                                                <input
+                                                                    type="file"
+                                                                    id="product-image-file"
+                                                                    accept="image/png, image/jpeg, image/webp, image/gif"
+                                                                    onChange={handleFileChange}
+                                                                    style={{ display: "none" }}
+                                                                />
+                                                                <label htmlFor="product-image-file" className={`admin-file-dropzone ${imageFile ? 'has-file' : ''}`}>
+                                                                    <span className="upload-icon">{imageFile ? '✅' : '📤'}</span>
+                                                                    <span className="upload-text">
+                                                                        {imageFile ? imageFile.name : (editFormProduct ? "Replace thumbnail" : "Select or drop image")}
+                                                                    </span>
+                                                                    <span className="upload-hint">PNG, JPG, WebP, or GIF (Max 5MB)</span>
+                                                                </label>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="admin-url-upload-box">
+                                                                <input
+                                                                    type="url"
+                                                                    placeholder="Paste image URL (e.g. https://...)"
+                                                                    value={newProduct.thumbnail}
+                                                                    onChange={e => {
+                                                                        setNewProduct({ ...newProduct, thumbnail: e.target.value });
+                                                                        setImagePreview(e.target.value);
+                                                                    }}
+                                                                    className="admin-form-input"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Right Column: Switch Back to Uploaded Image Banner OR Side Preview */}
+                                                    <div className="admin-image-side-col">
+                                                        {newProduct.uploadedThumbnail && newProduct.thumbnail !== newProduct.uploadedThumbnail ? (
+                                                            <div className="admin-saved-upload-banner">
+                                                                <div className="admin-saved-upload-left">
+                                                                    <img
+                                                                        src={newProduct.uploadedThumbnail}
+                                                                        alt="Preserved uploaded"
+                                                                        className="admin-saved-upload-preview-thumb saved-upload-preview-thumb"
+                                                                    />
+                                                                    <div className="admin-saved-upload-details">
+                                                                        <span className="admin-saved-upload-badge">☁️ Cloudinary Upload</span>
+                                                                    </div>
+                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    className="admin-btn-restore-upload"
+                                                                    onClick={() => {
+                                                                        setNewProduct({
+                                                                            ...newProduct,
+                                                                            thumbnail: newProduct.uploadedThumbnail,
+                                                                            thumbnailPublicId: newProduct.uploadedThumbnailPublicId,
+                                                                        });
+                                                                        setImagePreview(newProduct.uploadedThumbnail);
+                                                                        setImageFile(null);
+                                                                        setImageInputMode("file");
+                                                                    }}
+                                                                    title="Restore Cloudinary upload"
+                                                                >
+                                                                    ↩️ Restore
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            imagePreview ? (
+                                                                <div className="admin-image-preview-card side-preview">
+                                                                    <img
+                                                                        src={imagePreview}
+                                                                        alt="Thumbnail Preview"
+                                                                        className="preview-img"
+                                                                        onError={(e) => { e.target.style.display = "none"; }}
+                                                                        onLoad={(e) => { e.target.style.display = "block"; }}
+                                                                    />
+                                                                    <div className="preview-meta">
+                                                                        <span className="preview-status">
+                                                                            {imageFile ? "Ready to upload" : "Active thumbnail"}
+                                                                        </span>
+                                                                        {imageFile && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={clearSelectedFile}
+                                                                                className="admin-btn-clear-file"
+                                                                            >
+                                                                                ✕ Remove
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="admin-image-empty-placeholder">
+                                                                    <span className="placeholder-icon">🖼️</span>
+                                                                    <div className="placeholder-text">
+                                                                        <span className="placeholder-title">Live Preview</span>
+                                                                        <span className="placeholder-hint">File or URL</span>
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <textarea required placeholder="Description" rows="2" value={newProduct.description} onChange={e => setNewProduct({ ...newProduct, description: e.target.value })} className="admin-form-textarea full-width"></textarea>
+                                        </form>
+                                    </div>
+
+                                    <div className="admin-modal-footer">
+                                        <button
+                                            type="button"
+                                            className="admin-btn-modal-cancel"
+                                            onClick={closeFormWithAnimation}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            form="admin-product-form"
+                                            disabled={isUploadingImage}
+                                            className="admin-form-submit-btn"
+                                        >
+                                            {isUploadingImage
+                                                ? "Uploading to Cloudinary..."
+                                                : (editFormProduct ? "Save Changes" : "Create Product")}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>,
+                            document.body
                         )}
 
-                        <div className="products-table-wrapper">
-                            <div className="products-table-inner">
-                                <div className="products-table-header-wrap">
-                                    <table className="products-table products-table-head">
-                                        <colgroup>
-                                            <col style={{ width: '90px' }} />
-                                            <col style={{ width: '38%' }} />
-                                            <col style={{ width: '18%' }} />
-                                            <col style={{ width: '18%' }} />
-                                            <col style={{ width: '140px' }} />
-                                        </colgroup>
-                                        <thead>
-                                            <tr>
-                                                <th>Image</th>
-                                                <th className="sortable-th" onClick={() => handleProductSortToggle("title")} title="Sort by Title">
-                                                    <div className="th-content">
-                                                        <span>Title</span>
-                                                        {getSortIcon(productSort, "title-asc", "title-desc")}
-                                                    </div>
-                                                </th>
-                                                <th className="sortable-th" onClick={() => handleProductSortToggle("price")} title="Sort by Price">
-                                                    <div className="th-content">
-                                                        <span>Price</span>
-                                                        {getSortIcon(productSort, "price-asc", "price-desc")}
-                                                    </div>
-                                                </th>
-                                                <th className="sortable-th" onClick={() => handleProductSortToggle("stock")} title="Sort by Stock">
-                                                    <div className="th-content">
-                                                        <span>Stock</span>
-                                                        {getSortIcon(productSort, "stock-asc", "stock-desc")}
-                                                    </div>
-                                                </th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                    </table>
+                        {/* Desktop Table View (Viewports > 768px) */}
+                        <div className="admin-products-desktop-view">
+                            <div className="admin-table-mobile-hint">
+                                <span>👈 Scroll horizontally to view all columns 👉</span>
+                            </div>
+                            <div className="products-table-wrapper">
+                                <div className="products-table-inner">
+                                    <div className="products-table-header-wrap">
+                                        <table className="products-table products-table-head">
+                                            <colgroup>
+                                                <col style={{ width: '90px' }} />
+                                                <col style={{ width: '38%' }} />
+                                                <col style={{ width: '18%' }} />
+                                                <col style={{ width: '18%' }} />
+                                                <col style={{ width: '140px' }} />
+                                            </colgroup>
+                                            <thead>
+                                                <tr>
+                                                    <th>Image</th>
+                                                    <th className="sortable-th" onClick={() => handleProductSortToggle("title")} title="Sort by Title">
+                                                        <div className="th-content">
+                                                            <span>Title</span>
+                                                            {getSortIcon(productSort, "title-asc", "title-desc")}
+                                                        </div>
+                                                    </th>
+                                                    <th className="sortable-th" onClick={() => handleProductSortToggle("price")} title="Sort by Price">
+                                                        <div className="th-content">
+                                                            <span>Price</span>
+                                                            {getSortIcon(productSort, "price-asc", "price-desc")}
+                                                        </div>
+                                                    </th>
+                                                    <th className="sortable-th" onClick={() => handleProductSortToggle("stock")} title="Sort by Stock">
+                                                        <div className="th-content">
+                                                            <span>Stock</span>
+                                                            {getSortIcon(productSort, "stock-asc", "stock-desc")}
+                                                        </div>
+                                                    </th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                    <div className="products-table-scroll">
+                                        <table className="products-table products-table-body">
+                                            <colgroup>
+                                                <col style={{ width: '90px' }} />
+                                                <col style={{ width: '38%' }} />
+                                                <col style={{ width: '18%' }} />
+                                                <col style={{ width: '18%' }} />
+                                                <col style={{ width: '140px' }} />
+                                            </colgroup>
+                                            <tbody>
+                                                {paginatedProducts.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan="5" style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
+                                                            No products found matching your search or filters.
+                                                        </td>
+                                                    </tr>
+                                                ) : (
+                                                    paginatedProducts.map(product => (
+                                                        <tr key={product._id}>
+                                                            <td>
+                                                                <img src={product.thumbnail} alt={product.title} width="50" />
+                                                            </td>
+                                                            <td>{product.title}</td>
+                                                            <td>₹{product.price}</td>
+                                                            <td>
+                                                                {editingProduct === product._id ? (
+                                                                    <div className="stock-edit-box">
+                                                                        <input
+                                                                            type="number"
+                                                                            min="0"
+                                                                            step="1"
+                                                                            className="stock-inline-input"
+                                                                            defaultValue={product.stock}
+                                                                            autoFocus
+                                                                            onKeyDown={(e) => {
+                                                                                if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
+                                                                                if (e.key === "Enter") {
+                                                                                    handleStockUpdate(product._id, e.target.value);
+                                                                                } else if (e.key === "Escape") {
+                                                                                    setEditingProduct(null);
+                                                                                }
+                                                                            }}
+                                                                            onBlur={(e) => handleStockUpdate(product._id, e.target.value)}
+                                                                        />
+                                                                        <button
+                                                                            type="button"
+                                                                            className="stock-save-btn"
+                                                                            onMouseDown={(e) => {
+                                                                                e.preventDefault();
+                                                                                const inputEl = e.currentTarget.parentElement.querySelector("input");
+                                                                                if (inputEl) handleStockUpdate(product._id, inputEl.value);
+                                                                            }}
+                                                                            title="Save stock"
+                                                                        >
+                                                                            ✓
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div
+                                                                        className="stock-display-pill"
+                                                                        onClick={() => setEditingProduct(product._id)}
+                                                                        title="Click to edit stock"
+                                                                    >
+                                                                        <span className="stock-qty">{product.stock}</span>
+                                                                        <span className="stock-edit-hint">(click to edit)</span>
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                                    <button onClick={() => startEditProduct(product)} className="btn-edit">Edit</button>
+                                                                    <button onClick={() => handleDeleteProduct(product._id)} className="btn-delete">Delete</button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                                <div className="products-table-scroll">
-                                    <table className="products-table products-table-body">
-                                        <colgroup>
-                                            <col style={{ width: '90px' }} />
-                                            <col style={{ width: '38%' }} />
-                                            <col style={{ width: '18%' }} />
-                                            <col style={{ width: '18%' }} />
-                                            <col style={{ width: '140px' }} />
-                                        </colgroup>
-                                        <tbody>
-                                    {paginatedProducts.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="5" style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
-                                                No products found matching your search or filters.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        paginatedProducts.map(product => (
-                                            <tr key={product._id}>
-                                                <td>
-                                                    <img src={product.thumbnail} alt={product.title} width="50" />
-                                                </td>
-                                                <td>{product.title}</td>
-                                                <td>₹{product.price}</td>
-                                                <td>
+                            </div>
+                        </div>
+
+                        {/* Mobile Cards View (Viewports <= 768px) */}
+                        <div className="admin-products-mobile-view">
+                            {paginatedProducts.length === 0 ? (
+                                <div className="admin-products-empty-card">
+                                    <p>No products found matching your search or filters.</p>
+                                </div>
+                            ) : (
+                                <div className="admin-products-cards-grid">
+                                    {paginatedProducts.map(product => (
+                                        <div key={product._id} className="admin-product-card">
+                                            <div className="admin-product-card-top">
+                                                <div className="admin-product-card-thumb-wrap">
+                                                    <img
+                                                        src={product.thumbnail}
+                                                        alt={product.title}
+                                                        className="admin-product-card-thumb"
+                                                        loading="lazy"
+                                                        onError={(e) => { e.target.style.display = "none"; }}
+                                                    />
+                                                </div>
+                                                <div className="admin-product-card-info">
+                                                    <div className="admin-product-card-meta-row">
+                                                        <span className="admin-product-category-tag">
+                                                            {product.category || "General"}
+                                                        </span>
+                                                        <span className="admin-product-card-price">
+                                                            ₹{product.price}
+                                                        </span>
+                                                    </div>
+                                                    <h4 className="admin-product-card-title">{product.title}</h4>
+                                                </div>
+                                            </div>
+
+                                            <div className="admin-product-card-bottom">
+                                                <div className="admin-product-stock-container">
                                                     {editingProduct === product._id ? (
-                                                        <div className="stock-edit-box">
+                                                        <div className="stock-edit-box mobile-stock-box">
+                                                            <span className="stock-edit-label">Stock:</span>
                                                             <input
                                                                 type="number"
                                                                 min="0"
@@ -1112,55 +1355,113 @@ export const AdminDashboard = () => {
                                                         </div>
                                                     ) : (
                                                         <div
-                                                            className="stock-display-pill"
+                                                            className={`mobile-stock-pill ${product.stock <= 5 ? "low-stock" : ""}`}
                                                             onClick={() => setEditingProduct(product._id)}
-                                                            title="Click to edit stock"
+                                                            title="Tap to edit stock"
                                                         >
+                                                            <span className="stock-label-prefix">Stock:</span>
                                                             <span className="stock-qty">{product.stock}</span>
-                                                            <span className="stock-edit-hint">(click to edit)</span>
+                                                            <span className="stock-edit-pencil">✏️</span>
                                                         </div>
                                                     )}
-                                                </td>
-                                                <td>
-                                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                                        <button onClick={() => startEditProduct(product)} className="btn-edit">Edit</button>
-                                                        <button onClick={() => handleDeleteProduct(product._id)} className="btn-delete">Delete</button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                                                </div>
+
+                                                <div className="admin-product-card-actions">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => startEditProduct(product)}
+                                                        className="btn-edit admin-card-btn"
+                                                        title="Edit product"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteProduct(product._id)}
+                                                        className="btn-delete admin-card-btn"
+                                                        title="Delete product"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    </div>
-                </div>
 
                         {totalPages > 1 && (
-                            <div className="pagination">
-                                <button
-                                    className="pagination-btn"
-                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                    disabled={currentPage === 1}
-                                >
-                                    Prev
-                                </button>
-                                {Array.from({ length: totalPages }, (_, i) => (
+                            <div className="pagination-container">
+                                <nav className="pagination" aria-label="Products Pagination">
                                     <button
-                                        key={i}
-                                        className={`pagination-btn ${currentPage === i + 1 ? "active" : ""}`}
-                                        onClick={() => setCurrentPage(i + 1)}
+                                        type="button"
+                                        className="pagination-btn nav"
+                                        disabled={currentPage === 1}
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        aria-label="Go to previous page"
                                     >
-                                        {i + 1}
+                                        ← Prev
                                     </button>
-                                ))}
-                                <button
-                                    className="pagination-btn"
-                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                    disabled={currentPage === totalPages}
-                                >
-                                    Next
-                                </button>
+
+                                    {/* Desktop range (up to 7 items with ellipsis) */}
+                                    <div className="pagination-numbers pagination-numbers-desktop">
+                                        {desktopPageRange.map((item, idx) =>
+                                            item === "..." ? (
+                                                <span key={`desk-ellipsis-${idx}`} className="pagination-ellipsis" aria-hidden="true">
+                                                    …
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    key={`desk-page-${item}`}
+                                                    type="button"
+                                                    className={`pagination-btn ${currentPage === item ? "active" : ""}`}
+                                                    onClick={() => handlePageChange(item)}
+                                                    aria-label={`Go to page ${item}`}
+                                                    aria-current={currentPage === item ? "page" : undefined}
+                                                >
+                                                    {item}
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+
+                                    {/* Mobile range (compact window with ellipsis) */}
+                                    <div className="pagination-numbers pagination-numbers-mobile">
+                                        {mobilePageRange.map((item, idx) =>
+                                            item === "..." ? (
+                                                <span key={`mob-ellipsis-${idx}`} className="pagination-ellipsis" aria-hidden="true">
+                                                    …
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    key={`mob-page-${item}`}
+                                                    type="button"
+                                                    className={`pagination-btn ${currentPage === item ? "active" : ""}`}
+                                                    onClick={() => handlePageChange(item)}
+                                                    aria-label={`Go to page ${item}`}
+                                                    aria-current={currentPage === item ? "page" : undefined}
+                                                >
+                                                    {item}
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className="pagination-btn nav"
+                                        disabled={currentPage === totalPages}
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        aria-label="Go to next page"
+                                    >
+                                        Next →
+                                    </button>
+                                </nav>
+
+                                <div className="pagination-info">
+                                    Showing <strong>{sortedProducts.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}</strong>–<strong>{Math.min(currentPage * itemsPerPage, sortedProducts.length)}</strong> of <strong>{sortedProducts.length}</strong> items • Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -1188,196 +1489,402 @@ export const AdminDashboard = () => {
                             </button>
                         </div>
 
-                        <div className="admin-orders-toolbar">
-                            <div className="admin-orders-filters-row">
-                                <div className="admin-search-wrapper orders-search">
-                                    <span className="search-icon">🔍</span>
-                                    <input
-                                        type="text"
-                                        placeholder="Search orders (ID, customer, email, phone)..."
-                                        value={orderSearchQuery}
-                                        onChange={(e) => setOrderSearchQuery(e.target.value)}
-                                        className="admin-search-input"
-                                    />
-                                    {orderSearchQuery && (
-                                        <button
-                                            type="button"
-                                            className="clear-search-btn"
-                                            onClick={() => setOrderSearchQuery("")}
-                                            title="Clear search"
-                                        >
-                                            ✕
-                                        </button>
+                        <div className={`admin-orders-toolbar ${isOrderFilterMenuOpen ? "menu-open" : "menu-collapsed"}`}>
+                            {/* Summary & Mobile/Tablet Menu Toggle Header */}
+                            <div className="admin-orders-toolbar-top">
+                                <div className="admin-orders-count-badge">
+                                    <span className="badge-icon">📦</span>
+                                    <span className="badge-total">
+                                        <strong>{sortedOrders.length}</strong> {orderStatusFilter === "Abandoned" ? "Drafts" : "Orders"}
+                                    </span>
+                                    <span className="badge-dot">•</span>
+                                    <span className="badge-range">
+                                        {sortedOrders.length === 0 ? "0" : `${(orderCurrentPage - 1) * ordersPerPage + 1}–${Math.min(orderCurrentPage * ordersPerPage, sortedOrders.length)}`}
+                                    </span>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className={`admin-orders-menu-toggle-btn ${isOrderFilterMenuOpen ? "active" : ""} ${activeOrderFiltersCount > 0 ? "has-active-filters" : ""}`}
+                                    onClick={() => setIsOrderFilterMenuOpen(prev => !prev)}
+                                    aria-expanded={isOrderFilterMenuOpen}
+                                    title={isOrderFilterMenuOpen ? "Close filters menu" : "Open filters & search menu"}
+                                >
+                                    <span className="menu-toggle-icon">⚡</span>
+                                    <span className="menu-toggle-text">{isOrderFilterMenuOpen ? "Hide Filters" : "Filter & Search"}</span>
+                                    {activeOrderFiltersCount > 0 && (
+                                        <span className="menu-toggle-badge">{activeOrderFiltersCount}</span>
                                     )}
-                                </div>
+                                    <span className="menu-toggle-arrow">{isOrderFilterMenuOpen ? "▲" : "▼"}</span>
+                                </button>
+                            </div>
 
-                                <div className="admin-filter-group">
-                                    <span className="admin-control-label">Status:</span>
-                                    <NeoSelect
-                                        id="order-status-select"
-                                        value={orderStatusFilter}
-                                        onChange={setOrderStatusFilter}
-                                        options={[
-                                            { value: "all", label: `📦 Confirmed Orders (${confirmedOrders.length})` },
-                                            { value: "Pending", label: `⏳ Pending Fulfillment (${pendingOrders})` },
-                                            { value: "Processing", label: `⚙️ Processing (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Processing').length})` },
-                                            { value: "Shipped", label: `🚚 Shipped (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Shipped').length})` },
-                                            { value: "Delivered", label: `✅ Delivered (${deliveredOrders})` },
-                                            { value: "Cancelled", label: `❌ Cancelled (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Cancelled').length})` },
-                                            { value: "Abandoned", label: `🛒 Abandoned Drafts (${abandonedOrders.length})` },
-                                            { value: "all-with-drafts", label: `📋 All Records (inc. Drafts) (${orders.length})` }
-                                        ]}
-                                    />
-                                </div>
-
-                                <div className="admin-filter-group">
-                                    <span className="admin-control-label">Sort:</span>
-                                    <NeoSelect
-                                        id="order-sort-select"
-                                        value={orderSort}
-                                        onChange={setOrderSort}
-                                        options={[
-                                            { value: "date-desc", label: "📅 Date: Newest First" },
-                                            { value: "date-asc", label: "📅 Date: Oldest First" },
-                                            { value: "amount-desc", label: "💰 Total: High to Low" },
-                                            { value: "amount-asc", label: "💰 Total: Low to High" }
-                                        ]}
-                                    />
-                                </div>
-
-                                {(orderStatusFilter !== "all" || orderSearchQuery || orderSort !== "date-desc") && (
+                            {/* Structured Abandoned Drafts Alert Strip (full width, cleanly separated) */}
+                            {orderStatusFilter === "all" && abandonedOrders.length > 0 && (
+                                <div className="admin-drafts-alert-strip">
+                                    <div className="drafts-alert-left">
+                                        <span className="drafts-alert-icon">🛒</span>
+                                        <span className="drafts-alert-text">
+                                            <strong>{abandonedOrders.length}</strong> unpaid draft{abandonedOrders.length > 1 ? 's' : ''} segregated
+                                        </span>
+                                    </div>
                                     <button
                                         type="button"
-                                        className="admin-btn-reset-filters"
+                                        onClick={() => setOrderStatusFilter("Abandoned")}
+                                        className="drafts-alert-link-btn"
+                                        title="View abandoned checkouts"
+                                    >
+                                        View Drafts →
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Active filter chips (visible when menu is collapsed so admin sees active filters) */}
+                            {activeOrderFiltersCount > 0 && !isOrderFilterMenuOpen && (
+                                <div className="admin-orders-active-chips-row">
+                                    <span className="active-chips-label">Active:</span>
+                                    {orderStatusFilter !== "all" && (
+                                        <span className="admin-filter-pill-tag">
+                                            {orderStatusFilter === "Abandoned" ? "🛒 Abandoned" : `📦 ${orderStatusFilter}`}
+                                            <button
+                                                type="button"
+                                                className="pill-clear-btn"
+                                                onClick={() => setOrderStatusFilter("all")}
+                                                title="Clear status filter"
+                                            >
+                                                ✕
+                                            </button>
+                                        </span>
+                                    )}
+                                    {orderSearchQuery.trim() && (
+                                        <span className="admin-filter-pill-tag">
+                                            🔍 "{orderSearchQuery.slice(0, 12)}{orderSearchQuery.length > 12 ? '…' : ''}"
+                                            <button
+                                                type="button"
+                                                className="pill-clear-btn"
+                                                onClick={() => setOrderSearchQuery("")}
+                                                title="Clear search"
+                                            >
+                                                ✕
+                                            </button>
+                                        </span>
+                                    )}
+                                    {orderSort !== "date-desc" && (
+                                        <span className="admin-filter-pill-tag">
+                                            {orderSort === "date-asc" ? "📅 Oldest" : orderSort === "amount-desc" ? "💰 High-Low" : "💰 Low-High"}
+                                            <button
+                                                type="button"
+                                                className="pill-clear-btn"
+                                                onClick={() => setOrderSort("date-desc")}
+                                                title="Reset sort"
+                                            >
+                                                ✕
+                                            </button>
+                                        </span>
+                                    )}
+                                    <button
+                                        type="button"
+                                        className="admin-clear-all-pill-btn"
                                         onClick={() => {
                                             setOrderStatusFilter("all");
                                             setOrderSearchQuery("");
                                             setOrderSort("date-desc");
                                         }}
-                                        title="Reset filters & sort"
+                                        title="Clear all filters"
                                     >
-                                        Reset
+                                        <span className="clear-all-icon">✕</span> Clear All
                                     </button>
-                                )}
-                            </div>
+                                </div>
+                            )}
 
-                            <div className="admin-orders-summary-bar">
-                                <span className="admin-orders-count-text">
-                                    Showing <strong>{sortedOrders.length}</strong> {orderStatusFilter === "Abandoned" ? "abandoned checkout(s)" : "order(s)"}
-                                </span>
-                                {orderStatusFilter === "all" && abandonedOrders.length > 0 && (
-                                    <span className="admin-drafts-notice">
-                                        ({abandonedOrders.length} unpaid draft{abandonedOrders.length > 1 ? 's' : ''} segregated in <button type="button" onClick={() => setOrderStatusFilter("Abandoned")} className="admin-drafts-link">Abandoned Drafts</button>)
-                                    </span>
-                                )}
+                            {/* Collapsible Menu Body containing Search, Status, Sort, Reset */}
+                            <div className={`admin-orders-menu-body ${isOrderFilterMenuOpen ? "open" : "collapsed"}`}>
+                                <div className="admin-orders-filters-row">
+                                    <div className="admin-search-wrapper orders-search">
+                                        <span className="search-icon">🔍</span>
+                                        <input
+                                            type="text"
+                                            placeholder="Search orders (ID, customer, email, phone)..."
+                                            value={orderSearchQuery}
+                                            onChange={(e) => setOrderSearchQuery(e.target.value)}
+                                            className="admin-search-input"
+                                        />
+                                        {orderSearchQuery && (
+                                            <button
+                                                type="button"
+                                                className="clear-search-btn"
+                                                onClick={() => setOrderSearchQuery("")}
+                                                title="Clear search"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div className="admin-filter-group">
+                                        <span className="admin-control-label">Status:</span>
+                                        <NeoSelect
+                                            id="order-status-select"
+                                            size="sm"
+                                            value={orderStatusFilter}
+                                            onChange={setOrderStatusFilter}
+                                            options={[
+                                                { value: "all", label: `📦 Confirmed Orders (${confirmedOrders.length})` },
+                                                { value: "Pending", label: `⏳ Pending Fulfillment (${pendingOrders})` },
+                                                { value: "Processing", label: `⚙️ Processing (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Processing').length})` },
+                                                { value: "Shipped", label: `🚚 Shipped (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Shipped').length})` },
+                                                { value: "Delivered", label: `✅ Delivered (${deliveredOrders})` },
+                                                { value: "Cancelled", label: `❌ Cancelled (${orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Cancelled').length})` },
+                                                { value: "Abandoned", label: `🛒 Abandoned Drafts (${abandonedOrders.length})` },
+                                                { value: "all-with-drafts", label: `📋 All Records (inc. Drafts) (${orders.length})` }
+                                            ]}
+                                        />
+                                    </div>
+
+                                    <div className="admin-filter-group">
+                                        <span className="admin-control-label">Sort:</span>
+                                        <NeoSelect
+                                            id="order-sort-select"
+                                            size="sm"
+                                            value={orderSort}
+                                            onChange={setOrderSort}
+                                            options={[
+                                                { value: "date-desc", label: "📅 Date: Newest First" },
+                                                { value: "date-asc", label: "📅 Date: Oldest First" },
+                                                { value: "amount-desc", label: "💰 Total: High to Low" },
+                                                { value: "amount-asc", label: "💰 Total: Low to High" }
+                                            ]}
+                                        />
+                                    </div>
+
+                                    {activeOrderFiltersCount > 0 && (
+                                        <button
+                                            type="button"
+                                            className="admin-btn-reset-filters"
+                                            onClick={() => {
+                                                setOrderStatusFilter("all");
+                                                setOrderSearchQuery("");
+                                                setOrderSort("date-desc");
+                                            }}
+                                            title="Reset filters & sort"
+                                        >
+                                            Reset Filters
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
-                        <div className="products-table-wrapper">
-                            <div className="products-table-inner">
-                                <div className="products-table-header-wrap">
-                                    <table className="products-table products-table-head">
-                                        <colgroup>
-                                            <col style={{ width: '11%' }} />
-                                            <col style={{ width: '17%' }} />
-                                            <col style={{ width: '9%' }} />
-                                            <col style={{ width: '8%' }} />
-                                            <col style={{ width: '10%' }} />
-                                            <col style={{ width: '11%' }} />
-                                            <col style={{ width: '18%' }} />
-                                            <col style={{ width: '16%' }} />
-                                        </colgroup>
-                                        <thead>
+                        {/* Desktop View: Full Data Table (Screens > 1100px) */}
+                        <div className="admin-orders-desktop-view">
+                            <div className="admin-table-mobile-hint">
+                                <span>👈 Scroll horizontally to view all columns 👉</span>
+                            </div>
+                            <div className="products-table-wrapper">
+                                <div className="products-table-inner">
+                                    <div className="products-table-header-wrap">
+                                        <table className="products-table products-table-head">
+                                            <colgroup>
+                                                <col style={{ width: '11%' }} />
+                                                <col style={{ width: '17%' }} />
+                                                <col style={{ width: '9%' }} />
+                                                <col style={{ width: '8%' }} />
+                                                <col style={{ width: '10%' }} />
+                                                <col style={{ width: '11%' }} />
+                                                <col style={{ width: '18%' }} />
+                                                <col style={{ width: '16%' }} />
+                                            </colgroup>
+                                            <thead>
+                                                <tr>
+                                                    <th>Order ID</th>
+                                                    <th>Customer</th>
+                                                    <th className="sortable-th" onClick={() => handleOrderSortToggle("date")} title="Sort by Date">
+                                                        <div className="th-content">
+                                                            <span>Date</span>
+                                                            {getSortIcon(orderSort, "date-asc", "date-desc")}
+                                                        </div>
+                                                    </th>
+                                                    <th className="sortable-th" onClick={() => handleOrderSortToggle("amount")} title="Sort by Total Amount">
+                                                        <div className="th-content">
+                                                            <span>Total</span>
+                                                            {getSortIcon(orderSort, "amount-asc", "amount-desc")}
+                                                        </div>
+                                                    </th>
+                                                    <th>Payment</th>
+                                                    <th>Status</th>
+                                                    <th>Items Ordered</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                    <div className="products-table-scroll">
+                                        <table className="products-table products-table-body">
+                                            <colgroup>
+                                                <col style={{ width: '11%' }} />
+                                                <col style={{ width: '17%' }} />
+                                                <col style={{ width: '9%' }} />
+                                                <col style={{ width: '8%' }} />
+                                                <col style={{ width: '10%' }} />
+                                                <col style={{ width: '11%' }} />
+                                                <col style={{ width: '18%' }} />
+                                                <col style={{ width: '16%' }} />
+                                            </colgroup>
+                                            <tbody>
+                                        {paginatedOrders.length === 0 ? (
                                             <tr>
-                                                <th>Order ID</th>
-                                                <th>Customer</th>
-                                                <th className="sortable-th" onClick={() => handleOrderSortToggle("date")} title="Sort by Date">
-                                                    <div className="th-content">
-                                                        <span>Date</span>
-                                                        {getSortIcon(orderSort, "date-asc", "date-desc")}
-                                                    </div>
-                                                </th>
-                                                <th className="sortable-th" onClick={() => handleOrderSortToggle("amount")} title="Sort by Total Amount">
-                                                    <div className="th-content">
-                                                        <span>Total</span>
-                                                        {getSortIcon(orderSort, "amount-asc", "amount-desc")}
-                                                    </div>
-                                                </th>
-                                                <th>Payment</th>
-                                                <th>Status</th>
-                                                <th>Items Ordered</th>
-                                                <th>Action</th>
+                                                <td colSpan="8" style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
+                                                    No customer orders found matching your search or filters.
+                                                </td>
                                             </tr>
-                                        </thead>
-                                    </table>
+                                        ) : (
+                                            paginatedOrders.map(order => (
+                                                <tr key={order._id}>
+                                                    <td>
+                                                        <Link
+                                                            to={`/admin/orders/${order._id}`}
+                                                            className="admin-order-id-link"
+                                                            title="View full order details"
+                                                        >
+                                                            #{order._id.substring(order._id.length - 8)}
+                                                        </Link>
+                                                    </td>
+                                                    <td>
+                                                        <div className="admin-order-customer-name">
+                                                            {(order.user && typeof order.user === 'object' && order.user.name)
+                                                                ? order.user.name
+                                                                : (order.shippingAddress?.fullName || (order.user ? "Customer" : "Guest"))}
+                                                        </div>
+                                                        {((order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone) && (
+                                                            <small className="admin-order-customer-contact">
+                                                                {(order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone}
+                                                            </small>
+                                                        )}
+                                                    </td>
+                                                    <td className="admin-order-date">{new Date(order.createdAt).toLocaleDateString()}</td>
+                                                    <td><strong className="admin-order-total-amount">₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</strong></td>
+                                                    <td>
+                                                        <div className="admin-payment-cell">
+                                                            <span className="admin-payment-method">
+                                                                {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
+                                                            </span>
+                                                            <span className={`admin-payment-pill ${
+                                                                isAbandonedDraft(order)
+                                                                    ? "draft"
+                                                                    : (order.orderStatus === "Cancelled")
+                                                                        ? "cancelled"
+                                                                        : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "paid" : "pending")
+                                                            }`}>
+                                                                {isAbandonedDraft(order)
+                                                                    ? "Unpaid Draft"
+                                                                    : (order.orderStatus === "Cancelled")
+                                                                        ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "Refunded" : "Cancelled")
+                                                                        : (order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending"))}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {isAbandonedDraft(order) ? (
+                                                            <span className="status-badge draft" title="Unpaid online checkout draft - not confirmed for fulfillment">
+                                                                🛒 Abandoned Draft
+                                                            </span>
+                                                        ) : (
+                                                            <span className={`status-badge ${(order.orderStatus || "Pending").toLowerCase()}`}>
+                                                                {order.orderStatus || "Pending"}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        <ul className="admin-order-items-list">
+                                                            {order.orderItems.map((item, idx) => (
+                                                                <li
+                                                                    key={idx}
+                                                                    className="admin-order-item-row"
+                                                                    title={`${item.title} (Qty: ${item.quantity})`}
+                                                                >
+                                                                    <img
+                                                                        src={item.thumbnail}
+                                                                        alt={item.title}
+                                                                        width="32"
+                                                                        height="32"
+                                                                    />
+                                                                    <span className="admin-order-item-text">
+                                                                        {item.title}{' '}
+                                                                        <span className="admin-order-item-qty">
+                                                                            (x{item.quantity})
+                                                                        </span>
+                                                                    </span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </td>
+                                                    <td>
+                                                        <div className="admin-order-actions-stack">
+                                                            <Link
+                                                                to={`/admin/orders/${order._id}`}
+                                                                className="admin-btn-view-order"
+                                                            >
+                                                                👁️ Details
+                                                            </Link>
+                                                            <NeoSelect
+                                                                size="sm"
+                                                                fullWidth={true}
+                                                                alignRight={true}
+                                                                openUpward={true}
+                                                                value={order.orderStatus || "Pending"}
+                                                                onChange={(val) => handleInitiateStatusChange(order._id, val, order.orderStatus || "Pending")}
+                                                                options={[
+                                                                    { value: "Pending", label: "Pending" },
+                                                                    { value: "Processing", label: "Processing" },
+                                                                    { value: "Shipped", label: "Shipped" },
+                                                                    { value: "Delivered", label: "Delivered" },
+                                                                    { value: "Cancelled", label: "Cancelled" }
+                                                                ]}
+                                                            />
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                                <div className="products-table-scroll">
-                                    <table className="products-table products-table-body">
-                                        <colgroup>
-                                            <col style={{ width: '11%' }} />
-                                            <col style={{ width: '17%' }} />
-                                            <col style={{ width: '9%' }} />
-                                            <col style={{ width: '8%' }} />
-                                            <col style={{ width: '10%' }} />
-                                            <col style={{ width: '11%' }} />
-                                            <col style={{ width: '18%' }} />
-                                            <col style={{ width: '16%' }} />
-                                        </colgroup>
-                                        <tbody>
-                                    {sortedOrders.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="8" style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
-                                                No customer orders found matching your search or filters.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        sortedOrders.map(order => (
-                                            <tr key={order._id}>
-                                                <td>
-                                                    <Link
-                                                        to={`/admin/orders/${order._id}`}
-                                                        className="admin-order-id-link"
-                                                        title="View full order details"
-                                                    >
-                                                        #{order._id.substring(order._id.length - 8)}
-                                                    </Link>
-                                                </td>
-                                                <td>
-                                                    <div className="admin-order-customer-name">
-                                                        {(order.user && typeof order.user === 'object' && order.user.name)
-                                                            ? order.user.name
-                                                            : (order.shippingAddress?.fullName || (order.user ? "Customer" : "Guest"))}
-                                                    </div>
-                                                    {((order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone) && (
-                                                        <small className="admin-order-customer-contact">
-                                                            {(order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone}
-                                                        </small>
-                                                    )}
-                                                </td>
-                                                <td className="admin-order-date">{new Date(order.createdAt).toLocaleDateString()}</td>
-                                                <td><strong className="admin-order-total-amount">₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}</strong></td>
-                                                <td>
-                                                    <div className="admin-payment-cell">
-                                                        <span className="admin-payment-method">
-                                                            {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
-                                                        </span>
-                                                        <span className={`admin-payment-pill ${
-                                                            isAbandonedDraft(order)
-                                                                ? "draft"
-                                                                : (order.orderStatus === "Cancelled")
-                                                                    ? "cancelled"
-                                                                    : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "paid" : "pending")
-                                                        }`}>
-                                                            {isAbandonedDraft(order)
-                                                                ? "Unpaid Draft"
-                                                                : (order.orderStatus === "Cancelled")
-                                                                    ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "Refunded" : "Cancelled")
-                                                                    : (order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending"))}
+                            </div>
+                        </div>
+
+                        {/* Mobile & Tablet View: Clean Cards Grid (Screens <= 1100px) */}
+                        <div className="admin-orders-mobile-view">
+                            {paginatedOrders.length === 0 ? (
+                                <div className="admin-orders-empty-card">
+                                    <p>No customer orders found matching your search or filters.</p>
+                                </div>
+                            ) : (
+                                <div className="admin-orders-cards-grid">
+                                    {paginatedOrders.map(order => {
+                                        const isDraft = isAbandonedDraft(order);
+                                        const customerName = (order.user && typeof order.user === 'object' && order.user.name)
+                                            ? order.user.name
+                                            : (order.shippingAddress?.fullName || (order.user ? "Customer" : "Guest"));
+                                        const customerContact = ((order.user && typeof order.user === 'object' && order.user.email) || order.shippingAddress?.phone) || "";
+
+                                        return (
+                                            <div key={order._id} className="admin-order-card">
+                                                <div className="admin-order-card-header">
+                                                    <div className="admin-order-card-id-wrap">
+                                                        <Link
+                                                            to={`/admin/orders/${order._id}`}
+                                                            className="admin-order-id-link"
+                                                            title="View full order details"
+                                                        >
+                                                            #{order._id.substring(order._id.length - 8)}
+                                                        </Link>
+                                                        <span className="admin-order-card-date">
+                                                            {new Date(order.createdAt).toLocaleDateString()}
                                                         </span>
                                                     </div>
-                                                </td>
-                                                <td>
-                                                    {isAbandonedDraft(order) ? (
+
+                                                    {isDraft ? (
                                                         <span className="status-badge draft" title="Unpaid online checkout draft - not confirmed for fulfillment">
                                                             🛒 Abandoned Draft
                                                         </span>
@@ -1386,43 +1893,91 @@ export const AdminDashboard = () => {
                                                             {order.orderStatus || "Pending"}
                                                         </span>
                                                     )}
-                                                </td>
-                                                <td>
-                                                    <ul className="admin-order-items-list">
-                                                        {order.orderItems.map((item, idx) => (
-                                                            <li
-                                                                key={idx}
-                                                                className="admin-order-item-row"
-                                                                title={`${item.title} (Qty: ${item.quantity})`}
-                                                            >
-                                                                <img
-                                                                    src={item.thumbnail}
-                                                                    alt={item.title}
-                                                                    width="32"
-                                                                    height="32"
-                                                                />
-                                                                <span className="admin-order-item-text">
-                                                                    {item.title}{' '}
-                                                                    <span className="admin-order-item-qty">
-                                                                        (x{item.quantity})
-                                                                    </span>
-                                                                </span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </td>
-                                                <td>
-                                                    <div className="admin-order-actions-stack">
-                                                        <Link
-                                                            to={`/admin/orders/${order._id}`}
-                                                            className="admin-btn-view-order"
-                                                        >
-                                                            👁️ Details
-                                                        </Link>
+                                                </div>
+
+                                                <div className="admin-order-card-body">
+                                                    <div className="admin-order-card-customer">
+                                                        <div className="admin-order-card-customer-name">
+                                                            👤 {customerName}
+                                                        </div>
+                                                        {customerContact && (
+                                                            <div className="admin-order-card-customer-contact">
+                                                                {customerContact}
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="admin-order-card-payment-row">
+                                                        <div className="admin-order-card-amount-wrap">
+                                                            <span className="admin-order-card-amount-label">Total Amount</span>
+                                                            <span className="admin-order-card-total-amount">
+                                                                ₹{Number(order.amount ?? order.totalPrice ?? 0).toFixed(2)}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="admin-payment-cell">
+                                                            <span className="admin-payment-method">
+                                                                {order.paymentMethod === "COD" ? "💵 COD" : (order.paymentMethod || "COD")}
+                                                            </span>
+                                                            <span className={`admin-payment-pill ${
+                                                                isDraft
+                                                                    ? "draft"
+                                                                    : (order.orderStatus === "Cancelled")
+                                                                        ? "cancelled"
+                                                                        : ((order.status === "PAID" || order.paymentStatus === "Paid") ? "paid" : "pending")
+                                                            }`}>
+                                                                {isDraft
+                                                                    ? "Unpaid Draft"
+                                                                    : (order.orderStatus === "Cancelled")
+                                                                        ? ((order.status === "PAID" || order.paymentStatus === "Paid" || order.status === "REFUNDED") ? "Refunded" : "Cancelled")
+                                                                        : (order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()) : (order.paymentStatus || "Pending"))}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {order.orderItems && order.orderItems.length > 0 && (
+                                                        <div className="admin-order-card-items-wrap">
+                                                            <span className="admin-order-card-items-heading">
+                                                                Items Ordered ({order.orderItems.length})
+                                                            </span>
+                                                            <div className="admin-order-card-items-list">
+                                                                {order.orderItems.map((item, idx) => (
+                                                                    <div key={idx} className="admin-order-card-item-row" title={`${item.title} (Qty: ${item.quantity})`}>
+                                                                        {item.thumbnail ? (
+                                                                            <img
+                                                                                src={item.thumbnail}
+                                                                                alt={item.title}
+                                                                                className="admin-order-card-item-thumb"
+                                                                                loading="lazy"
+                                                                                onError={(e) => { e.target.style.display = "none"; }}
+                                                                            />
+                                                                        ) : (
+                                                                            <div className="admin-order-card-item-thumb admin-order-item-placeholder">📦</div>
+                                                                        )}
+                                                                        <div className="admin-order-card-item-details">
+                                                                            <span className="admin-order-card-item-title">{item.title}</span>
+                                                                            <span className="admin-order-card-item-qty">x{item.quantity}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="admin-order-card-actions">
+                                                    <Link
+                                                        to={`/admin/orders/${order._id}`}
+                                                        className="admin-btn-view-order"
+                                                    >
+                                                        👁️ Details
+                                                    </Link>
+                                                    <div className="admin-order-card-status-select">
                                                         <NeoSelect
                                                             size="sm"
                                                             fullWidth={true}
                                                             alignRight={true}
+                                                            openUpward={true}
                                                             value={order.orderStatus || "Pending"}
                                                             onChange={(val) => handleInitiateStatusChange(order._id, val, order.orderStatus || "Pending")}
                                                             options={[
@@ -1434,15 +1989,88 @@ export const AdminDashboard = () => {
                                                             ]}
                                                         />
                                                     </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
-                    </div>
-                </div>
+
+                        {/* Orders Windowed Pagination */}
+                        {orderTotalPages > 1 && (
+                            <div className="pagination-container">
+                                <nav className="pagination" aria-label="Orders Pagination">
+                                    <button
+                                        type="button"
+                                        className="pagination-btn nav"
+                                        disabled={orderCurrentPage === 1}
+                                        onClick={() => handleOrderPageChange(orderCurrentPage - 1)}
+                                        aria-label="Go to previous page"
+                                    >
+                                        ← Prev
+                                    </button>
+
+                                    {/* Desktop range (up to 7 items with ellipsis) */}
+                                    <div className="pagination-numbers pagination-numbers-desktop">
+                                        {desktopOrderPageRange.map((item, idx) =>
+                                            item === "..." ? (
+                                                <span key={`desk-order-ellipsis-${idx}`} className="pagination-ellipsis" aria-hidden="true">
+                                                    …
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    key={`desk-order-page-${item}`}
+                                                    type="button"
+                                                    className={`pagination-btn ${orderCurrentPage === item ? "active" : ""}`}
+                                                    onClick={() => handleOrderPageChange(item)}
+                                                    aria-label={`Go to page ${item}`}
+                                                    aria-current={orderCurrentPage === item ? "page" : undefined}
+                                                >
+                                                    {item}
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+
+                                    {/* Mobile range (compact window with ellipsis) */}
+                                    <div className="pagination-numbers pagination-numbers-mobile">
+                                        {mobileOrderPageRange.map((item, idx) =>
+                                            item === "..." ? (
+                                                <span key={`mob-order-ellipsis-${idx}`} className="pagination-ellipsis" aria-hidden="true">
+                                                    …
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    key={`mob-order-page-${item}`}
+                                                    type="button"
+                                                    className={`pagination-btn ${orderCurrentPage === item ? "active" : ""}`}
+                                                    onClick={() => handleOrderPageChange(item)}
+                                                    aria-label={`Go to page ${item}`}
+                                                    aria-current={orderCurrentPage === item ? "page" : undefined}
+                                                >
+                                                    {item}
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className="pagination-btn nav"
+                                        disabled={orderCurrentPage === orderTotalPages}
+                                        onClick={() => handleOrderPageChange(orderCurrentPage + 1)}
+                                        aria-label="Go to next page"
+                                    >
+                                        Next →
+                                    </button>
+                                </nav>
+
+                                <div className="pagination-info">
+                                    Showing <strong>{sortedOrders.length === 0 ? 0 : (orderCurrentPage - 1) * ordersPerPage + 1}</strong>–<strong>{Math.min(orderCurrentPage * ordersPerPage, sortedOrders.length)}</strong> of <strong>{sortedOrders.length}</strong> orders • Page <strong>{orderCurrentPage}</strong> of <strong>{orderTotalPages}</strong>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

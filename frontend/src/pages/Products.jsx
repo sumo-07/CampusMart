@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 
@@ -25,6 +25,32 @@ export const Products = () => {
 
   const [showCategories, setShowCategories] = useState(false);
   const [showPrice, setShowPrice] = useState(false);
+
+  const categoryDropdownRef = useRef(null);
+  const priceDropdownRef = useRef(null);
+
+  // Close dropdowns when tapping outside
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (
+        categoryDropdownRef.current &&
+        !categoryDropdownRef.current.contains(e.target) &&
+        priceDropdownRef.current &&
+        !priceDropdownRef.current.contains(e.target)
+      ) {
+        setShowCategories(false);
+        setShowPrice(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, []);
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -114,6 +140,62 @@ export const Products = () => {
     startIndex + ITEMS_PER_PAGE
   );
 
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
+    setCurrentPage(newPage);
+
+    // If switching to the last page (where fewer items cause document collapse),
+    // immediately reset scroll to top of page so the browser doesn't clamp to footer
+    if (newPage === totalPages) {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
+  };
+
+  useLayoutEffect(() => {
+    if (currentPage === totalPages && totalPages > 1) {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
+  }, [currentPage, totalPages]);
+
+
+
+
+
+  const getPaginationRange = (current, total, isMobile = false) => {
+    if (total <= 1) return [];
+
+    if (isMobile) {
+      if (total <= 4) {
+        return Array.from({ length: total }, (_, i) => i + 1);
+      }
+      if (current <= 2) {
+        return [1, 2, "...", total];
+      }
+      if (current >= total - 1) {
+        return [1, "...", total - 1, total];
+      }
+      return [1, "...", current, "...", total];
+    }
+
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    if (current <= 4) {
+      return [1, 2, 3, 4, 5, "...", total];
+    }
+
+    if (current >= total - 3) {
+      return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+    }
+
+    return [1, "...", current - 1, current, current + 1, "...", total];
+  };
+
+  const desktopPageRange = getPaginationRange(currentPage, totalPages, false);
+  const mobilePageRange = getPaginationRange(currentPage, totalPages, true);
+
+
   /* ------------------ Loading & Error ------------------ */
   if (isLoading) return (
     <div className="section-products">
@@ -175,7 +257,7 @@ export const Products = () => {
           {/* Filters */}
           <div className="products-filters">
             {/* Categories */}
-            <div className="filter-block">
+            <div className="filter-block filter-block-category" ref={categoryDropdownRef}>
               <button
                 className={`filter-toggle ${activeCategory ? "active-filter" : ""}`}
                 onClick={() => {
@@ -213,7 +295,7 @@ export const Products = () => {
             </div>
 
             {/* Price */}
-            <div className="filter-block">
+            <div className="filter-block filter-block-price" ref={priceDropdownRef}>
               <button
                 className={`filter-toggle ${activeSort ? "active-filter" : ""}`}
                 onClick={() => {
@@ -282,36 +364,79 @@ export const Products = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="pagination">
-            <button
-              className="pagination-btn nav"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
-            >
-              ← Prev
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => (
+          <div className="pagination-container">
+            <nav className="pagination" aria-label="Catalog Pagination">
               <button
-                key={i}
-                className={`pagination-btn ${
-                  currentPage === i + 1 ? "active" : ""
-                }`}
-                onClick={() => setCurrentPage(i + 1)}
+                type="button"
+                className="pagination-btn nav"
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+                aria-label="Go to previous page"
               >
-                {i + 1}
+                ← Prev
               </button>
-            ))}
 
-            <button
-              className="pagination-btn nav"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-            >
-              Next →
-            </button>
+              {/* Desktop range (up to 7 items with ellipsis) */}
+              <div className="pagination-numbers pagination-numbers-desktop">
+                {desktopPageRange.map((item, idx) =>
+                  item === "..." ? (
+                    <span key={`desk-ellipsis-${idx}`} className="pagination-ellipsis" aria-hidden="true">
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={`desk-page-${item}`}
+                      type="button"
+                      className={`pagination-btn ${currentPage === item ? "active" : ""}`}
+                      onClick={() => handlePageChange(item)}
+                      aria-label={`Go to page ${item}`}
+                      aria-current={currentPage === item ? "page" : undefined}
+                    >
+                      {item}
+                    </button>
+                  )
+                )}
+              </div>
+
+              {/* Mobile range (compact window with ellipsis) */}
+              <div className="pagination-numbers pagination-numbers-mobile">
+                {mobilePageRange.map((item, idx) =>
+                  item === "..." ? (
+                    <span key={`mob-ellipsis-${idx}`} className="pagination-ellipsis" aria-hidden="true">
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={`mob-page-${item}`}
+                      type="button"
+                      className={`pagination-btn ${currentPage === item ? "active" : ""}`}
+                      onClick={() => handlePageChange(item)}
+                      aria-label={`Go to page ${item}`}
+                      aria-current={currentPage === item ? "page" : undefined}
+                    >
+                      {item}
+                    </button>
+                  )
+                )}
+              </div>
+
+              <button
+                type="button"
+                className="pagination-btn nav"
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+                aria-label="Go to next page"
+              >
+                Next →
+              </button>
+            </nav>
+
+            <div className="pagination-info">
+              Showing <strong>{startIndex + 1}</strong>–<strong>{Math.min(startIndex + ITEMS_PER_PAGE, filteredProducts.length)}</strong> of <strong>{filteredProducts.length}</strong> drops • Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+            </div>
           </div>
         )}
+
 
       </div>
 

@@ -70,7 +70,7 @@ export const ProductCard = ({ product }) => {
           <span className="product-price">₹{Number(price).toFixed(2)}</span>
 
           <div className="product-card-actions">
-            {!isOutOfStock && cartQty > 0 ? (
+            {!user?.isAdmin && !isOutOfStock && cartQty > 0 ? (
               <div className="card-qty-control" onClick={(e) => e.stopPropagation()}>
                 <button
                   type="button"
@@ -105,7 +105,7 @@ export const ProductCard = ({ product }) => {
                   +
                 </button>
               </div>
-            ) : !isOutOfStock ? (
+            ) : !user?.isAdmin && !isOutOfStock ? (
               <button
                 type="button"
                 className="btn-add-cart-card"

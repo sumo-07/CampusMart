@@ -1,15 +1,15 @@
 /* --- Contact Section (Neobrutalist / Neo-Pop Theme) --- */
 .section-contact {
-  padding: 48px 0 60px;
+  padding: 2rem 0 3.5rem 0;
   background-color: transparent;
   position: relative;
   color: var(--neo-black);
 }
 
 .contact-container {
-  max-width: 1180px;
+  max-width: 73.75rem;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 1.5rem;
   position: relative;
   z-index: 2;
 }
@@ -17,50 +17,53 @@
 /* --- Header --- */
 .contact-header {
   text-align: center;
-  margin-bottom: 34px;
+  margin-bottom: 1.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .contact-header .neo-badge {
-  margin-bottom: 12px;
-  font-size: 0.88rem;
-  padding: 6px 16px;
+  margin-bottom: 0.5rem;
+  font-size: 0.82rem;
+  padding: 0.35rem 1rem;
 }
 
 .contact-title {
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  font-size: clamp(1.85rem, 4.2vw, 3.1rem);
   font-weight: 900;
   color: var(--neo-black);
   text-transform: uppercase;
-  letter-spacing: -1px;
-  line-height: 1.1;
-  margin: 0 0 12px;
-  text-shadow: 2px 2px 0px #FFFFFF, 4px 4px 0px var(--neo-pink);
+  letter-spacing: -0.06rem;
+  line-height: 1.12;
+  margin: 0 0 0.5rem;
+  text-shadow: 0.125rem 0.125rem 0 #FFFFFF, 0.22rem 0.22rem 0 var(--neo-pink);
 }
 
 .contact-subtitle {
   font-family: var(--font-body);
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   font-weight: 700;
   color: var(--neo-black);
-  max-width: 640px;
-  line-height: 1.5;
+  max-width: 40rem;
+  width: 100%;
+  box-sizing: border-box;
+  line-height: 1.48;
   background: #FFFFFF;
   border: var(--border-medium);
   border-radius: var(--radius-pill);
-  padding: 10px 26px;
+  padding: 0.45rem 1.3rem;
   box-shadow: var(--shadow-hard-xs);
   display: inline-block;
+  margin: 0 auto;
 }
 
 /* --- Layout --- */
 .contact-content {
   display: grid;
   grid-template-columns: 1fr 1.25fr;
-  gap: 32px;
+  gap: 1.75rem;
   align-items: stretch;
 }
 
@@ -70,7 +73,7 @@
   border: var(--border-thick);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-hard-lg);
-  padding: 20px;
+  padding: 1.15rem;
   display: flex;
   flex-direction: column;
 }
@@ -79,19 +82,19 @@
   background: var(--neo-yellow);
   color: var(--neo-black);
   font-family: var(--font-display);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 900;
-  padding: 6px 14px;
+  padding: 0.35rem 0.85rem;
   border: var(--border-thick);
-  box-shadow: 2px 2px 0px var(--neo-black);
+  box-shadow: 0.125rem 0.125rem 0 var(--neo-black);
   border-radius: var(--radius-sm);
-  margin-bottom: 14px;
+  margin-bottom: 0.75rem;
   align-self: flex-start;
 }
 
 .contact-map {
   flex: 1;
-  min-height: 390px;
+  min-height: 19rem;
   border-radius: var(--radius-md);
   overflow: hidden;
   border: var(--border-thick);
@@ -105,7 +108,7 @@
 
 /* --- Form Card --- */
 .contact-form {
-  padding: 32px 36px;
+  padding: 1.4rem 1.75rem;
   background: var(--neo-white);
   border-radius: var(--radius-lg);
   border: var(--border-thick);
@@ -118,44 +121,50 @@
 .contact-form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  gap: 0.85rem;
 }
 
 /* --- Form Fields --- */
 .form-group {
-  margin-bottom: 17px;
+  margin-bottom: 0.75rem;
 }
 
 .form-group label {
   display: block;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
-  margin-bottom: 7px;
+  margin-bottom: 0.3rem;
   color: var(--neo-black);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03rem;
 }
 
 .form-group input,
 .form-group textarea,
-.form-group select {
+.form-group select,
+.form-group .neo-select-trigger {
   width: 100%;
-  padding: 13px 16px;
+  padding: 0.65rem 0.85rem;
   border: var(--border-thick);
   background: var(--neo-cream);
   color: var(--neo-black);
   border-radius: var(--radius-md);
   font-family: var(--font-body);
-  font-size: 0.96rem;
+  font-size: 0.9rem;
   font-weight: 600;
   outline: none;
+  box-sizing: border-box;
   transition: transform var(--transition-bounce), box-shadow var(--transition-bounce), background-color var(--transition-fast);
+}
+
+.form-group .neo-select-container {
+  width: 100%;
 }
 
 .form-group textarea {
   resize: vertical;
-  min-height: 95px;
+  min-height: 4.8rem;
 }
 
 .form-group input::placeholder,
@@ -166,10 +175,12 @@
 
 .form-group input:focus,
 .form-group textarea:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group .neo-select-trigger:focus,
+.form-group .neo-select-trigger.open {
   background: var(--neo-white);
-  box-shadow: 3px 3px 0px var(--neo-black);
-  transform: translate(-1px, -1px);
+  box-shadow: 0.18rem 0.18rem 0 var(--neo-black);
+  transform: translate(-0.06rem, -0.06rem);
 }
 
 .form-group select option {
@@ -180,32 +191,32 @@
 /* --- Button --- */
 .form-btn-primary {
   width: 100%;
-  padding: 16px 24px;
+  padding: 0.85rem 1.4rem;
   background: var(--neo-black);
   color: var(--neo-white);
   border: var(--border-thick);
   border-radius: var(--radius-md);
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 1.08rem;
+  font-size: 1rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03rem;
   cursor: pointer;
   box-shadow: var(--shadow-hard);
   transition: transform var(--transition-bounce), box-shadow var(--transition-bounce);
-  margin-top: 8px;
+  margin-top: 0.45rem;
 }
 
 .form-btn-primary:hover:not(:disabled) {
   background: var(--neo-yellow);
   color: var(--neo-black);
-  transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0px var(--neo-black);
+  transform: translate(-0.125rem, -0.125rem);
+  box-shadow: 0.25rem 0.25rem 0 var(--neo-black);
 }
 
 .form-btn-primary:active:not(:disabled) {
-  transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0px var(--neo-black);
+  transform: translate(0.06rem, 0.06rem);
+  box-shadow: 0.06rem 0.06rem 0 var(--neo-black);
 }
 
 .form-btn-primary:disabled {
@@ -219,61 +230,180 @@
 .contact-alert-error {
   background: #FFF0F0;
   border: var(--border-thick);
-  box-shadow: 2px 2px 0px var(--neo-black);
+  box-shadow: 0.125rem 0.125rem 0 var(--neo-black);
   color: #D32F2F;
-  padding: 8px 12px;
+  padding: 0.5rem 0.75rem;
   border-radius: var(--radius-md);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  margin-bottom: 10px;
+  margin-bottom: 0.65rem;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 /* Success Card */
 .contact-success-card {
   text-align: center;
-  padding: 24px 18px;
+  padding: 1.5rem 1.15rem;
 }
 
 .contact-success-icon {
-  font-size: 2.8rem;
-  margin-bottom: 12px;
+  font-size: 2.6rem;
+  margin-bottom: 0.75rem;
 }
 
 .contact-success-title {
   font-family: var(--font-display);
   color: var(--neo-black);
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 900;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
   text-transform: uppercase;
 }
 
 .contact-success-text {
   color: var(--neo-black);
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   font-weight: 500;
   line-height: 1.5;
-  margin-bottom: 18px;
+  margin-bottom: 1.15rem;
 }
 
-/* --- Responsive --- */
-@media (max-width: 960px) {
+/* ==================== RESPONSIVE MEDIA QUERIES (ALL IN REM) ==================== */
+
+/* --- Medium Screens & Tablets (<= 62rem / ~992px) --- */
+@media (max-width: 62rem) {
+  .section-contact {
+    padding: 2rem 0 3.5rem 0;
+  }
+
+  .contact-container {
+    padding: 0 1.25rem;
+  }
+
   .contact-content {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 1.5rem;
+  }
+
+  .contact-form {
+    order: 1;
+    padding: 1.5rem 1.4rem;
+  }
+
+  .contact-map-card {
+    order: 2;
+    padding: 1rem;
   }
 
   .contact-map {
-    min-height: 240px;
+    min-height: 14rem;
   }
 }
 
-@media (max-width: 600px) {
+/* --- Mobile Devices (<= 48rem / ~768px) --- */
+@media (max-width: 48rem) {
+  .section-contact {
+    padding: 1.6rem 0 3rem 0;
+  }
+
+  .contact-header {
+    margin-bottom: 1.35rem;
+  }
+
+  .contact-title {
+    font-size: 1.85rem;
+    letter-spacing: -0.04rem;
+    margin-bottom: 0.55rem;
+    text-shadow: 0.1rem 0.1rem 0 #FFFFFF, 0.18rem 0.18rem 0 var(--neo-pink);
+  }
+
+  .contact-subtitle {
+    font-size: 0.86rem;
+    padding: 0.45rem 0.95rem;
+    line-height: 1.42;
+    border-radius: 0.75rem;
+  }
+
   .contact-form-row {
     grid-template-columns: 1fr;
     gap: 0;
+  }
+
+  .contact-form {
+    padding: 1.25rem 1.1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0.2rem 0.2rem 0 var(--neo-black);
+  }
+
+  .form-group {
+    margin-bottom: 0.85rem;
+  }
+
+  .form-group label {
+    font-size: 0.76rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select,
+  .form-group .neo-select-trigger {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.88rem;
+  }
+
+  .form-group textarea {
+    min-height: 4.8rem;
+  }
+
+  .form-btn-primary {
+    padding: 0.75rem 1.2rem;
+    font-size: 0.95rem;
+  }
+
+  .contact-map-card {
+    padding: 0.85rem;
+    border-radius: 0.75rem;
+    box-shadow: 0.2rem 0.2rem 0 var(--neo-black);
+  }
+
+  .contact-map {
+    min-height: 12.5rem;
+    border-radius: 0.55rem;
+  }
+
+  .contact-map-badge {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.7rem;
+    margin-bottom: 0.65rem;
+  }
+}
+
+/* --- Ultra-Compact Mobile (<= 24rem / ~384px) --- */
+@media (max-width: 24rem) {
+  .contact-container {
+    padding: 0 0.75rem;
+  }
+
+  .contact-title {
+    font-size: 1.6rem;
+  }
+
+  .contact-form {
+    padding: 1rem 0.85rem;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select,
+  .form-group .neo-select-trigger {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.84rem;
+  }
+
+  .contact-map {
+    min-height: 11rem;
   }
 }

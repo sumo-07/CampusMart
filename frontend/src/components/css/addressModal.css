@@ -70,6 +70,14 @@
   margin: 0;
 }
 
+.modal-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 0.35rem;
+  line-height: 1.4;
+}
+
 .modal-back-btn {
   background: none;
   border: none;
@@ -340,6 +348,53 @@
   box-shadow: none;
 }
 
+.address-form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.address-form-actions .save-btn {
+  flex: 1;
+}
+
+.cancel-btn {
+  flex: 1;
+  background: var(--neo-white);
+  color: var(--neo-black);
+  padding: 13px;
+  border: var(--border-thick);
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  margin-top: 8px;
+  box-shadow: var(--shadow-hard);
+  transition: transform var(--transition-bounce), box-shadow var(--transition-bounce), background-color var(--transition-fast);
+}
+
+.cancel-btn:hover {
+  background: #F1F5F9;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--neo-black);
+}
+
+.cancel-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--neo-black);
+}
+
+.address-empty-state {
+  text-align: center;
+  padding: 2.2rem 1rem;
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
 .loading-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -353,3 +408,59 @@
   font-size: 1.1rem;
   color: var(--neo-black);
 }
+
+/* Responsive adjustments for mobile viewports */
+@media (max-width: 520px) {
+  .modal-overlay {
+    padding: 0.75rem;
+  }
+
+  .modal-content {
+    width: 100%;
+    padding: 1.4rem 1.1rem;
+    border-radius: var(--radius-md);
+  }
+
+  .modal-title {
+    font-size: 1.35rem;
+  }
+
+  .modal-close {
+    top: 0.9rem;
+    right: 0.9rem;
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+  }
+
+  .address-item {
+    padding: 1rem 0.85rem;
+  }
+
+  .address-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .address-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .address-phone-input-wrap .phone-prefix {
+    padding: 10px 10px;
+    font-size: 0.85rem;
+  }
+
+  .new-address-form input {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+
+  .save-btn {
+    padding: 11px;
+    font-size: 0.9rem;
+  }
+}
+

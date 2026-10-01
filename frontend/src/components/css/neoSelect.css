@@ -16,40 +16,40 @@
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  background: #FAF7F2;
-  border: var(--border-medium);
+  gap: 0.5rem;
+  background: var(--neo-cream);
+  border: var(--border-thick);
   border-radius: var(--radius-md);
   font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 0.88rem;
+  font-weight: 600;
+  font-size: 0.9rem;
   color: var(--neo-border);
   box-shadow: var(--shadow-hard-xs);
   cursor: pointer;
   outline: none;
-  transition: var(--transition-tactile);
+  transition: transform var(--transition-bounce), box-shadow var(--transition-bounce), background-color var(--transition-fast);
   width: 100%;
   text-align: left;
   box-sizing: border-box;
-  padding: 0.55rem 0.95rem;
+  padding: 0.65rem 0.85rem;
 }
 
 .neo-select-trigger:hover:not(:disabled) {
   background: #FFFFFF;
-  transform: translate(-1px, -1px);
-  box-shadow: var(--shadow-hard-sm);
+  transform: translate(-0.06rem, -0.06rem);
+  box-shadow: 0.18rem 0.18rem 0 var(--neo-border);
 }
 
 .neo-select-trigger:active:not(:disabled) {
-  transform: translate(1.5px, 1.5px) scale(0.98) !important;
-  box-shadow: 0.5px 0.5px 0px var(--neo-border) !important;
+  transform: translate(0.06rem, 0.06rem) scale(0.985) !important;
+  box-shadow: 0.06rem 0.06rem 0px var(--neo-border) !important;
   filter: brightness(0.95);
 }
 
 .neo-select-trigger.open {
   background: #FFFFFF;
   border-color: var(--neo-border);
-  box-shadow: var(--shadow-hard-sm);
+  box-shadow: 0.18rem 0.18rem 0 var(--neo-border);
 }
 
 .neo-select-trigger:disabled {
@@ -59,14 +59,14 @@
 
 /* Size Variants */
 .neo-select-container.size-sm .neo-select-trigger {
-  padding: 0.35rem 0.7rem;
+  padding: 0.4rem 0.65rem;
   font-size: 0.8rem;
   border-radius: var(--radius-sm);
-  gap: 6px;
+  gap: 0.35rem;
 }
 
 .neo-select-container.size-lg .neo-select-trigger {
-  padding: 0.75rem 1.2rem;
+  padding: 0.75rem 1.15rem;
   font-size: 0.95rem;
   border-radius: var(--radius-md);
 }
@@ -74,7 +74,7 @@
 .neo-select-value {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.45rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -83,7 +83,7 @@
 
 .neo-select-placeholder {
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .neo-select-arrow {
@@ -99,26 +99,30 @@
 }
 
 /* Dropdown Menu Popup */
+/* Dropdown Menu Popup */
 .neo-select-dropdown {
   position: absolute;
-  top: calc(100% + 5px);
+  top: calc(100% + 0.35rem);
   left: 0;
   min-width: 100%;
-  width: max-content;
-  max-width: 420px;
+  width: 100%;
+  max-width: 100%;
   background: #FFFFFF;
   border: var(--border-thick);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-hard-lg);
-  padding: 6px;
+  box-shadow: 0.25rem 0.25rem 0 var(--neo-border);
+  padding: 0;
   z-index: 1200;
-  max-height: 280px;
-  overflow-y: auto;
+  max-height: 16rem;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 4px;
   box-sizing: border-box;
   animation: neoSelectPop 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.neo-select-container.is-open {
+  z-index: 1300 !important;
 }
 
 .neo-select-container.align-right .neo-select-dropdown {
@@ -126,10 +130,26 @@
   right: 0;
 }
 
+/* Upward Dropdown Popup */
+.neo-select-container.open-upward .neo-select-dropdown {
+  top: auto;
+  bottom: calc(100% + 0.35rem);
+  box-shadow: 0.25rem -0.25rem 0 var(--neo-border);
+  animation: neoSelectPopUpward 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.neo-select-container.open-upward .neo-select-arrow {
+  transform: rotate(180deg);
+}
+
+.neo-select-container.open-upward .neo-select-arrow.open {
+  transform: rotate(0deg);
+}
+
 @keyframes neoSelectPop {
   from {
     opacity: 0;
-    transform: translateY(-6px) scale(0.98);
+    transform: translateY(-0.35rem) scale(0.98);
   }
   to {
     opacity: 1;
@@ -137,29 +157,102 @@
   }
 }
 
-/* Custom Scrollbar for Dropdown Menu */
-.neo-select-dropdown {
+@keyframes neoSelectPopUpward {
+  from {
+    opacity: 0;
+    transform: translateY(0.35rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Pinned Header/Footer & Scroll Container */
+.neo-select-pinned-top {
+  flex-shrink: 0;
+  padding: 0.35rem;
+  border-bottom: 2px solid var(--neo-border);
+  background: #FFFDF0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  box-sizing: border-box;
+}
+
+.neo-select-options-scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.35rem;
+  box-sizing: border-box;
   scrollbar-width: thin;
   scrollbar-color: var(--neo-border) #FAF7F2;
 }
-.neo-select-dropdown::-webkit-scrollbar {
-  width: 5px;
+
+.neo-select-pinned-bottom {
+  flex-shrink: 0;
+  padding: 0.35rem;
+  border-top: 2px solid var(--neo-border);
+  background: #FFFDF0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  box-sizing: border-box;
 }
-.neo-select-dropdown::-webkit-scrollbar-button {
+
+/* Custom Scrollbar for Dropdown Menu */
+.neo-select-dropdown,
+.neo-select-options-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--neo-border) #FAF7F2;
+}
+.neo-select-dropdown::-webkit-scrollbar,
+.neo-select-options-scroll::-webkit-scrollbar {
+  width: 0.35rem;
+}
+.neo-select-dropdown::-webkit-scrollbar-button,
+.neo-select-options-scroll::-webkit-scrollbar-button {
   display: none;
   width: 0;
   height: 0;
 }
-.neo-select-dropdown::-webkit-scrollbar-track {
+.neo-select-dropdown::-webkit-scrollbar-track,
+.neo-select-options-scroll::-webkit-scrollbar-track {
   background: #FAF7F2;
   border-radius: var(--radius-pill);
 }
-.neo-select-dropdown::-webkit-scrollbar-thumb {
+.neo-select-dropdown::-webkit-scrollbar-thumb,
+.neo-select-options-scroll::-webkit-scrollbar-thumb {
   background: var(--neo-border) !important;
   border-radius: var(--radius-pill);
 }
-.neo-select-dropdown::-webkit-scrollbar-thumb:hover {
+.neo-select-dropdown::-webkit-scrollbar-thumb:hover,
+.neo-select-options-scroll::-webkit-scrollbar-thumb:hover {
   background: #383838 !important;
+}
+
+/* Special Action Option (e.g. Add New) */
+.neo-select-option.is-action {
+  background: #FFF0F5;
+  border: 1.5px solid var(--neo-border);
+  color: var(--neo-border);
+  font-weight: 800;
+  box-shadow: var(--shadow-hard-xs);
+}
+
+.neo-select-option.is-action:hover {
+  background: var(--neo-pink) !important;
+  color: #FFFFFF !important;
+  transform: translate(-0.06rem, -0.06rem);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.neo-select-option.is-action:active {
+  transform: translate(0.06rem, 0.06rem) scale(0.98) !important;
+  box-shadow: 0.06rem 0.06rem 0px var(--neo-border) !important;
 }
 
 /* Option Items */
@@ -167,8 +260,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 8px 12px;
+  gap: 0.65rem;
+  padding: 0.55rem 0.85rem;
   background: transparent;
   border: 1.5px solid transparent;
   border-radius: var(--radius-sm);
@@ -185,19 +278,19 @@
 }
 
 .neo-select-container.size-sm .neo-select-option {
-  padding: 5px 8px;
+  padding: 0.35rem 0.55rem;
   font-size: 0.8rem;
 }
 
 .neo-select-option:hover {
   background: #FFF4B8;
   border-color: var(--neo-border);
-  transform: translate(-1px, -1px);
+  transform: translate(-0.06rem, -0.06rem);
 }
 
 .neo-select-option:active {
-  transform: translate(1px, 1px) scale(0.98);
-  box-shadow: 0.5px 0.5px 0px var(--neo-border);
+  transform: translate(0.06rem, 0.06rem) scale(0.98);
+  box-shadow: 0.06rem 0.06rem 0 var(--neo-border);
 }
 
 .neo-select-option.selected {
@@ -210,7 +303,7 @@
 .neo-select-option-label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.45rem;
   flex: 1;
 }
 
@@ -219,4 +312,43 @@
   font-weight: 900;
   color: var(--neo-border);
   flex-shrink: 0;
+}
+
+/* ==================== RESPONSIVE MEDIA QUERIES (IN REM) ==================== */
+
+/* --- Mobile Devices (<= 48rem / ~768px) --- */
+@media (max-width: 48rem) {
+  .neo-select-trigger {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.88rem;
+    border-radius: var(--radius-md);
+  }
+
+  .neo-select-dropdown {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    left: 0;
+    right: 0;
+    box-shadow: 0.2rem 0.2rem 0 var(--neo-border);
+    max-height: 14rem;
+  }
+
+  .neo-select-option {
+    padding: 0.55rem 0.75rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* --- Ultra-Compact Phones (<= 24rem / ~384px) --- */
+@media (max-width: 24rem) {
+  .neo-select-trigger {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.84rem;
+  }
+
+  .neo-select-option {
+    padding: 0.45rem 0.65rem;
+    font-size: 0.82rem;
+  }
 }

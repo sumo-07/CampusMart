@@ -84,71 +84,91 @@ export const Cart = () => {
 
     return (
         <section className="cart-section">
-            <div className="cart-header-row">
-                <div>
-                    <div className="neo-badge yellow">🛍️ BAG CHECK</div>
-                    <h1 className="cart-main-title">YOUR BAG</h1>
+            <div className="cart-main-col">
+                <div className="cart-header-row">
+                    <div>
+                        <div className="neo-badge yellow">🛍️ BAG CHECK</div>
+                        <h1 className="cart-main-title">YOUR BAG</h1>
+                    </div>
+                    <span className="cart-items-count-badge">
+                        {cartItems.length} {cartItems.length === 1 ? 'ITEM' : 'ITEMS'}
+                    </span>
                 </div>
-                <span className="cart-items-count-badge">
-                    {cartItems.length} {cartItems.length === 1 ? 'ITEM' : 'ITEMS'}
-                </span>
-            </div>
 
-            <div className="cart-items-list">
-                {cartItems.map((item) => (
-                    <div key={item.productId} className="cart-item">
-                        <div className="cart-item-img-wrap">
-                            <img
-                                src={item.thumbnail}
-                                alt={item.title}
-                            />
-                        </div>
-
-                        <div className="cart-item-info">
-                            <h3 className="cart-item-title">{item.title}</h3>
-                            <p className="cart-item-price">₹{Number(item.price).toFixed(2)} each</p>
-
-                            <div className="cart-qty">
-                                <button 
-                                    onClick={() => handleQuantity(item.productId, "dec")}
-                                    aria-label="Decrease quantity"
-                                >
-                                    −
-                                </button>
-
-                                <span className="cart-qty-num">{item.quantity}</span>
-
-                                <button
-                                    onClick={() => handleQuantity(item.productId, "inc")}
-                                    disabled={item.quantity >= (MAX_ITEM_QUANTITY || 5)}
-                                    title={item.quantity >= (MAX_ITEM_QUANTITY || 5) ? `Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item` : "Increase quantity"}
-                                    aria-label="Increase quantity"
-                                >
-                                    +
-                                </button>
-
-                                {/* Remove Button */}
-                                <button
-                                    className="cart-remove-btn"
-                                    onClick={() => handleRemove(item.productId)}
-                                    aria-label="Remove item"
-                                    title="Dump item"
-                                >
-                                    <MdDeleteOutline size={16} />
-                                </button>
+                <div className="cart-items-list">
+                    {cartItems.map((item) => (
+                        <div key={item.productId} className="cart-item">
+                            <div className="cart-item-img-wrap">
+                                <img
+                                    src={item.thumbnail}
+                                    alt={item.title}
+                                />
                             </div>
 
-                            <p className="cart-item-total">
-                                Subtotal: <strong>₹{(Math.round(item.price * item.quantity * 100) / 100).toFixed(2)}</strong>
-                            </p>
+                            <div className="cart-item-info">
+                                <div className="cart-item-header-part">
+                                    <h3 className="cart-item-title">{item.title}</h3>
+                                    <p className="cart-item-price">₹{Number(item.price).toFixed(2)} each</p>
+                                </div>
+
+                                <div className="cart-item-stock-status">✓ In Stock • Instant Dispatch</div>
+
+                                <div className="cart-item-actions-row">
+                                    <div className="cart-qty">
+                                        <button
+                                            onClick={() => handleQuantity(item.productId, "dec")}
+                                            aria-label="Decrease quantity"
+                                        >
+                                            −
+                                        </button>
+
+                                        <span className="cart-qty-num">{item.quantity}</span>
+
+                                        <button
+                                            onClick={() => handleQuantity(item.productId, "inc")}
+                                            disabled={item.quantity >= (MAX_ITEM_QUANTITY || 5)}
+                                            title={item.quantity >= (MAX_ITEM_QUANTITY || 5) ? `Maximum ${MAX_ITEM_QUANTITY || 5} units allowed per item` : "Increase quantity"}
+                                            aria-label="Increase quantity"
+                                        >
+                                            +
+                                        </button>
+
+                                        {/* Remove Button */}
+                                        <button
+                                            className="cart-remove-btn"
+                                            onClick={() => handleRemove(item.productId)}
+                                            aria-label="Remove item"
+                                            title="Dump item"
+                                        >
+                                            <MdDeleteOutline size={16} />
+                                        </button>
+                                    </div>
+
+                                    <p className="cart-item-total">
+                                        Subtotal: <strong>₹{(Math.round(item.price * item.quantity * 100) / 100).toFixed(2)}</strong>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
+
+                <div className="cart-main-subtotal-footer">
+                    <span>Subtotal ({cartItems.reduce((acc, curr) => acc + curr.quantity, 0)} {cartItems.reduce((acc, curr) => acc + curr.quantity, 0) === 1 ? 'item' : 'items'}):</span>
+                    <strong>₹{totalPrice.toFixed(2)}</strong>
+                </div>
             </div>
 
-            <div className="cart-summary-box">
+            <aside className="cart-summary-box">
+                <div className="cart-summary-perks">
+                    <span className="perk-check">✓</span>
+                    <span>Your order qualifies for <strong>FREE Delivery</strong></span>
+                </div>
+
                 <div className="cart-summary-row">
-                    <span className="summary-label">BAG TOTAL:</span>
+                    <span className="summary-label">
+                        Subtotal ({cartItems.reduce((acc, curr) => acc + curr.quantity, 0)} {cartItems.reduce((acc, curr) => acc + curr.quantity, 0) === 1 ? 'item' : 'items'}):
+                    </span>
                     <span className="summary-total-price">₹{totalPrice.toFixed(2)}</span>
                 </div>
                 <p className="summary-free-shipping">✓ Free doorstep delivery included • No hidden fee scams</p>
@@ -165,7 +185,11 @@ export const Cart = () => {
                 >
                     SECURE THE BAG (CHECKOUT) ⚡
                 </button>
-            </div>
+
+                <div className="cart-summary-trust-badge">
+                    <small>100% verified drops</small>
+                </div>
+            </aside>
         </section>
     );
 };

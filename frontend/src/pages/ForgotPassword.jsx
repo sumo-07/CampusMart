@@ -46,7 +46,7 @@ export const ForgotPassword = () => {
             <div className="success-icon-wrapper">
               <AiOutlineCheckCircle />
             </div>
-            <h3 style={{ color: "#f8fafc", fontSize: "1.3rem", fontWeight: 700, marginBottom: "0.5rem" }}>
+            <h3 className="auth-card-title">
               Check Your Inbox
             </h3>
             <p className="auth-subtitle">
@@ -115,9 +115,9 @@ export const ForgotPassword = () => {
               </button>
             </form>
 
-            <p className="auth-switch">
-              Remember your password?{" "}
-              <Link to="/login" className="auth-link">
+            <p className="auth-switch auth-switch-split">
+              <span className="auth-switch-prompt">Remember your password?</span>{" "}
+              <Link to="/login" className="auth-link auth-switch-link">
                 Back to Login
               </Link>
             </p>

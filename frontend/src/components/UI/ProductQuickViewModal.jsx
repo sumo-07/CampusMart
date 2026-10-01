@@ -88,7 +88,19 @@ export const ProductQuickViewModal = ({ isOpen, onClose, product }) => {
             </div>
 
             <div className="quickview-actions">
-              {stock <= 0 ? (
+              {user?.isAdmin ? (
+                <button 
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => {
+                    onClose();
+                    navigate("/admin?tab=products");
+                  }}
+                  style={{ background: 'var(--neo-green)', color: 'var(--neo-border)' }}
+                >
+                  ✏️ Manage in Admin Dashboard
+                </button>
+              ) : stock <= 0 ? (
                 <button className="btn btn-primary" disabled>
                   Out of Stock
                 </button>
