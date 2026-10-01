@@ -1,6 +1,12 @@
 const nodemailer = require("nodemailer");
+const dns = require("dns");
 const User = require("../models/User");
 const Order = require("../models/Order");
+
+// Ensure Node resolves IPv4 addresses before IPv6 to prevent ENETUNREACH on cloud environments like Render
+if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder("ipv4first");
+}
 
 /**
  * Creates and returns a Nodemailer transporter instance.
@@ -17,11 +23,20 @@ const getTransporter = () => {
 
     if (service === "gmail") {
         return nodemailer.createTransport({
-            service: "gmail",
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false, // Use STARTTLS on 587 (port 465 SSL is blocked or times out on cloud hosts like Render)
+            family: 4,     // Force IPv4 to eliminate connect ENETUNREACH 2607:f8b0... on Render
             auth: {
                 user,
                 pass,
             },
+            tls: {
+                rejectUnauthorized: false,
+            },
+            connectionTimeout: 10000,
+            greetingTimeout: 10000,
+            socketTimeout: 15000,
         });
     }
 
@@ -30,10 +45,17 @@ const getTransporter = () => {
         host: process.env.SMTP_HOST || "smtp.gmail.com",
         port: Number(process.env.SMTP_PORT) || 587,
         secure: Number(process.env.SMTP_PORT) === 465,
+        family: 4, // Force IPv4
         auth: {
             user,
             pass,
         },
+        tls: {
+            rejectUnauthorized: false,
+        },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
     });
 };
 
