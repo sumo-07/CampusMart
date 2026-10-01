@@ -184,14 +184,13 @@ export const AdminOrderDetails = () => {
                         <span className="breadcrumb-current">Order #{order._id.substring(order._id.length - 8)}</span>
                     </div>
 
-                    <div className="admin-details-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <div className="admin-details-actions">
                         <button
                             type="button"
                             onClick={fetchOrderDetails}
                             className="orders-refresh-btn"
                             disabled={loading || updatingStatus}
                             title="Refresh order details from server"
-                            style={{ padding: '7px 14px', fontSize: '0.85rem' }}
                         >
                             <span className={`refresh-icon ${loading ? "spinning" : ""}`}>🔄</span>
                             {loading ? "Refreshing..." : "Refresh Status"}
@@ -271,7 +270,7 @@ export const AdminOrderDetails = () => {
                             <span className="status-label">Change Status:</span>
                             <NeoSelect
                                 id="status-select"
-                                size="md"
+                                size="sm"
                                 value={currentStatus}
                                 onChange={handleStatusSelect}
                                 disabled={updatingStatus}
@@ -438,48 +437,33 @@ export const AdminOrderDetails = () => {
                         <h2>Items Ordered ({order.orderItems?.length || 0})</h2>
                     </div>
 
-                    <div className="products-table-wrapper">
-                        <table className="products-table admin-order-items-table">
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th>Product Title</th>
-                                    <th>Unit Price</th>
-                                    <th>Quantity</th>
-                                    <th style={{ textAlign: "right" }}>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {order.orderItems && order.orderItems.map((item, idx) => (
-                                    <tr key={idx}>
-                                        <td style={{ width: "70px" }}>
-                                            <img
-                                                src={item.thumbnail}
-                                                alt={item.title}
-                                                className="order-detail-thumbnail"
-                                            />
-                                        </td>
-                                        <td>
-                                            <div className="item-title-link">
-                                                <Link to={`/product/${item.productId}`} target="_blank" rel="noreferrer">
-                                                    {item.title}
-                                                </Link>
-                                            </div>
-                                            <small className="item-sku">ID: {item.productId}</small>
-                                        </td>
-                                        <td>₹{Number(item.price).toFixed(2)}</td>
-                                        <td>
-                                            <span className="item-qty-pill">x{item.quantity}</span>
-                                        </td>
-                                        <td style={{ textAlign: "right" }}>
-                                            <strong className="item-line-total">
-                                                ₹{(Number(item.price) * Number(item.quantity)).toFixed(2)}
-                                            </strong>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    {/* Ordered Items Tiles View (All screens: desktop, laptop, tablet, mobile) */}
+                    <div className="order-items-tiles-view">
+                        {order.orderItems && order.orderItems.map((item, idx) => (
+                            <div key={idx} className="admin-order-detail-item-card">
+                                <img
+                                    src={item.thumbnail}
+                                    alt={item.title}
+                                    className="order-detail-item-card-thumb"
+                                />
+                                <div className="order-detail-item-card-info">
+                                    <Link to={`/product/${item.productId}`} target="_blank" rel="noreferrer" className="order-detail-item-card-title">
+                                        {item.title}
+                                    </Link>
+                                    <div className="order-detail-item-card-meta">
+                                        <span className="order-detail-item-card-price">₹{Number(item.price).toFixed(2)}</span>
+                                        <span className="item-qty-pill">x{item.quantity}</span>
+                                        {item.productId && <span className="order-detail-item-sku">ID: {item.productId}</span>}
+                                    </div>
+                                </div>
+                                <div className="order-detail-item-card-total">
+                                    <span className="order-detail-item-total-label">Total</span>
+                                    <strong className="item-line-total">
+                                        ₹{(Number(item.price) * Number(item.quantity)).toFixed(2)}
+                                    </strong>
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
                     {/* Financial Calculations Summary */}

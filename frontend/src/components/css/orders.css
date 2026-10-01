@@ -400,14 +400,14 @@
   gap: 0.85rem;
   max-height: 24rem;
   overflow-y: auto;
-  padding-right: 0.35rem;
+  padding: 3px 6px 6px 3px;
   scrollbar-width: thin;
   scrollbar-color: var(--neo-border) #FAF7F2;
-  overscroll-behavior: contain;
+  overscroll-behavior: auto;
 }
 
 .order-items-list::-webkit-scrollbar {
-  width: 0.38rem;
+  width: 7px;
 }
 
 .order-items-list::-webkit-scrollbar-button {
@@ -418,6 +418,7 @@
 
 .order-items-list::-webkit-scrollbar-track {
   background: #FAF7F2;
+  border: 1px solid #EFEAE0;
   border-radius: var(--radius-pill);
 }
 

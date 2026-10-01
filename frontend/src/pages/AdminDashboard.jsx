@@ -158,7 +158,7 @@ export const AdminDashboard = () => {
     const [newProduct, setNewProduct] = useState({
         title: '',
         price: 0,
-        stock: 0,
+ stock: 0,
         category: '',
         description: '',
         thumbnail: '',
