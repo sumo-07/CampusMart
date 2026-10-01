@@ -47,7 +47,9 @@ export const Footer = () => {
             <li><NavLink to="/" className="footer-link">Home (HQ)</NavLink></li>
             <li><NavLink to="/product" className="footer-link">Fresh Drops 🔥</NavLink></li>
             <li><NavLink to="/about" className="footer-link">The Lore (About)</NavLink></li>
-            <li><NavLink to="/contact" className="footer-link">Hit Our Line</NavLink></li>
+            <li><NavLink to="/contact" className="footer-link">Hit Our Line (Contact)</NavLink></li>
+            <li><NavLink to="/shipping-policy" className="footer-link">Shipping & Delivery 🚚</NavLink></li>
+            <li><NavLink to="/refund-policy" className="footer-link">Refund & Returns 💸</NavLink></li>
           </ul>
         </div>
 
@@ -100,8 +102,10 @@ export const Footer = () => {
         <div className="footer-bottom">
           <p className="footer-copyright">© {new Date().getFullYear()} Cartsy. Built with ☕ & zero chill for hype legends.</p>
           <div className="footer-legal-links">
-            <a href="#" className="footer-link">Privacy Policy</a>
-            <a href="#" className="footer-link">Terms of Service</a>
+            <NavLink to="/privacy" className="footer-link">Privacy Policy</NavLink>
+            <NavLink to="/terms" className="footer-link">Terms of Service</NavLink>
+            <NavLink to="/refund-policy" className="footer-link">Refund & Cancellation</NavLink>
+            <NavLink to="/shipping-policy" className="footer-link">Shipping Policy</NavLink>
           </div>
         </div>
       </div>

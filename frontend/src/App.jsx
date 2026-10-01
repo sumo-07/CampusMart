@@ -18,6 +18,7 @@ import { AdminRequire } from "./components/AdminRequire";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { About } from "./pages/About";
 import { Cart } from "./pages/Cart";
+import { LegalPolicy } from "./pages/LegalPolicy";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import './App.css';
 import { AuthProvider } from "./context/AuthContext";
@@ -87,6 +88,26 @@ const router = createBrowserRouter([
             {
                 path: "/orders",
                 element: <Orders />,
+            },
+            {
+                path: "/terms",
+                element: <LegalPolicy initialPolicy="terms" />,
+            },
+            {
+                path: "/privacy",
+                element: <LegalPolicy initialPolicy="privacy" />,
+            },
+            {
+                path: "/refund-policy",
+                element: <LegalPolicy initialPolicy="refund" />,
+            },
+            {
+                path: "/cancellation-refund",
+                element: <LegalPolicy initialPolicy="refund" />,
+            },
+            {
+                path: "/shipping-policy",
+                element: <LegalPolicy initialPolicy="shipping" />,
             },
             {
                 path: "/admin",

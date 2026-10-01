@@ -132,6 +132,32 @@ export const Contact = () => {
                 title="Cartsy HQ Location"
               ></iframe>
             </div>
+
+            {/* Official Business & Support Details (Compliance) */}
+            <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "0.6rem", borderTop: "2px dashed #E5E7EB", paddingTop: "0.85rem" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "0.88rem" }}>
+                <span style={{ fontSize: "1.1rem" }}>🏢</span>
+                <div>
+                  <strong style={{ display: "block", color: "var(--neo-border)" }}>Operating Address:</strong>
+                  <span style={{ color: "var(--text-secondary)" }}>DLF Cyber City, Phase 2, Gurugram, Haryana 122002, India</span>
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.88rem" }}>
+                <span style={{ fontSize: "1.1rem" }}>✉️</span>
+                <div>
+                  <strong style={{ color: "var(--neo-border)" }}>Support Email: </strong>
+                  <a href="mailto:support@cartsy.in" style={{ color: "var(--neo-pink-dark)", fontWeight: 700, textDecoration: "none" }}>support@cartsy.in</a>
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.88rem" }}>
+                <span style={{ fontSize: "1.1rem" }}>📞</span>
+                <div>
+                  <strong style={{ color: "var(--neo-border)" }}>Helpline: </strong>
+                  <a href="tel:+919876543210" style={{ color: "var(--neo-border)", fontWeight: 700, textDecoration: "none" }}>+91 98765 43210</a>
+                  <span style={{ color: "var(--text-secondary)", fontSize: "0.8rem", marginLeft: "6px" }}>(Mon-Sat, 9AM-6PM IST)</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Right Side - Form */}
