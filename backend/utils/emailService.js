@@ -2,6 +2,8 @@ const nodemailer = require("nodemailer");
 const dns = require("dns");
 const User = require("../models/User");
 const Order = require("../models/Order");
+const { getGmailClient } = require("./gmail/gmailAuth");
+const { sendEmail: sendGmailEmail } = require("./gmail/gmailSender");
 
 // Ensure Node resolves IPv4 addresses before IPv6 to prevent ENETUNREACH on cloud environments like Render
 if (dns.setDefaultResultOrder) {
@@ -57,6 +59,83 @@ const getTransporter = () => {
         greetingTimeout: 10000,
         socketTimeout: 15000,
     });
+};
+
+/**
+ * Resolves active email provider ('gmail_api' vs 'nodemailer').
+ * Defaults to 'gmail_api'.
+ */
+const getEmailProvider = () => {
+    return (process.env.EMAIL_PROVIDER || "gmail_api").trim().toLowerCase();
+};
+
+/**
+ * Dispatches an email using the active provider:
+ * - 'gmail_api' (default): Official Google Gmail API via OAuth 2.0
+ * - 'nodemailer': Custom SMTP / Gmail App Password
+ */
+const dispatchEmail = async ({
+    to,
+    subject,
+    html,
+    text,
+    from,
+    replyTo,
+    headers = {},
+    contextName = "Email",
+}) => {
+    const provider = getEmailProvider();
+
+    if (provider === "nodemailer") {
+        const transporter = getTransporter();
+        if (!transporter) {
+            console.warn(`[EmailService] Nodemailer credentials (EMAIL_USER/EMAIL_PASS) not configured in .env. ${contextName} skipped.`);
+            return { success: false, skipped: true, provider };
+        }
+
+        const info = await transporter.sendMail({
+            from,
+            replyTo,
+            to,
+            subject,
+            text,
+            html,
+            headers,
+        });
+
+        return {
+            success: true,
+            messageId: info.messageId,
+            provider,
+        };
+    }
+
+    // Default: gmail_api
+    const gmail = getGmailClient();
+    if (!gmail) {
+        console.warn(`[EmailService] Gmail API credentials (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN) not configured in .env. ${contextName} skipped.`);
+        return { success: false, skipped: true, provider };
+    }
+
+    const result = await sendGmailEmail({
+        to,
+        subject,
+        html,
+        text,
+        from,
+        replyTo,
+        headers,
+    });
+
+    if (!result.success) {
+        throw new Error(result.error || "Gmail API send failed");
+    }
+
+    return {
+        success: true,
+        messageId: result.messageId,
+        provider,
+    };
 };
 
 /**
@@ -363,14 +442,7 @@ const sendOrderConfirmationEmail = async (orderInput) => {
             return false;
         }
 
-        // 2. Transporter check: Fail gracefully if credentials are not configured
-        const transporter = getTransporter();
-        if (!transporter) {
-            console.warn("[EmailService] EMAIL_USER or EMAIL_PASS not configured in backend/.env. Email dispatch skipped.");
-            return false;
-        }
-
-        // 3. Resolve customer email and name
+        // 2. Resolve customer email and name
         let recipientEmail = null;
         let customerName = order.shippingAddress?.fullName || "Valued Student";
 
@@ -399,32 +471,38 @@ const sendOrderConfirmationEmail = async (orderInput) => {
             ? `Payment Received & Order Confirmed #${shortId} - CARTSY`
             : `Order Confirmed #${shortId} (Cash on Delivery) - CARTSY`;
 
-        // Ensure From address uses the authenticated Gmail address for 100% SPF/DKIM alignment
-        let fromAddress = `"CARTSY" <${process.env.EMAIL_USER}>`;
+        // Ensure From address uses brand name and authenticated email address
+        const fallbackEmail = (process.env.GMAIL_FROM_EMAIL || process.env.EMAIL_USER || "").trim();
+        let fromAddress = `"CARTSY" <${fallbackEmail}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
             const displayName = nameMatch ? nameMatch[1].trim() : "CARTSY";
-            fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
+            fromAddress = `"${displayName}" <${fallbackEmail}>`;
         }
 
         const html = generateOrderReceiptHtml(order, customerName, clientUrl);
         const text = generateOrderReceiptText(order, customerName, clientUrl);
 
-        const info = await transporter.sendMail({
-            from: fromAddress,
-            replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER,
+        const dispatchResult = await dispatchEmail({
             to: recipientEmail,
+            from: fromAddress,
+            replyTo: process.env.EMAIL_REPLY_TO || process.env.GMAIL_FROM_EMAIL || process.env.EMAIL_USER,
             subject,
             text,
             html,
             headers: {
                 "X-Entity-Ref-ID": String(order._id),
             },
+            contextName: `Order receipt (#${order._id})`,
         });
 
-        console.log(`[EmailService] Order receipt sent to ${recipientEmail} for order #${order._id} (Message ID: ${info.messageId})`);
+        if (!dispatchResult.success) {
+            return false;
+        }
 
-        // 4. Update idempotency flag
+        console.log(`[EmailService] Order receipt sent to ${recipientEmail} for order #${order._id} (Provider: ${dispatchResult.provider}, Message ID: ${dispatchResult.messageId})`);
+
+        // 3. Update idempotency flag
         if (typeof order.save === "function") {
             order.confirmationEmailSent = true;
             await order.save();
@@ -755,12 +833,6 @@ const sendOrderStatusEmail = async (orderInput, newStatus) => {
             if (freshOrder) order = freshOrder;
         }
 
-        const transporter = getTransporter();
-        if (!transporter) {
-            console.warn("[EmailService] EMAIL_USER or EMAIL_PASS not configured. Skipping status update email.");
-            return false;
-        }
-
         let recipientEmail = null;
         let customerName = order.shippingAddress?.fullName || "Valued Student";
 
@@ -785,20 +857,21 @@ const sendOrderStatusEmail = async (orderInput, newStatus) => {
         const clientUrl = (process.env.URL || process.env.CLIENT_URL || "http://localhost:5173").trim();
         const config = getStatusConfig(newStatus, order, customerName);
 
-        let fromAddress = `"CARTSY" <${process.env.EMAIL_USER}>`;
+        const fallbackEmail = (process.env.GMAIL_FROM_EMAIL || process.env.EMAIL_USER || "").trim();
+        let fromAddress = `"CARTSY" <${fallbackEmail}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
             const displayName = nameMatch ? nameMatch[1].trim() : "CARTSY";
-            fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
+            fromAddress = `"${displayName}" <${fallbackEmail}>`;
         }
 
         const html = generateStatusUpdateHtml(order, customerName, clientUrl, newStatus);
         const text = generateStatusUpdateText(order, customerName, clientUrl, newStatus);
 
-        const info = await transporter.sendMail({
-            from: fromAddress,
-            replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER,
+        const dispatchResult = await dispatchEmail({
             to: recipientEmail,
+            from: fromAddress,
+            replyTo: process.env.EMAIL_REPLY_TO || process.env.GMAIL_FROM_EMAIL || process.env.EMAIL_USER,
             subject: config.subject,
             text,
             html,
@@ -806,9 +879,14 @@ const sendOrderStatusEmail = async (orderInput, newStatus) => {
                 "X-Entity-Ref-ID": String(order._id),
                 "X-Order-Status": newStatus,
             },
+            contextName: `Status update email (${newStatus})`,
         });
 
-        console.log(`[EmailService] Status update email (${newStatus}) sent to ${recipientEmail} for order #${order._id} (Message ID: ${info.messageId})`);
+        if (!dispatchResult.success) {
+            return false;
+        }
+
+        console.log(`[EmailService] Status update email (${newStatus}) sent to ${recipientEmail} for order #${order._id} (Provider: ${dispatchResult.provider}, Message ID: ${dispatchResult.messageId})`);
         return true;
     } catch (error) {
         console.error(`[EmailService] Error sending status email for order #${orderInput?._id || "unknown"}:`, error.message);
@@ -831,6 +909,56 @@ const verifySmtpConnection = async () => {
     } catch (error) {
         return { success: false, message: error.message };
     }
+};
+
+/**
+ * Diagnostic tool: Verifies Google OAuth2 credentials and Gmail API profile
+ */
+const verifyGmailConnection = async () => {
+    try {
+        const { getOAuth2Client } = require("./gmail/gmailAuth");
+        const auth = getOAuth2Client();
+        if (!auth) {
+            return {
+                success: false,
+                message: "Missing Gmail API OAuth2 credentials in .env",
+            };
+        }
+
+        const { token } = await auth.getAccessToken();
+        const tokenInfoRes = await fetch("https://oauth2.googleapis.com/tokeninfo?access_token=" + token);
+        const tokenInfo = await tokenInfoRes.json();
+
+        const hasSendScope = (tokenInfo.scope || "").includes("gmail.send") || (tokenInfo.scope || "").includes("mail.google.com");
+        if (!hasSendScope) {
+            return {
+                success: false,
+                message: "Insufficient scopes: Token lacks 'https://www.googleapis.com/auth/gmail.send'. Re-run 'npm run auth:gmail' and check the permission box.",
+            };
+        }
+
+        return {
+            success: true,
+            emailAddress: tokenInfo.email,
+            message: `Gmail API ready. Authenticated as ${tokenInfo.email || "OK"}`,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: error.response?.data?.error?.message || error.message,
+        };
+    }
+};
+
+/**
+ * Diagnostic tool: Verifies connection for currently active email provider
+ */
+const verifyEmailConnection = async () => {
+    const provider = getEmailProvider();
+    if (provider === "nodemailer") {
+        return await verifySmtpConnection();
+    }
+    return await verifyGmailConnection();
 };
 
 /**
@@ -984,19 +1112,14 @@ const generatePasswordResetHtml = ({ customerName, otp, resetToken, clientUrl, r
  */
 const sendPasswordResetEmail = async ({ recipientEmail, customerName, otp, resetToken, clientUrl }) => {
     try {
-        const transporter = getTransporter();
-        if (!transporter) {
-            console.warn(`[EmailService] Nodemailer not configured in .env. Password reset email for ${recipientEmail} skipped.`);
-            return false;
-        }
-
         const resolvedClientUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
 
-        let fromAddress = `"CARTSY" <${process.env.EMAIL_USER}>`;
+        const fallbackEmail = (process.env.GMAIL_FROM_EMAIL || process.env.EMAIL_USER || "").trim();
+        let fromAddress = `"CARTSY" <${fallbackEmail}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
             const displayName = nameMatch ? nameMatch[1].trim() : "CARTSY";
-            fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
+            fromAddress = `"${displayName}" <${fallbackEmail}>`;
         }
 
         const html = generatePasswordResetHtml({
@@ -1014,19 +1137,24 @@ const sendPasswordResetEmail = async ({ recipientEmail, customerName, otp, reset
             recipientEmail,
         });
 
-        const info = await transporter.sendMail({
-            from: fromAddress,
-            replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER,
+        const dispatchResult = await dispatchEmail({
             to: recipientEmail,
+            from: fromAddress,
+            replyTo: process.env.EMAIL_REPLY_TO || process.env.GMAIL_FROM_EMAIL || process.env.EMAIL_USER,
             subject: "CARTSY Password Reset - Verification Code & Link",
             text,
             html,
             headers: {
                 "X-Entity-Ref-ID": `pwd-reset-${Date.now()}`,
             },
+            contextName: `Password reset email for ${recipientEmail}`,
         });
 
-        console.log(`[EmailService] Password reset email sent to ${recipientEmail} (Message ID: ${info.messageId})`);
+        if (!dispatchResult.success) {
+            return false;
+        }
+
+        console.log(`[EmailService] Password reset email sent to ${recipientEmail} (Provider: ${dispatchResult.provider}, Message ID: ${dispatchResult.messageId})`);
         return true;
     } catch (error) {
         console.error(`[EmailService] Error sending password reset email to ${recipientEmail}:`, error.message);
@@ -1186,19 +1314,14 @@ const generatePasswordResetSuccessHtml = ({ customerName, clientUrl, recipientEm
  */
 const sendPasswordResetSuccessEmail = async ({ recipientEmail, customerName, clientUrl }) => {
     try {
-        const transporter = getTransporter();
-        if (!transporter) {
-            console.warn(`[EmailService] Nodemailer not configured in .env. Password reset success email for ${recipientEmail} skipped.`);
-            return false;
-        }
-
         const resolvedClientUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
 
-        let fromAddress = `"CARTSY" <${process.env.EMAIL_USER}>`;
+        const fallbackEmail = (process.env.GMAIL_FROM_EMAIL || process.env.EMAIL_USER || "").trim();
+        let fromAddress = `"CARTSY" <${fallbackEmail}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
             const displayName = nameMatch ? nameMatch[1].trim() : "CARTSY";
-            fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
+            fromAddress = `"${displayName}" <${fallbackEmail}>`;
         }
 
         const html = generatePasswordResetSuccessHtml({
@@ -1214,19 +1337,24 @@ const sendPasswordResetSuccessEmail = async ({ recipientEmail, customerName, cli
             changedAt: Date.now(),
         });
 
-        const info = await transporter.sendMail({
-            from: fromAddress,
-            replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER,
+        const dispatchResult = await dispatchEmail({
             to: recipientEmail,
+            from: fromAddress,
+            replyTo: process.env.EMAIL_REPLY_TO || process.env.GMAIL_FROM_EMAIL || process.env.EMAIL_USER,
             subject: "CARTSY - Your Password Was Successfully Reset",
             text,
             html,
             headers: {
                 "X-Entity-Ref-ID": `pwd-success-${Date.now()}`,
             },
+            contextName: `Password reset success email for ${recipientEmail}`,
         });
 
-        console.log(`[EmailService] Password reset success email sent to ${recipientEmail} (Message ID: ${info.messageId})`);
+        if (!dispatchResult.success) {
+            return false;
+        }
+
+        console.log(`[EmailService] Password reset success email sent to ${recipientEmail} (Provider: ${dispatchResult.provider}, Message ID: ${dispatchResult.messageId})`);
         return true;
     } catch (error) {
         console.error(`[EmailService] Error sending password reset success email to ${recipientEmail}:`, error.message);
@@ -1402,19 +1530,14 @@ const generateWelcomeEmailHtml = ({ customerName, clientUrl, recipientEmail }) =
  */
 const sendWelcomeEmail = async ({ recipientEmail, customerName, clientUrl }) => {
     try {
-        const transporter = getTransporter();
-        if (!transporter) {
-            console.warn(`[EmailService] Nodemailer not configured in .env. Welcome email for ${recipientEmail} skipped.`);
-            return false;
-        }
-
         const resolvedClientUrl = (process.env.URL || process.env.CLIENT_URL || clientUrl || "http://localhost:5173").trim();
 
-        let fromAddress = `"CARTSY" <${process.env.EMAIL_USER}>`;
+        const fallbackEmail = (process.env.GMAIL_FROM_EMAIL || process.env.EMAIL_USER || "").trim();
+        let fromAddress = `"CARTSY" <${fallbackEmail}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
             const displayName = nameMatch ? nameMatch[1].trim() : "CARTSY";
-            fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
+            fromAddress = `"${displayName}" <${fallbackEmail}>`;
         }
 
         const html = generateWelcomeEmailHtml({
@@ -1428,19 +1551,24 @@ const sendWelcomeEmail = async ({ recipientEmail, customerName, clientUrl }) => 
             recipientEmail,
         });
 
-        const info = await transporter.sendMail({
-            from: fromAddress,
-            replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER,
+        const dispatchResult = await dispatchEmail({
             to: recipientEmail,
+            from: fromAddress,
+            replyTo: process.env.EMAIL_REPLY_TO || process.env.GMAIL_FROM_EMAIL || process.env.EMAIL_USER,
             subject: `Welcome to CARTSY, ${customerName || "Friend"}! 🛍️`,
             text,
             html,
             headers: {
                 "X-Entity-Ref-ID": `welcome-${Date.now()}`,
             },
+            contextName: `Welcome email for ${recipientEmail}`,
         });
 
-        console.log(`[EmailService] Welcome email sent to ${recipientEmail} (Message ID: ${info.messageId})`);
+        if (!dispatchResult.success) {
+            return false;
+        }
+
+        console.log(`[EmailService] Welcome email sent to ${recipientEmail} (Provider: ${dispatchResult.provider}, Message ID: ${dispatchResult.messageId})`);
         return true;
     } catch (error) {
         console.error(`[EmailService] Error sending welcome email to ${recipientEmail}:`, error.message);
@@ -1728,14 +1856,7 @@ const sendAdminNewOrderAlert = async (orderInput) => {
 
         order = claimedOrder;
 
-        // 3. Transporter check
-        const transporter = getTransporter();
-        if (!transporter) {
-            console.warn("[EmailService] Nodemailer not configured in backend/.env. Admin alert skipped.");
-            return false;
-        }
-
-        // 4. Resolve Admin Email
+        // 3. Resolve Admin Email
         let adminEmail = (process.env.ADMIN_EMAIL || "").trim();
         if (!adminEmail) {
             const adminUser = await User.findOne({ isAdmin: true }).select("email");
@@ -1743,8 +1864,8 @@ const sendAdminNewOrderAlert = async (orderInput) => {
                 adminEmail = adminUser.email.trim();
             }
         }
-        if (!adminEmail && process.env.EMAIL_USER) {
-            adminEmail = process.env.EMAIL_USER.trim();
+        if (!adminEmail && (process.env.GMAIL_FROM_EMAIL || process.env.EMAIL_USER)) {
+            adminEmail = (process.env.GMAIL_FROM_EMAIL || process.env.EMAIL_USER).trim();
         }
 
         if (!adminEmail) {
@@ -1752,7 +1873,7 @@ const sendAdminNewOrderAlert = async (orderInput) => {
             return false;
         }
 
-        // 5. Resolve Customer Details
+        // 4. Resolve Customer Details
         let customerEmail = "N/A";
         let customerName = order.shippingAddress?.fullName || "CARTSY Student";
 
@@ -1774,20 +1895,21 @@ const sendAdminNewOrderAlert = async (orderInput) => {
         const total = Number(order.totalPrice || order.amount || 0).toFixed(2);
         const subject = `New Order #${shortId} received from ${customerName} (Rs. ${total})`;
 
-        let fromAddress = `"CARTSY System" <${process.env.EMAIL_USER}>`;
+        const fallbackEmail = (process.env.GMAIL_FROM_EMAIL || process.env.EMAIL_USER || "").trim();
+        let fromAddress = `"CARTSY System" <${fallbackEmail}>`;
         if (process.env.EMAIL_FROM) {
             const nameMatch = process.env.EMAIL_FROM.match(/^["']?([^"<']+)["']?/);
             const displayName = nameMatch ? nameMatch[1].trim() : "CARTSY";
-            fromAddress = `"${displayName}" <${process.env.EMAIL_USER}>`;
+            fromAddress = `"${displayName}" <${fallbackEmail}>`;
         }
 
         const html = generateAdminNewOrderAlertHtml(order, { customerName, customerEmail }, clientUrl);
         const text = generateAdminNewOrderAlertText(order, { customerName, customerEmail }, clientUrl);
 
-        const info = await transporter.sendMail({
-            from: fromAddress,
-            replyTo: customerEmail !== "N/A" ? customerEmail : process.env.EMAIL_USER,
+        const dispatchResult = await dispatchEmail({
             to: adminEmail,
+            from: fromAddress,
+            replyTo: customerEmail !== "N/A" ? customerEmail : (process.env.EMAIL_REPLY_TO || process.env.GMAIL_FROM_EMAIL || process.env.EMAIL_USER),
             subject,
             text,
             html,
@@ -1795,9 +1917,16 @@ const sendAdminNewOrderAlert = async (orderInput) => {
                 "X-Entity-Ref-ID": `admin-alert-${order._id}`,
                 "X-Order-Status": order.status || "CONFIRMED",
             },
+            contextName: `Admin new order alert for order #${order._id}`,
         });
 
-        console.log(`[EmailService] Admin new order alert sent to ${adminEmail} for order #${order._id} (Message ID: ${info.messageId})`);
+        if (!dispatchResult.success) {
+            const Order = require("../models/Order");
+            await Order.findByIdAndUpdate(orderInput?._id, { adminAlertEmailSent: false }).catch(() => {});
+            return false;
+        }
+
+        console.log(`[EmailService] Admin new order alert sent to ${adminEmail} for order #${order._id} (Provider: ${dispatchResult.provider}, Message ID: ${dispatchResult.messageId})`);
         return true;
     } catch (error) {
         console.error(`[EmailService] Error sending admin alert for order #${orderInput?._id || "unknown"}:`, error.message);
@@ -1808,7 +1937,13 @@ const sendAdminNewOrderAlert = async (orderInput) => {
 };
 
 module.exports = {
+    getEmailProvider,
     getTransporter,
+    getGmailClient,
+    dispatchEmail,
+    verifySmtpConnection,
+    verifyGmailConnection,
+    verifyEmailConnection,
     sendOrderConfirmationEmail,
     sendOrderStatusEmail,
     sendPasswordResetEmail,
@@ -1827,7 +1962,6 @@ module.exports = {
     generateWelcomeEmailText,
     generateAdminNewOrderAlertHtml,
     generateAdminNewOrderAlertText,
-    verifySmtpConnection,
 };
 
 

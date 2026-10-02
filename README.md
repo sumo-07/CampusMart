@@ -1,27 +1,45 @@
-# 🛒 CampusMart — Campus E-Commerce Platform
+# 🛒 Cartsy (CampusMart) — Campus E-Commerce Platform
 
-A modern, full-stack, cyber-glassmorphic e-commerce platform built specifically for campus communities. Powered by **React 19**, **Three.js**, **Node.js**, **Express**, **MongoDB**, **Razorpay**, **Nodemailer**, and **Discord Webhooks**.
+A production-grade, full-stack, neobrutalist e-commerce platform designed and built specifically for campus communities. Powered by **React 19**, **Three.js**, **Node.js**, **Express 5**, **MongoDB**, **Razorpay**, **Google Gmail API (OAuth 2.0)**, **Nodemailer**, **Cloudinary**, and **Discord Webhooks**.
+
+🌐 **Live Storefront**: [https://cartsy-ecom.vercel.app](https://cartsy-ecom.vercel.app)  
+📌 **Project Status**: **Production Ready / Active Deployment**
+
+---
+
+## 📊 Current Project Status
+
+| Area | Status | Details |
+|---|---|---|
+| **Frontend Deployment** | 🟢 Live | Hosted on **Vercel** ([cartsy-ecom.vercel.app](https://cartsy-ecom.vercel.app)) with fast global CDN delivery. |
+| **Backend Architecture** | 🟢 Active | Express 5 REST API with MongoDB Atlas cluster and IPv4-first DNS resolution for cloud hosting. |
+| **Email Infrastructure** | 🟢 Live (Dual) | **Google Gmail API (OAuth 2.0)** active as default via HTTPS; **Nodemailer SMTP** preserved for custom business domains. |
+| **Payments Gateway** | 🟢 Verified | **Razorpay** checkout integration with cryptographic webhook/signature verification and COD support. |
+| **Media & Assets** | 🟢 Cloudinary | In-memory buffer streaming with auto WebP/AVIF formatting and orphan asset cleanup. |
+| **Notifications** | 🟢 Discord Suite | 3 dedicated webhooks for Real-Time Orders, Low/Out-of-Stock inventory, and Customer Support queries. |
+| **Design System** | 🟢 Neobrutalist | Custom Vanilla CSS design tokens with tactile drop shadows, bold borders, Google Fonts, and mobile responsiveness. |
 
 ---
 
 ## 🌟 Features Overview
 
 ### 🛍️ Storefront & Product Catalog
-- **Interactive Catalog**: Real-time search, category filtering, price range sorting, and pagination.
-- **Product Details & Gallery**: High-resolution image displays, stock counters, specs breakdown, and add-to-cart controls with instant stock ceiling enforcement.
+- **Interactive Catalog**: Real-time multi-field search, category filtering, dynamic price sorting, and responsive pagination.
+- **Product Details & Gallery**: High-resolution image displays, interactive thumbnail carousel, live stock count, specs breakdown, and add-to-cart controls with instant stock ceiling enforcement.
+- **Stock Urgency Indicators**: Dynamic warning badges (`⚠️ Only X left in stock - Don't get cooked!`) to boost conversion.
 - **Automated Catalog Seeder**: Includes safe catalog synchronization and seeding via DummyJSON API with image fallbacks (`npm run seed`).
 
-### 🎨 3D Graphics & Cyber-Glassmorphic UI
-- **Three.js & React Three Fiber**: Interactive 3D objects and canvas scenes embedded seamlessly into the modern storefront.
+### 🎨 3D Graphics & Neobrutalist UI
+- **Three.js & React Three Fiber**: Interactive 3D objects and canvas scenes embedded seamlessly into the storefront.
 - **Framer Motion Micro-Interactions**: Smooth state transitions, interactive card hovers, loading skeletons, and notification toasts.
-- **Tailored Neon & Cyber Aesthetic**: Glassmorphism with neon accents, custom scrollbars, and responsive mobile-first layouts.
+- **Neobrutalist Aesthetic**: High-contrast `#0A0A0A` borders, solid tactile drop shadows (`box-shadow: 4px 4px 0px #0A0A0A`), vibrant color pills, custom scrollbars, and responsive mobile-first layouts.
 
 ### 🛒 Cart & Checkout Experience
-- **Synchronized Cart**: Persistent cart state backed by MongoDB for authenticated users and local state for guests.
-- **Real-Time Stock Validation**: Prevents overselling by checking live warehouse inventory before placing orders.
+- **Synchronized Cart**: Persistent cart state backed by MongoDB for authenticated users and local state fallback for guests.
+- **Real-Time Stock Validation**: Prevents overselling by validating live warehouse inventory before placing orders.
 - **Dual Payment Methods**:
   - **Cash on Delivery (COD)**: Instant order confirmation with automatic stock deduction and verification.
-  - **Razorpay Online Payments**: Seamless checkout with cryptographic signature verification, retry payment capability for unpaid orders, and 10-day auto-cleanup of expired pending checkouts.
+  - **Razorpay Online Payments**: Seamless checkout with cryptographic signature verification (`crypto.createHmac`), retry payment capability for unpaid orders, and 10-day auto-cleanup of expired pending checkouts.
 
 ### 🔐 Authentication & Account Security
 - **JWT + HTTP-Only Cookies**: Secure authentication flow with token cookies and fallback authorization headers.
@@ -37,13 +55,17 @@ A modern, full-stack, cyber-glassmorphic e-commerce platform built specifically 
 - **Masked OTP Field**: Secure `type="password"` input with dot rendering to prevent shoulder surfing.
 - **Post-Reset Confirmation**: Instant security confirmation email with 1-click emergency reset if unauthorized.
 
-### 📧 Automated Nodemailer Email Lifecycle
-All emails are crafted with responsive HTML, cyber-glassmorphic branding, and plain-text fallbacks:
+### 📧 Dual-Provider Automated Email System
+All transactional emails feature responsive HTML, Neobrutalist branding, and accessible plain-text fallbacks:
 1. **Order Confirmation Receipt**: Itemized receipt with order breakdown, pricing, delivery address, and tracking link.
 2. **Order Status Updates**: Real-time notification when orders transition to `Processing`, `Shipped`, `Delivered`, or `Cancelled`.
 3. **Welcome Email**: Sent automatically on initial student registration and first-time Google sign-in.
 4. **Admin New Order Alert**: Sent immediately to store admin upon confirmed COD or paid Razorpay orders.
 5. **Password Reset Request & Success Emails**: High-security emails with action buttons and security advisories.
+
+> **Provider Flexibility**: Features a zero-downtime provider switch via `EMAIL_PROVIDER=gmail_api` vs `EMAIL_PROVIDER=nodemailer`.
+> - **Gmail API (OAuth 2.0)**: Active default. Bypasses cloud host SMTP/port 587 blocks (e.g. Render, Railway, Koyeb) using HTTPS API calls.
+> - **Nodemailer SMTP**: Fully preserved for custom business domain SMTP setup (SendGrid, Amazon SES, Postmark, Mailgun, etc.).
 
 ### 💬 Discord Real-Time Webhook Suite
 Separate dedicated Discord webhooks for instant notifications without inbox clutter:
@@ -60,8 +82,16 @@ Separate dedicated Discord webhooks for instant notifications without inbox clut
 ### 🛡️ Admin Dashboard & Query Management
 - **Catalog Management**: Add, edit, and delete products, select categories, update pricing, and adjust inventory levels.
 - **Cloudinary Image Uploads**: Upload product images directly to Cloudinary with automatic deletion of replaced assets.
-- **Order Management**: Track orders, view payment status, update delivery milestones, and inspect customer details.
+- **Admin Preview Mode**: Visual indicator and direct "Manage in Admin Dashboard" quick-action on product details pages.
+- **Order Management & Detail Inspection**: Track orders, view payment status, update delivery milestones, inspect customer details, and trigger customer status update emails with modal confirmations.
 - **Contact Query Backup**: All contact inquiries are safely stored in MongoDB (`Contact` model) with status toggles (`Pending` / `Resolved` / `Archived`).
+
+### 📜 Legal & Compliance Pages
+Dedicated campus-compliant policy pages covering all student consumer rights:
+- `/terms`: Terms of Service & acceptable usage
+- `/privacy`: Data privacy & cookie policies
+- `/refund-policy` & `/cancellation-refund`: Refund terms & return window
+- `/shipping-policy`: Campus doorstep delivery timeline & guidelines
 
 ---
 
@@ -74,14 +104,16 @@ Separate dedicated Discord webhooks for instant notifications without inbox clut
 - **Data Fetching**: TanStack React Query v5
 - **Routing**: React Router DOM v7
 - **Authentication**: `@react-oauth/google`
-- **Styling**: Custom Vanilla CSS with Cyber-Glassmorphic Design System
+- **Styling**: Vanilla CSS with Neobrutalist Design System
 
 ### Backend
 - **Runtime**: Node.js + Express 5
 - **Database**: MongoDB via Mongoose 9
-- **Authentication**: JSON Web Token (`jsonwebtoken`), Bcrypt.js, Cookie Parser
+- **Authentication**: JSON Web Token (`jsonwebtoken`), Bcrypt.js, Cookie Parser, Google Auth Library
 - **Payments**: Razorpay Node SDK (`razorpay`)
-- **Email Delivery**: Nodemailer 10 (Gmail SMTP or Custom SMTP)
+- **Email Delivery (Dual Architecture)**:
+  - **Google Gmail API** via `googleapis` (OAuth 2.0 with auto token refresh) — **Default**
+  - **Nodemailer 10** (SMTP / Custom Domain Mailer) — **Preserved**
 - **Image Storage**: Cloudinary SDK + Multer
 - **Webhooks**: Discord Webhooks API (Native `fetch`)
 
@@ -97,9 +129,10 @@ campusMart/
 │   ├── middleware/         # Auth & admin route guards, error handlers
 │   ├── models/             # Mongoose schemas (User, Product, Order, Contact)
 │   ├── routes/             # Express API routes
-│   ├── scripts/            # Standalone diagnostic test scripts
+│   ├── scripts/            # Diagnostic & test scripts (testGmailApi, testEmail, etc.)
 │   ├── services/           # External services (Cloudinary, Catalog Seeder)
-│   ├── utils/              # Email service (Nodemailer) & Discord webhook service
+│   ├── utils/              # Email service (dispatch switch) & Discord webhook service
+│   │   └── gmail/          # Dedicated Gmail API modules (gmailAuth.js, gmailSender.js)
 │   ├── .env.example        # Backend environment template
 │   ├── package.json        # Backend dependencies & scripts
 │   └── server.js           # Server entry point
@@ -125,14 +158,14 @@ campusMart/
 
 ## ⚙️ Environment Configuration
 
-### 1. Backend Configuration (`backend/.env`)
-Create a `.env` file inside the `backend/` directory:
+### Backend Configuration (`backend/.env`)
 
 ```env
 PORT=5000
 MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/campusmart
 JWT_SECRET=your_jwt_super_secret_key
 URL=http://localhost:5173
+CLIENT_URL=http://localhost:5173
 
 # Razorpay Payments
 RAZORPAY_KEY_ID=rzp_test_your_key_id
@@ -144,14 +177,28 @@ CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 
-# Google OAuth
-GOOGLE_CLIENT_ID=your_google_oauth_client_id.apps.googleusercontent.com
+# Google Sign-In (Frontend Customer Authentication)
+GOOGLE_CLIENT_ID=your_google_signin_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your_google_signin_client_secret
 
-# Nodemailer Email Configuration
+# -------------------------------------------------------------
+# EMAIL PROVIDER SWITCH ('gmail_api' vs 'nodemailer')
+# -------------------------------------------------------------
+EMAIL_PROVIDER=gmail_api
+
+# 1. Google Gmail API (OAuth 2.0) — Active Default
+GMAIL_CLIENT_ID=your_gmail_mailer_client_id.apps.googleusercontent.com
+GMAIL_CLIENT_SECRET=your_gmail_mailer_client_secret
+GMAIL_REDIRECT_URI=https://developers.google.com/oauthplayground
+GMAIL_REFRESH_TOKEN=your_oauth_refresh_token
+GMAIL_FROM_NAME=Cartsy
+GMAIL_FROM_EMAIL=your_store_email@gmail.com
+
+# 2. Nodemailer / SMTP (Preserved for Custom Business Domain Mailers)
 EMAIL_SERVICE=gmail
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_16_character_google_app_password
-EMAIL_FROM="CampusMart <your_email@gmail.com>"
+EMAIL_USER=your_store_email@gmail.com
+EMAIL_PASS=your_16_character_app_password
+EMAIL_FROM="Cartsy <your_store_email@gmail.com>"
 ADMIN_EMAIL=your_admin_inbox@gmail.com
 
 # Discord Webhooks (Optional but Recommended)
@@ -160,13 +207,90 @@ DISCORD_ORDER_WEBHOOK_URL=https://discord.com/api/webhooks/...
 DISCORD_CONTACT_WEBHOOK_URL=https://discord.com/api/webhooks/...
 ```
 
-### 2. Frontend Configuration (`frontend/.env`)
-Create a `.env` file inside the `frontend/` directory:
+### Frontend Configuration (`frontend/.env`)
 
 ```env
 VITE_BASE_URL=http://localhost:5000
-VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id.apps.googleusercontent.com
+VITE_GOOGLE_CLIENT_ID=your_google_signin_client_id.apps.googleusercontent.com
 ```
+
+---
+
+## 📬 Email Provider Guide: Gmail API vs. Nodemailer
+
+Cartsy implements a **dual-provider email architecture** managed by the `EMAIL_PROVIDER` environment variable.
+
+### Option A: Using Google Gmail API (OAuth 2.0) — Active Default
+
+#### Why Gmail API?
+- **Cloud-Ready**: Cloud hosting providers (Render, Railway, Koyeb, Vercel, AWS EC2) frequently block outbound SMTP ports (`25`, `465`, `587`) or hit `ENETUNREACH` network errors. The Gmail API sends messages over standard HTTPS (`port 443`), making it 100% reliable anywhere.
+- **High Security**: Uses OAuth 2.0 tokens rather than storing static passwords on servers.
+
+#### Setup Instructions:
+1. **Google Cloud Console**:
+   - Go to [Google Cloud Console](https://console.cloud.google.com/) and open your project.
+   - Navigate to **APIs & Services > Library**, search for **Gmail API**, and click **Enable**.
+   - Navigate to **APIs & Services > OAuth consent screen > Scopes**:
+     - Click **Add or Remove Scopes**.
+     - Add `https://www.googleapis.com/auth/gmail.send` (or `https://mail.google.com/`) and save.
+   - Under **Test users**, add your store email (e.g. `your_store_email@gmail.com`).
+2. **Create OAuth Client ID**:
+   - Go to **APIs & Services > Credentials > Create Credentials > OAuth client ID**.
+   - Application Type: **Web application**.
+   - Add Authorized redirect URI: `https://developers.google.com/oauthplayground`.
+   - Copy the Client ID & Secret to `backend/.env`:
+     ```env
+     GMAIL_CLIENT_ID=your_client_id.apps.googleusercontent.com
+     GMAIL_CLIENT_SECRET=your_client_secret
+     ```
+3. **Generate Refresh Token**:
+   Run the interactive helper in the `backend/` directory:
+   ```bash
+   cd backend
+   npm run auth:gmail
+   ```
+   - Open the generated link in your browser.
+   - Log in with your store Gmail.
+   - **Crucial**: Check the permission box (**☑ "Send email on your behalf"** or **☑ "Read, compose, send, and permanently delete all your email from Gmail"**).
+   - Copy the authorization code and paste it back into your terminal.
+   - The script will automatically save `GMAIL_REFRESH_TOKEN` to your `backend/.env`.
+4. **Test Delivery**:
+   ```bash
+   node scripts/testGmailApi.js your_personal_email@gmail.com
+   ```
+
+---
+
+### Option B: Enabling Nodemailer (SMTP / Custom Domain)
+
+The Nodemailer integration is 100% preserved and ready to use whenever you set up a custom business domain (e.g., `orders@yourdomain.com`) or want standard SMTP.
+
+#### How to Switch to Nodemailer:
+1. Open `backend/.env` and change `EMAIL_PROVIDER`:
+   ```env
+   EMAIL_PROVIDER=nodemailer
+   ```
+2. Configure your SMTP credentials in `backend/.env`:
+   - **For Gmail App Password**:
+     ```env
+     EMAIL_SERVICE=gmail
+     EMAIL_USER=your_email@gmail.com
+     EMAIL_PASS=your_16_character_google_app_password
+     EMAIL_FROM="Cartsy <your_email@gmail.com>"
+     ```
+   - **For Custom SMTP (SendGrid, Amazon SES, Mailgun, Postmark, etc.)**:
+     ```env
+     EMAIL_SERVICE=custom
+     SMTP_HOST=smtp.sendgrid.net
+     SMTP_PORT=587
+     EMAIL_USER=apikey
+     EMAIL_PASS=your_sendgrid_api_key
+     EMAIL_FROM="Cartsy <support@yourdomain.com>"
+     ```
+3. **Test Delivery**:
+   ```bash
+   node scripts/testEmail.js your_personal_email@gmail.com
+   ```
 
 ---
 
@@ -224,12 +348,15 @@ Open your browser and visit: **`http://localhost:5173`**
 
 ## 🧪 Diagnostic & Testing Scripts
 
-The `backend/scripts/` directory provides standalone scripts to verify integrations without triggering live user flows:
+The `backend/scripts/` directory provides standalone diagnostic scripts to verify integrations without triggering live user flows:
 
 | Command | Purpose |
 |---|---|
-| `node backend/scripts/testEmail.js` | Verifies SMTP credentials and sends a test order receipt. |
+| `npm run auth:gmail` | Interactive Google OAuth2 helper to authorize & generate `GMAIL_REFRESH_TOKEN`. |
+| `node backend/scripts/testGmailApi.js [email]` | Verifies Gmail API OAuth scopes and sends a test order receipt. |
+| `node backend/scripts/testEmail.js [email]` | Verifies Nodemailer SMTP connectivity and sends a test order receipt. |
 | `node backend/scripts/testWelcomeEmail.js` | Previews and verifies the student welcome email template. |
+| `node backend/scripts/testPasswordResetEmail.js` | Previews and tests the OTP/Reset link password reset email. |
 | `node backend/scripts/testPasswordResetSuccessEmail.js` | Previews the password reset confirmation email. |
 | `node backend/scripts/testAdminOrderAlertEmail.js` | Tests the itemized admin order alert email. |
 | `node backend/scripts/testDiscordAlert.js` | Dispatches sample Low Stock and Out-of-Stock embeds to Discord. |
@@ -268,8 +395,6 @@ The `backend/scripts/` directory provides standalone scripts to verify integrati
 
 ## 🔮 Future Scope & Roadmap
 
-Here are the key upcoming enhancements planned for CampusMart:
-
 ### 1. 🛡️ API Rate Limiting (Highest Priority)
 - Implement robust rate limiting (using `express-rate-limit` / Redis token bucket) across sensitive endpoints:
   - **Authentication Endpoints** (`/api/auth/login`, `/api/auth/signup`): Guard against brute-force attacks and credential stuffing.
@@ -290,10 +415,7 @@ Here are the key upcoming enhancements planned for CampusMart:
 ### 4. 📋 Dedicated Admin Queries Dashboard (Contact Submissions)
 - Add a dedicated **"Queries"** tab directly in the Admin Dashboard (`/admin?tab=queries`).
 - Display all customer inquiries collected from `/contact` (`name`, `email`, `phone`, `subject`, `message`, timestamps, and linked student accounts).
-- Allows administrators to:
-  - View full inquiry details with student order history.
-  - Mark inquiries as `Completed` / `Resolved` or keep them as `Pending`.
-  - Quick-reply directly to students without switching windows.
+- Allows administrators to view details, update statuses, and quick-reply directly to students.
 
 ### 5. ⭐ Verified Product Reviews & Ratings
 - Allow verified student buyers to post authentic product reviews and 1–5 star ratings.
