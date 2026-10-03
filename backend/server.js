@@ -4,6 +4,8 @@ const dns = require("dns");
 if (dns.setDefaultResultOrder) {
     dns.setDefaultResultOrder("ipv4first");
 }
+const path = require("path");
+const fs = require("fs");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
@@ -76,6 +78,18 @@ app.use((err, req, res, next) => {
     console.error("Unhandled Error:", err.stack);
     res.status(500).send({ message: "Something went wrong" });
 });
+
+// Serve static frontend build if it exists (Railway unified full-stack deployment)
+const frontendDistPath = path.join(__dirname, "../frontend/dist");
+if (fs.existsSync(frontendDistPath)) {
+    app.use(express.static(frontendDistPath));
+    app.use((req, res, next) => {
+        if (req.method === "GET" && !req.path.startsWith("/api")) {
+            return res.sendFile(path.join(frontendDistPath, "index.html"));
+        }
+        next();
+    });
+}
 
 const PORT = process.env.PORT || 5000;
 

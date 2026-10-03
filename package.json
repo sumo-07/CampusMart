@@ -1,0 +1,10 @@
+{
+  "name": "campusmart-monorepo",
+  "version": "1.0.0",
+  "description": "CampusMart unified full-stack deployment on Railway",
+  "private": true,
+  "scripts": {
+    "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
+    "start": "node backend/server.js"
+  }
+}
