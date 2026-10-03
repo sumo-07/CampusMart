@@ -2,8 +2,8 @@
 
 A production-grade, full-stack, neobrutalist e-commerce platform designed and built specifically for campus communities. Powered by **React 19**, **Three.js**, **Node.js**, **Express 5**, **MongoDB**, **Razorpay**, **Google Gmail API (OAuth 2.0)**, **Nodemailer**, **Cloudinary**, and **Discord Webhooks**.
 
-🌐 **Live Storefront**: [https://cartsy-ecom.vercel.app](https://cartsy-ecom.vercel.app)  
-📌 **Project Status**: **Production Ready / Active Deployment**
+🌐 **Live Storefront**: [https://cartsy-prod.up.railway.app](https://cartsy-prod.up.railway.app)  
+📌 **Project Status**: **Production Ready / Active Unified Deployment**
 
 ---
 
@@ -11,7 +11,7 @@ A production-grade, full-stack, neobrutalist e-commerce platform designed and bu
 
 | Area | Status | Details |
 |---|---|---|
-| **Frontend Deployment** | 🟢 Live | Hosted on **Vercel** ([cartsy-ecom.vercel.app](https://cartsy-ecom.vercel.app)) with fast global CDN delivery. |
+| **Full-Stack Deployment** | 🟢 Live | Unified single-origin hosting on **Railway** ([cartsy-prod.up.railway.app](https://cartsy-prod.up.railway.app)). Express 5 directly serves both the compiled React 19 storefront and REST API endpoints under one domain, ensuring rock-solid first-party cookie authentication. |
 | **Backend Architecture** | 🟢 Active | Express 5 REST API with MongoDB Atlas cluster and IPv4-first DNS resolution for cloud hosting. |
 | **Email Infrastructure** | 🟢 Live (Dual) | **Google Gmail API (OAuth 2.0)** active as default via HTTPS; **Nodemailer SMTP** preserved for custom business domains. |
 | **Payments Gateway** | 🟢 Verified | **Razorpay** checkout integration with cryptographic webhook/signature verification and COD support. |
@@ -151,6 +151,7 @@ campusMart/
 │   ├── package.json        # Frontend dependencies & scripts
 │   └── vite.config.js      # Vite bundler configuration
 │
+├── package.json            # Root monorepo orchestration (Railway build & start scripts)
 └── README.md               # Project documentation
 ```
 
@@ -164,8 +165,7 @@ campusMart/
 PORT=5000
 MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/campusmart
 JWT_SECRET=your_jwt_super_secret_key
-URL=http://localhost:5173
-CLIENT_URL=http://localhost:5173
+URL=https://cartsy-prod.up.railway.app
 
 # Razorpay Payments
 RAZORPAY_KEY_ID=rzp_test_your_key_id
@@ -343,6 +343,36 @@ npm run dev
 ```
 
 Open your browser and visit: **`http://localhost:5173`**
+
+---
+
+## 🌐 Production Deployment (Railway Unified Monorepo)
+
+Cartsy is deployed as a **single-origin monorepo** on [Railway](https://railway.app) under **`https://cartsy-prod.up.railway.app`**.
+
+### Why Unified Architecture?
+When the frontend (e.g. Vercel) and backend (e.g. Railway) run on separate domains, authentication cookies become **third-party (cross-site)** cookies. Modern browsers (Safari ITP, Brave Shields, Chrome third-party cookie phase-out) reject third-party cookies even with `SameSite=None; Secure`, causing intermittent `401 Unauthorized` token failures on mobile and private windows.
+
+By unifying both frontend and backend on Railway:
+1. **First-Party Cookies**: Express directly serves the compiled Vite React frontend (`frontend/dist`) along with `/api/*` endpoints under the same URL. All cookies are strictly **first-party** with `SameSite=Lax`.
+2. **Zero Cookie Blocking**: 100% acceptance across iOS Safari, Chrome, Brave, and Edge.
+3. **No CORS Friction**: Same-origin API calls avoid CORS preflight latency.
+
+### Deployment Configuration
+- **Root Directory**: `/` (Repository root)
+- **Build Script (`package.json`)**:
+  ```bash
+  npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend
+  ```
+- **Start Script**:
+  ```bash
+  node backend/server.js
+  ```
+- **Key Environment Variables**:
+  - `NODE_ENV`: `production`
+  - `URL`: `https://cartsy-prod.up.railway.app`
+  - `VITE_GOOGLE_CLIENT_ID`: `1278...apps.googleusercontent.com` (baked into React build by Vite)
+  - `PORT`: Automatically assigned by Railway
 
 ---
 

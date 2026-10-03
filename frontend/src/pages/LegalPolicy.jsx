@@ -79,7 +79,7 @@ export const LegalPolicy = ({ initialPolicy = "terms" }) => {
                   Acceptance of Terms
                 </h2>
                 <p>
-                  Welcome to <strong>Cartsy</strong> (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). By browsing, accessing, registering an account, or placing an order on our platform (including <a href="https://cartsy-ecom.vercel.app">cartsy-ecom.vercel.app</a> and associated mobile interfaces), you explicitly agree to comply with and be bound by these Terms of Service.
+                  Welcome to <strong>Cartsy</strong> (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). By browsing, accessing, registering an account, or placing an order on our platform (including <a href="https://cartsy-prod.up.railway.app">cartsy-prod.up.railway.app</a> and associated mobile interfaces), you explicitly agree to comply with and be bound by these Terms of Service.
                 </p>
                 <p>
                   If you disagree with any portion of these terms, please refrain from using our services. We reserve the right to revise or update these terms at our sole discretion. Continued use of Cartsy constitutes acceptance of revised terms.
