@@ -40,6 +40,8 @@ const fetchWithRetry = async (url, maxRetries = 3, initialBackoffMs = 1000) => {
 const EXCLUDED_CATEGORIES = new Set([
     "smartphones",
     "laptops",
+    "tablets",
+    "tablet",
     "motorcycle",
     "motorcycles",
     "vehicle",
