@@ -30,7 +30,7 @@ export const CategoriesSection = () => {
       badgeColor: "green",
       type: "tech-essentials",
       desc: "Power through late-night creative grinds and gaming sessions with chargers, stands, and gadgets.",
-      slug: "smartphones",
+      slug: "mobile-accessories",
     },
   ];
 

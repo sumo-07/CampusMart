@@ -36,6 +36,17 @@ const fetchWithRetry = async (url, maxRetries = 3, initialBackoffMs = 1000) => {
     }
 };
 
+// Categories restricted by payment gateway compliance (e.g. Razorpay high-risk / prohibited list)
+const EXCLUDED_CATEGORIES = new Set([
+    "smartphones",
+    "laptops",
+    "motorcycle",
+    "motorcycles",
+    "vehicle",
+    "vehicles",
+    "automotive",
+]);
+
 const syncCatalog = async (options = {}) => {
     const isClean = !!options.clean;
 
@@ -46,9 +57,22 @@ const syncCatalog = async (options = {}) => {
     const batch2 = await fetchWithRetry(DUMMY_JSON_URLS[1]);
     const allProducts = [...batch1, ...batch2];
 
-    console.log(`[Seeder] Fetched ${allProducts.length} products total.`);
+    // Filter out restricted high-ticket electronics & vehicles to comply with payment gateway policies
+    const compliantProducts = allProducts.filter(
+        (p) => !EXCLUDED_CATEGORIES.has((p.category || "").toLowerCase())
+    );
 
-    const mappedProducts = allProducts.map((p) => ({
+    console.log(`[Seeder] Fetched ${allProducts.length} products total, ${compliantProducts.length} campus-compliant products retained.`);
+
+    // Always remove any previously inserted products from prohibited categories
+    const purgeResult = await Product.deleteMany({
+        category: { $in: Array.from(EXCLUDED_CATEGORIES) },
+    });
+    if (purgeResult.deletedCount > 0) {
+        console.log(`[Seeder] Purged ${purgeResult.deletedCount} prohibited products (smartphones, laptops, vehicles).`);
+    }
+
+    const mappedProducts = compliantProducts.map((p) => ({
         title: p.title,
         description: p.description,
         price: Number(p.price) || 0,
