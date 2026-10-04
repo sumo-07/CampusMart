@@ -16,6 +16,7 @@ const cartRoutes = require("./routes/cartRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const productRoutes = require("./routes/productRoutes");
 const contactRoutes = require("./routes/contactRoutes");
+const { handleRazorpayWebhook } = require("./controllers/orderController");
 
 const app = express();
 
@@ -68,6 +69,11 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/contact", contactRoutes);
+
+// Webhook route aliases for Razorpay
+app.post("/api/webhook/razorpay", handleRazorpayWebhook);
+app.post("/api/razorpay/webhook", handleRazorpayWebhook);
+app.post("/api/webhook", handleRazorpayWebhook);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
