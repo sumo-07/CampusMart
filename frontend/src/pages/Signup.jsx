@@ -13,6 +13,7 @@ export const Signup = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // Evaluate password strength
   const getPasswordStrength = (pwd) => {
@@ -44,18 +45,22 @@ export const Signup = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setError("");
 
     if (password !== confirmPassword) {
       return setError("Passwords do not match");
     }
 
+    setLoading(true);
     try {
       const { data } = await api.post("/api/auth/signup", { name, email, password });
       login(data);
       navigate(redirect, { state: location.state, replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Signup failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -176,8 +181,8 @@ export const Signup = () => {
             />
           </div>
 
-          <button type="submit" className="auth-btn signup-btn">
-            CLAIM YOUR SPOT 🚀
+          <button type="submit" className="auth-btn signup-btn" disabled={loading}>
+            {loading ? "CLAIMING SPOT..." : "CLAIM YOUR SPOT 🚀"}
           </button>
         </form>
 

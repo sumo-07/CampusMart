@@ -11,6 +11,7 @@ export const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,13 +26,17 @@ export const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setError("");
+    setLoading(true);
     try {
       const { data } = await api.post("/api/auth/login", { email, password });
       login(data);
       navigate(redirect, { state: location.state, replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -120,8 +125,8 @@ export const Login = () => {
             </div>
           </div>
 
-          <button type="submit" className="auth-btn login-btn">
-            LOCK IN ⚡
+          <button type="submit" className="auth-btn login-btn" disabled={loading}>
+            {loading ? "LOCKING IN..." : "LOCK IN ⚡"}
           </button>
         </form>
 

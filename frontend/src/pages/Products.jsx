@@ -84,12 +84,12 @@ export const Products = () => {
     gcTime: Infinity,
   });
 
-  /* ------------------ Debounce Search ------------------ */
+  /* ------------------ Debounce Search (280ms) ------------------ */
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
       setCurrentPage(1);
-    }, 400);
+    }, 280);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
@@ -112,6 +112,7 @@ export const Products = () => {
     setSearchParams({});
     setActiveSort(null);
     setSearchTerm("");
+    setDebouncedSearch("");
     setCurrentPage(1);
     setShowCategories(false);
     setShowPrice(false);

@@ -136,10 +136,14 @@ const removeFromCart = async (req, res) => {
 // @route   PUT /api/cart/:productId
 // @access  Private
 const updateCartQuantity = async (req, res) => {
-    const { action } = req.body; // 'inc' or 'dec'
+    const { action, quantity } = req.body; // 'inc', 'dec', or target number
     const { productId } = req.params;
 
-    if (!action || !["inc", "dec"].includes(action)) {
+    if (!action && typeof quantity !== "number") {
+        return res.status(400).json({ message: "Either 'action' (inc/dec) or 'quantity' must be provided" });
+    }
+
+    if (action && !["inc", "dec"].includes(action)) {
         return res.status(400).json({ message: "Action must be 'inc' or 'dec'" });
     }
 
@@ -162,10 +166,39 @@ const updateCartQuantity = async (req, res) => {
         );
 
         if (itemIndex === -1) {
+            // If item is not in cart, but target quantity > 0 or action is 'inc', insert it
+            const targetQty = typeof quantity === "number" ? Math.floor(quantity) : 1;
+            if (targetQty > 0 && product && product.stock > 0) {
+                const finalQty = Math.min(targetQty, Math.min(product.stock, MAX_ITEM_QUANTITY));
+                user.cart.push({
+                    productId: product._id.toString(),
+                    title: product.title,
+                    price: product.price,
+                    thumbnail: product.thumbnail,
+                    quantity: finalQty,
+                });
+                await user.save();
+                return res.json(user.cart);
+            }
             return res.status(404).json({ message: "Item not found in cart" });
         }
 
-        if (action === "inc") {
+        // 1. Direct Target Quantity update (idempotent, eliminates race conditions)
+        if (typeof quantity === "number") {
+            const targetQty = Math.floor(quantity);
+            if (targetQty <= 0) {
+                user.cart.splice(itemIndex, 1);
+            } else {
+                const maxAllowed = Math.min(MAX_ITEM_QUANTITY, product ? product.stock : MAX_ITEM_QUANTITY);
+                user.cart[itemIndex].quantity = Math.min(targetQty, maxAllowed);
+                if (product) {
+                    user.cart[itemIndex].title = product.title;
+                    user.cart[itemIndex].price = product.price;
+                    user.cart[itemIndex].thumbnail = product.thumbnail;
+                }
+            }
+        // 2. Step actions ('inc' / 'dec') for backwards compatibility
+        } else if (action === "inc") {
             if (!product) {
                 // If product was deleted from DB, purge it from cart
                 user.cart.splice(itemIndex, 1);
@@ -192,7 +225,6 @@ const updateCartQuantity = async (req, res) => {
             }
 
             user.cart[itemIndex].quantity = nextQty;
-            // Synchronize authoritative DB details
             user.cart[itemIndex].title = product.title;
             user.cart[itemIndex].price = product.price;
             user.cart[itemIndex].thumbnail = product.thumbnail;
@@ -201,7 +233,6 @@ const updateCartQuantity = async (req, res) => {
             if (user.cart[itemIndex].quantity <= 0) {
                 user.cart.splice(itemIndex, 1);
             } else if (product) {
-                // Ensure quantity does not exceed current stock if stock was lowered by admin
                 if (user.cart[itemIndex].quantity > product.stock) {
                     user.cart[itemIndex].quantity = product.stock;
                 }

@@ -30,12 +30,22 @@ export const Orders = () => {
     });
 
     const [searchQuery, setSearchQuery] = useState("");
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
     const ORDERS_PER_PAGE = 5;
     const [currentPage, setCurrentPage] = useState(1);
 
+    // Debounce search query by 280ms for instant input responsiveness and smooth filtering
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+            setCurrentPage(1);
+        }, 280);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
     const filteredOrders = orders.filter((order) => {
-        if (!searchQuery.trim()) return true;
-        const query = searchQuery.trim().toLowerCase();
+        if (!debouncedSearchQuery.trim()) return true;
+        const query = debouncedSearchQuery.trim().toLowerCase();
 
         // 1. Order ID match (full or partial)
         if (order._id && order._id.toLowerCase().includes(query)) return true;
@@ -86,6 +96,7 @@ export const Orders = () => {
 
     const handleClearSearch = () => {
         setSearchQuery("");
+        setDebouncedSearchQuery("");
         setCurrentPage(1);
     };
 

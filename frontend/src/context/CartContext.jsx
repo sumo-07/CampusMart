@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import api from "../api/axiosConfig";
 import { AuthContext } from "./AuthContext";
 
@@ -11,6 +11,20 @@ export const CartProvider = ({ children }) => {
     const { user } = useContext(AuthContext);
     const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Track latest cart items in ref for debounce callbacks
+    const latestCartRef = useRef(cartItems);
+    latestCartRef.current = cartItems;
+
+    // Map of active debounce timers per product ID: { [productId]: timeoutId }
+    const debounceTimers = useRef({});
+
+    // Clean up all pending debounce timers on unmount
+    useEffect(() => {
+        return () => {
+            Object.values(debounceTimers.current).forEach((timer) => clearTimeout(timer));
+        };
+    }, []);
 
     // Fetch cart whenever user logs in or mounts
     useEffect(() => {
@@ -39,15 +53,46 @@ export const CartProvider = ({ children }) => {
         return item ? item.quantity : 0;
     };
 
-    // Add new product or increment existing
+    // Add new product or increment existing (Instant Optimistic UI - 0ms lag)
     const addToCart = async (product, quantity = 1) => {
-        const productId = product._id || product.id;
+        const productId = String(product._id || product.id);
         const currentQty = getItemQuantity(productId);
 
         if (currentQty + quantity > MAX_ITEM_QUANTITY) {
             throw new Error(`Maximum ${MAX_ITEM_QUANTITY} units allowed per item (${currentQty} already in your cart).`);
         }
 
+        // Cancel any pending debounce timer on this product
+        if (debounceTimers.current[productId]) {
+            clearTimeout(debounceTimers.current[productId]);
+            delete debounceTimers.current[productId];
+        }
+
+        const prevCart = [...cartItems];
+
+        // 1. Instant Optimistic UI update (0ms feedback)
+        setCartItems((prev) => {
+            const exists = prev.some((i) => String(i.productId) === productId);
+            if (exists) {
+                return prev.map((item) =>
+                    String(item.productId) === productId
+                        ? { ...item, quantity: item.quantity + quantity }
+                        : item
+                );
+            }
+            return [
+                ...prev,
+                {
+                    productId,
+                    title: product.title,
+                    price: product.price,
+                    thumbnail: product.thumbnail,
+                    quantity,
+                },
+            ];
+        });
+
+        // 2. Synchronize with server in background
         try {
             const { data } = await api.post("/api/cart/add", {
                 productId,
@@ -56,30 +101,40 @@ export const CartProvider = ({ children }) => {
                 thumbnail: product.thumbnail,
                 quantity,
             });
-            setCartItems(data);
+
+            // Merge safely: only update if user hasn't made further changes
+            setCartItems((current) => {
+                const latestItem = current.find((i) => String(i.productId) === productId);
+                const serverItem = data.find((i) => String(i.productId) === productId);
+                if (!latestItem || !serverItem || latestItem.quantity === serverItem.quantity) {
+                    return data;
+                }
+                return current;
+            });
             return data;
         } catch (error) {
             console.error("addToCart error:", error);
+            setCartItems(prevCart);
             throw new Error(error.response?.data?.message || "Please login to add items to cart.");
         }
     };
 
-    // Update quantity ('inc' or 'dec')
+    // Update quantity with Instant Optimistic UI + Debounced Server Sync
     const updateQuantity = async (productId, action) => {
-        const currentQty = getItemQuantity(productId);
+        const id = String(productId);
+        const currentQty = getItemQuantity(id);
 
         if (action === "inc" && currentQty >= MAX_ITEM_QUANTITY) {
             throw new Error(`Maximum ${MAX_ITEM_QUANTITY} units allowed per item.`);
         }
 
-        const prevCart = [...cartItems];
+        const nextQty = action === "inc" ? currentQty + 1 : currentQty - 1;
 
-        // Optimistic UI update for instant feedback
+        // 1. Instant Optimistic UI update (0ms lag, smooth feedback)
         setCartItems((prev) =>
             prev
                 .map((item) => {
-                    if (String(item.productId) === String(productId)) {
-                        const nextQty = action === "inc" ? item.quantity + 1 : item.quantity - 1;
+                    if (String(item.productId) === id) {
                         return { ...item, quantity: nextQty };
                     }
                     return item;
@@ -87,25 +142,57 @@ export const CartProvider = ({ children }) => {
                 .filter((item) => item.quantity > 0)
         );
 
-        try {
-            const { data } = await api.put(`/api/cart/${productId}`, { action });
-            setCartItems(data);
-            return data;
-        } catch (error) {
-            console.error("updateQuantity error:", error);
-            // Revert on failure
-            setCartItems(prevCart);
-            throw new Error(error.response?.data?.message || "Failed to update cart quantity.");
+        // 2. Clear any pending debounce timer for this product
+        if (debounceTimers.current[id]) {
+            clearTimeout(debounceTimers.current[id]);
         }
+
+        // 3. Debounce network sync by 250ms: batches rapid clicks into 1 single idempotent request
+        debounceTimers.current[id] = setTimeout(async () => {
+            try {
+                // Find latest intended quantity for this product from ref
+                const item = latestCartRef.current.find((i) => String(i.productId) === id);
+                const targetQty = item ? item.quantity : 0;
+
+                let responseData;
+                if (targetQty <= 0) {
+                    const { data } = await api.delete(`/api/cart/${id}`);
+                    responseData = data;
+                } else {
+                    const { data } = await api.put(`/api/cart/${id}`, { quantity: targetQty, action });
+                    responseData = data;
+                }
+
+                // Synchronize without overwriting newer clicks that occurred during network flight
+                setCartItems((current) => {
+                    const latest = current.find((i) => String(i.productId) === id);
+                    if (!latest || latest.quantity === targetQty) {
+                        return responseData;
+                    }
+                    return current;
+                });
+            } catch (error) {
+                console.error("updateQuantity sync error:", error);
+                refreshCart();
+            } finally {
+                delete debounceTimers.current[id];
+            }
+        }, 250);
     };
 
-    // Remove single item completely
+    // Remove single item completely (Instant Optimistic Removal)
     const removeFromCart = async (productId) => {
+        const id = String(productId);
+        if (debounceTimers.current[id]) {
+            clearTimeout(debounceTimers.current[id]);
+            delete debounceTimers.current[id];
+        }
+
         const prevCart = [...cartItems];
-        setCartItems((prev) => prev.filter((item) => String(item.productId) !== String(productId)));
+        setCartItems((prev) => prev.filter((item) => String(item.productId) !== id));
 
         try {
-            const { data } = await api.delete(`/api/cart/${productId}`);
+            const { data } = await api.delete(`/api/cart/${id}`);
             setCartItems(data);
             return data;
         } catch (error) {
@@ -115,15 +202,21 @@ export const CartProvider = ({ children }) => {
         }
     };
 
-    // Clear whole cart on server and locally
+    // Clear whole cart on server and locally (Instant Optimistic Wipe)
     const clearCart = async () => {
+        // Clear all pending debounce timers
+        Object.values(debounceTimers.current).forEach((timer) => clearTimeout(timer));
+        debounceTimers.current = {};
+
+        const prevCart = [...cartItems];
+        setCartItems([]); // Instant 0ms feedback
+
         try {
             const { data } = await api.delete("/api/cart");
-            setCartItems([]);
             return data;
         } catch (error) {
             console.error("clearCart error:", error);
-            setCartItems([]);
+            setCartItems(prevCart);
         }
     };
 

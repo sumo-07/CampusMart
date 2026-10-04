@@ -85,12 +85,30 @@ export const AdminDashboard = () => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
     const [isSeeding, setIsSeeding] = useState(false);
     const [productSort, setProductSort] = useState("default");
     const [orderSort, setOrderSort] = useState("date-desc");
     const [orderStatusFilter, setOrderStatusFilter] = useState("all");
     const [orderSearchQuery, setOrderSearchQuery] = useState("");
+    const [debouncedOrderSearchQuery, setDebouncedOrderSearchQuery] = useState("");
     const [isOrderFilterMenuOpen, setIsOrderFilterMenuOpen] = useState(false);
+
+    // Debounce product search by 280ms for instant input responsiveness
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+        }, 280);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    // Debounce order search by 280ms for instant input responsiveness
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedOrderSearchQuery(orderSearchQuery);
+        }, 280);
+        return () => clearTimeout(timer);
+    }, [orderSearchQuery]);
 
     const [imageInputMode, setImageInputMode] = useState("file"); // "file" | "url"
     const [imageFile, setImageFile] = useState(null);
@@ -460,11 +478,11 @@ export const AdminDashboard = () => {
 
     const deliveredOrders = orders.filter(o => !isAbandonedDraft(o) && o.orderStatus === 'Delivered').length;
 
-    // Filter & Sort Products
+    // Filter & Sort Products (using debounced query)
     const filteredProducts = products.filter(p =>
-        (p.title && p.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (p._id && p._id.includes(searchQuery))
+        (p.title && p.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase())) ||
+        (p.category && p.category.toLowerCase().includes(debouncedSearchQuery.toLowerCase())) ||
+        (p._id && p._id.includes(debouncedSearchQuery))
     );
 
     const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -493,7 +511,7 @@ export const AdminDashboard = () => {
     // Reset page on search or sort change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, productSort]);
+    }, [debouncedSearchQuery, productSort]);
 
     // Smart windowed pagination range matching store catalog
     const getPaginationRange = (current, total, isMobile = false) => {
@@ -588,8 +606,8 @@ export const AdminDashboard = () => {
             if (currentStatus !== orderStatusFilter) return false;
         }
 
-        if (orderSearchQuery.trim()) {
-            const q = orderSearchQuery.toLowerCase().trim();
+        if (debouncedOrderSearchQuery.trim()) {
+            const q = debouncedOrderSearchQuery.toLowerCase().trim();
             const idMatch = order._id && order._id.toLowerCase().includes(q);
             const customerName = (order.user && typeof order.user === 'object' && order.user.name)
                 ? order.user.name.toLowerCase()
