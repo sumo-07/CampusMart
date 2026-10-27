@@ -58,7 +58,18 @@ app.use(express.json({
 }));
 app.use(cookieParser());
 
-// Health check endpoint for cloud platforms (e.g. Render)
+// Ensure MongoDB is connected for serverless invocations (no-op if already connected)
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (err) {
+        console.error("Database connection failure:", err.message);
+        res.status(500).json({ message: "Database connection failed", error: err.message });
+    }
+});
+
+// Health check endpoint for cloud platforms (e.g. Render/Vercel)
 app.get("/health", (req, res) => {
     res.status(200).json({ status: "OK", timestamp: new Date() });
 });
