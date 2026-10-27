@@ -70,8 +70,13 @@ app.use(async (req, res, next) => {
 });
 
 // Health check endpoint for cloud platforms (e.g. Render/Vercel)
-app.get("/health", (req, res) => {
+app.get(["/health", "/api/health"], (req, res) => {
     res.status(200).json({ status: "OK", timestamp: new Date() });
+});
+
+// Root API welcome endpoint
+app.get("/api", (req, res) => {
+    res.status(200).json({ message: "CampusMart API is running!" });
 });
 
 app.use("/api/auth", authRoutes);
