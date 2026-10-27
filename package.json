@@ -1,10 +1,25 @@
 {
   "name": "campusmart-monorepo",
   "version": "1.0.0",
-  "description": "CampusMart unified full-stack deployment on Railway",
+  "description": "CampusMart unified full-stack deployment",
   "private": true,
   "scripts": {
-    "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
+    "build": "npm install --prefix frontend && npm run build --prefix frontend",
     "start": "node backend/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.11.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "google-auth-library": "^11.1.0",
+    "googleapis": "^182.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.3.0",
+    "multer": "^2.4.0",
+    "nodemailer": "^10.0.10",
+    "razorpay": "^2.9.8"
   }
 }

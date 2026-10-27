@@ -105,4 +105,9 @@ const startServer = async () => {
     }
 };
 
-startServer();
+// Only listen on port in long-running container/local environments, not in Vercel serverless functions
+if (!process.env.VERCEL) {
+    startServer();
+}
+
+module.exports = app;
