@@ -24,6 +24,13 @@
       "destination": { "service": "backend" }
     },
     {
+      "source": "/((?!api|health|assets|vite.svg|logo.jpg|cartsy-icon.svg).*)",
+      "destination": {
+        "service": "frontend",
+        "path": "/"
+      }
+    },
+    {
       "source": "/(.*)",
       "destination": { "service": "frontend" }
     }
